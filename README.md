@@ -59,9 +59,10 @@ docker network create front-back
 2) Заполните `.env` по примеру `.env.example`
 
 ```js
-PROJECT_NAME="marking-lab-backend"
+PROJECT_NAME="marking-lab"
 API_V1_STR="/api/v1"
-ML_URL="http://ml:8001/"
+BACKEND_URL="http://localhost:8000"
+ML_URL="http://ml:8001"
 
 DB_HOST="host.docker.internal"
 DB_PORT=5432
@@ -75,9 +76,9 @@ AUTH_DB_USERNAME="postgres"
 AUTH_DB_PASSWORD="password"
 AUTH_DB_NAME="marking-lab-auth"
 
-JWT_ACCESS_TOKEN_SECRET="dAwvW_skfeSqA_hsdi_pequ"
+JWT_ACCESS_TOKEN_SECRET="dAwvW_fzdrmqA_hsdi_pequ"
 JWT_ACCESS_TOKEN_EXPIRATION="24h"
-JWT_REFRESH_TOKEN_SECRET="dAwvW_skfeSqA_hsdi_pequ"
+JWT_REFRESH_TOKEN_SECRET="dAwvW_fzdrmqA_hsdi_pequ"
 JWT_REFRESH_TOKEN_EXPIRATION="168h"
 ```
 
