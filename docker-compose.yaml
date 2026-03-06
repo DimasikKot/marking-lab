@@ -1,0 +1,91 @@
+services:
+  backend:
+    build:
+      context: ./backend  # Папка, содержащая файлы контейнера
+      dockerfile: backend.Dockerfile
+    container_name: backend
+    restart: always
+
+    # Создаёт том хранения данных. Необходим для сохранения данных при перезапуске образа
+    volumes:
+      # Пути сохраняемых директорий
+      - ./backend:/app
+    
+    # Указываем переменные окружения (имеют высший приоритет, чем переменные из файла .env)
+    # environment:
+    #   - name=value
+
+    # Указываем файл с переменными окружения, которые будут использоваться в контейнере
+    env_file:
+      - .env
+
+    deploy:
+      resources:
+        limits:
+          memory: 2G # Ограничиваем ОЗУ
+
+    # Это публикует порт на хост, поэтому любой может открыть
+    ports:
+      - "8000:8000"
+    
+    # Это открывает порт только для других контейнеров в той же сети, но не для хоста
+    # expose:
+    #   - "8000"
+    
+    # Указываем сети, к которым будет подключён контейнер. Сети нужно создавать заранее командой `docker network create <network-name>`
+    networks:
+      - front-back
+      - ml-back
+  
+  frontend:
+    build:
+      context: ./frontend  # Папка, содержащая файлы контейнера
+      dockerfile: frontend.Dockerfile
+    container_name: frontend
+    restart: always
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    
+    ports:
+      - "5173:5173"
+    
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Нужен для hot-reload
+    
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    
+    networks:
+      - front-back
+  
+  ml:
+    build:
+      context: ./ml  # Папка, содержащая файлы контейнера
+      dockerfile: ml.Dockerfile
+    container_name: ml
+    restart: always
+
+    ports:
+      - "8001:8001"
+
+    volumes:
+      - ./ml:/app
+      - /app/data:/data # Общая папка для датасетов
+    
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+    networks:
+      - ml-back
+
+networks:
+  front-back:
+    external: true # Указываем что не локальная в docker-compose, а общая для всего докера
+  ml-back:
+    external: true
