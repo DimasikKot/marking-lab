@@ -31,7 +31,13 @@ git clone https://github.com/DimasikKot/marking-lab.git
 
 1) Установите `docker`
 
-2) Создайте общие сети
+2) Выдайте `docker`'у права супер-пользователя, чтобы не вводить постоянно `sudo` (если на `Linux`)
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+3) Создайте общие сети
 
 ```bash
 docker network create ml-back
@@ -47,8 +53,8 @@ docker network create front-back
 
 3) Создайте две базы данных, советую данные названия:
 
-- marking-lab
-- marking-lab-auth
+- `marking-lab`
+- `marking-lab-auth`
 
 4) Активируйте два скрипта для создания таблиц, они в корне проекта с расширением `.sql`
 
@@ -108,7 +114,16 @@ docker-compose up --build
 
 ```
 
-> Чтобы освободить консоль нажмите `D` или при запуске добавьте флаг `-d`
+На `Linux`:
+
+```bash
+docker compose up --build
+
+```
+
+> Чтобы освободить консоль нажмите `D`
+
+> или при запуске добавьте флаг `-d`
 
 ## URLs
 
