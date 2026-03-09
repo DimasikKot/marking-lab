@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
-from database import init_db
+from backend.app.core.database import init_db
 
 app = FastAPI()
 

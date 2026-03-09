@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from config import settings
+from backend.app.core.config import settings
 
 # Основная БД
 engine = create_engine(settings.DATABASE_URL)
@@ -26,7 +26,3 @@ def get_auth_db():
         yield db
     finally:
         db.close()
-
-# Функция для создания таблиц при старте
-def init_db():
-    Base.metadata.create_all(bind=engine)
