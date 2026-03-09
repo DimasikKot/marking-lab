@@ -39,9 +39,10 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
+# Не выгружаем из памяти
 @lru_cache
 def get_settings():
     return Settings()
 
 
-settings = get_settings()
+settings: Settings = get_settings()

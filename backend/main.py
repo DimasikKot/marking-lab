@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import httpx
-from backend.app.core.database import init_db
+from app.core.config import settings
+from app.api.v1.endpioints import api_router
 
-app = FastAPI()
+app: FastAPI = FastAPI()
 
 # Разрешённые источники (добавь свой фронтенд)
-origins = [
+origins: list[str] = [
     "http://localhost:5173",  # Фронтенд на Vite
     "http://127.0.0.1:5173",  # Альтернативный локальный хост
 ]
@@ -20,21 +20,5 @@ app.add_middleware(
     allow_headers=["*"],  # Разрешенные заголовки
 )
 
-@app.on_event("startup")
-def startup_event():
-    init_db()  # Таблицы создадутся сами при старте контейнера
-    print("Database tables created!")
-
-@app.get("/")
-def home():
-    return {"message": "NLP Platforma API is ready"}
-
-@app.get("/ml")
-async def test_ml():
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "http://ml:8001/process",
-            json={"text": "Apple was founded by Steve Jobs"}
-        )
-
-    return response.json()
+# Подключение всех роутеров API
+app.include_router(api_router, prefix=settings.API_V1_STR)
