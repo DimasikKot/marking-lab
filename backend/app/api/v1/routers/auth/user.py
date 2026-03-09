@@ -16,6 +16,7 @@ from app.core.database import get_auth_db
 from app.models.auth.user import User
 from datetime import timedelta
 
+
 router = APIRouter()
 
 

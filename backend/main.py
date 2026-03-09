@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.endpioints import api_router
 
+
 app: FastAPI = FastAPI()
+
 
 # Разрешённые источники (добавь свой фронтенд)
 origins: list[str] = [
@@ -19,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],  # Разрешенные методы (GET, POST и т.д.)
     allow_headers=["*"],  # Разрешенные заголовки
 )
+
 
 # Подключение всех роутеров API
 app.include_router(api_router, prefix=settings.API_V1_STR)
