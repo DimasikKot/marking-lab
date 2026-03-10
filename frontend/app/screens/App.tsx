@@ -6,17 +6,17 @@ function App() {
   const [message, setMessage] = useState("NOT RESPONDING");
   const [messageBackendToML, setMessageBackendToML] = useState("NOT RESPONDING");
   
-  const VITE_API_BASE_URL = "http://localhost:8000/api/v1"
+  const VITE_API_URL = "http://localhost:8000/api/v1"
 
   useEffect(() => {
-    fetch(VITE_API_BASE_URL+"/test/echo/backend")
+    fetch(VITE_API_URL+"/test/echo/backend")
       .then((response) => response.json())
       .then((data) => {
         setMessage(data.detail);
       })
       .catch((error) => console.error(error));
 
-    fetch(VITE_API_BASE_URL+"/test/echo/ml")
+    fetch(VITE_API_URL+"/test/echo/ml")
       .then((response) => response.json())
       .then((data) => {
         setMessageBackendToML(data.detail);

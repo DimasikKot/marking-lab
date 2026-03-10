@@ -79,14 +79,14 @@ services:
 
 ### Задание своих переменных среды
 
-1) Создайте `.env` файл в корне проекта
+1) Создайте `.env` файлы в папках каждого сервиса
 
-2) Заполните `.env` по примеру `.env.example`
+2) Заполните `.env` по примерам `.env.example`
+
+`backend`
 
 ```js
-PROJECT_NAME="marking-lab"
-BACKEND_URL="http://localhost:8000"
-ML_URL="http://ml:8001"
+ML_URL="http://ml:8001/api/v1"
 
 DB_HOST="host.docker.internal"
 DB_PORT=5432
@@ -104,6 +104,12 @@ JWT_ACCESS_TOKEN_SECRET="dAwvW_fzdrmqA_hsdi_pequ"
 JWT_ACCESS_TOKEN_EXPIRATION="24h"
 JWT_REFRESH_TOKEN_SECRET="dAwvW_fzdrmqA_hsdi_pequ"
 JWT_REFRESH_TOKEN_EXPIRATION="168h"
+```
+
+`frontend`
+
+```js
+VITE_BACKEND_URL="http://localhost:8000/api/v1"
 ```
 
 ## Запуск проекта

@@ -17,7 +17,7 @@ services:
 
     # Указываем файл с переменными окружения, которые будут использоваться в контейнере
     env_file:
-      - .env
+      - ./backend/.env
 
     deploy:
       resources:
@@ -53,6 +53,9 @@ services:
     
     environment:
       - CHOKIDAR_USEPOLLING=true # Нужен для hot-reload
+    
+    env_file:
+      - ./frontend/.env
     
     deploy:
       resources:

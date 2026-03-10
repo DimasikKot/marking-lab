@@ -3,7 +3,6 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str
     ML_URL: str
 
     # Основная БД
