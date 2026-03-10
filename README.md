@@ -138,11 +138,11 @@ http://localhost:5173/
 
 ### backend
 
-http://localhost:8000/
+http://localhost:8000/docs
 
 ### ml
 
-http://localhost:8000/
+http://localhost:8000/docs
 
 ## Включение подсветки синтаксиса в `vscode` / `cursor`
 
