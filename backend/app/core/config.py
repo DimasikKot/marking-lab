@@ -34,7 +34,7 @@ class Settings(BaseSettings):
         return f"postgresql://{self.AUTH_DB_USERNAME}:{self.AUTH_DB_PASSWORD}@{self.AUTH_DB_HOST}:{self.AUTH_DB_PORT}/{self.AUTH_DB_NAME}"
 
     class Config:
-        env_file = ".env"
+        env_file = ".env.local"
 
 
 # Не выгружаем из памяти
