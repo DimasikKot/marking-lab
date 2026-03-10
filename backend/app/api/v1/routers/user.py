@@ -4,16 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 # Модели используемые для создания пользователя и ответа в роутере
-from app.schemas.auth.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse
 
 # Методы взаимодействия с БД
-from app.services.auth.user import create_user, authenticate_user, create_access_token
+from app.services.user import create_user, authenticate_user, create_access_token
 
 # Подключение к БД
 from app.core.database import get_auth_db
 
 # Модель пользователя хранящаяся в БД
-from app.models.auth.user import User
+from app.models.user import User
 from datetime import timedelta
 
 

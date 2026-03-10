@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.auth.user import User
+from app.models.user import User
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta, timezone

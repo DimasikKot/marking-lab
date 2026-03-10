@@ -8,7 +8,7 @@ interface EchoResponse {
 
 export const fetchBackendEcho = async (): Promise<EchoResponse | undefined> => {
     try {
-        const response = await api.get<EchoResponse>("/test/echo/backend");
+        const response = await api.get<EchoResponse>("/echos/backend");
         return response.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
@@ -19,7 +19,7 @@ export const fetchBackendEcho = async (): Promise<EchoResponse | undefined> => {
 
 export const fetchMLEcho = async (): Promise<EchoResponse | undefined> => {
     try {
-        const response = await api.get<EchoResponse>("/test/echo/ml");
+        const response = await api.get<EchoResponse>("/echos/ml");
         return response.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
