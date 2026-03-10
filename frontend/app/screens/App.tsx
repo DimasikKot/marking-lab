@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
-import logo from '/src/assets/logo/favicon.svg'
+import logo from '/app/assets/logo/favicon.svg' // Лучше всегда писать абсолютный путь
 
 function App() {
   const [count, setCount] = useState(0)
   const [message, setMessage] = useState("NOT RESPONDING");
   const [messageBackendToML, setMessageBackendToML] = useState("NOT RESPONDING");
+  
+  const VITE_API_BASE_URL = "http://localhost:8000/api/v1"
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/test/echo/backend")
+    fetch(VITE_API_BASE_URL+"/test/echo/backend")
       .then((response) => response.json())
       .then((data) => {
         setMessage(data.detail);
       })
       .catch((error) => console.error(error));
 
-    fetch("http://localhost:8000/api/v1/test/echo/ml")
+    fetch(VITE_API_BASE_URL+"/test/echo/ml")
       .then((response) => response.json())
       .then((data) => {
         setMessageBackendToML(data.detail);
