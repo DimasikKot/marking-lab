@@ -6,9 +6,9 @@ class EchoResponse(BaseModel):
     status: str = "success"
 
 
-class MLRequest(BaseModel):
+class MLPostRequest(BaseModel):
     text: str
 
 
-class MLResponse(BaseModel):
-    tokens: list[str]
+class MLPostResponse(BaseModel):
+    words: list[str]

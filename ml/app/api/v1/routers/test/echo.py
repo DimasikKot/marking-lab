@@ -1,27 +1,16 @@
-from pydantic import BaseModel
 from fastapi import APIRouter
-from app.schemas.test.echo import EchoResponse, MLRequest, MLResponse
+from app.schemas.test.echo import *
 
 
 router: APIRouter = APIRouter()
 
 
-class MLRequest(BaseModel):
-    text: str
-
-
-class EchoResponse(BaseModel):
-    detail: str
-    status: str = "success"
-
-
 @router.get("/ml", response_model=EchoResponse)
-def test_backend():
+def test_ml():
     return EchoResponse(detail="ML контейнер исправно работает")
 
 
-@router.post("/process")
-def process(request: MLRequest):
-    return {
-        "tokens": [t for t in [request.text]]
-    }
+@router.post("/ml", response_model=PostResponse)
+def test_ml_post(request: PostRequest):
+    words = request.text.split()
+    return PostResponse(words=words)
