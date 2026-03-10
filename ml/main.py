@@ -1,20 +1,26 @@
-import spacy
-from pydantic import BaseModel
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1.endpoints import api_router
 
-print(f"SpaCy version: {spacy.__version__}")
 
-class TextRequest(BaseModel):
-    text: str
+app: FastAPI = FastAPI()
 
-app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"status": "ml worker running"}
+# Разрешённые источники (добавь свой фронтенд)
+origins: list[str] = [
+    "http://localhost:8000",  # Фронтенд на Vite
+    "http://127.0.0.1:8000",  # Альтернативный локальный хост
+]
 
-@app.post("/process")
-def process(request: TextRequest):
-    return {
-        "tokens": [t for t in [request.text]]
-    }
+# Добавляем CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Кто может делать запросы
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешенные методы (GET, POST и т.д.)
+    allow_headers=["*"],  # Разрешенные заголовки
+)
+
+
+# Подключение всех роутеров API
+app.include_router(api_router, prefix="/api/v1")

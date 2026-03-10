@@ -85,7 +85,6 @@ services:
 
 ```js
 PROJECT_NAME="marking-lab"
-API_V1_STR="/api/v1"
 BACKEND_URL="http://localhost:8000"
 ML_URL="http://ml:8001"
 

@@ -1,22 +1,10 @@
-from pydantic import BaseModel
 from fastapi import APIRouter
+from app.core.config import settings
 import httpx
+from app.schemas.test.echo import EchoResponse, MLRequest, MLResponse
 
 
 router: APIRouter = APIRouter()
-
-
-class MLRequest(BaseModel):
-    text: str
-
-
-class MLResponse(BaseModel):
-    tokens: list[str]
-
-
-class EchoResponse(BaseModel):
-    detail: str
-    status: str = "success"
 
 
 @router.get("/backend", response_model=EchoResponse)
@@ -28,7 +16,7 @@ def test_backend():
 async def test_ml():
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://ml:8001/process",
+            settings.ML_URL + "api/v1/test/echo/process",
             # Преобразуем модель в словарь
             json=MLRequest(text="ML контейнер исправно работает").model_dump()
         )

@@ -7,17 +7,17 @@ function App() {
   const [messageBackendToML, setMessageBackendToML] = useState("NOT RESPONDING");
 
   useEffect(() => {
-    fetch("http://localhost:8000")
+    fetch("http://localhost:8000/api/v1/test/echo/backend")
       .then((response) => response.json())
       .then((data) => {
-        setMessage(data.message);
+        setMessage(data.detail);
       })
       .catch((error) => console.error(error));
 
-    fetch("http://localhost:8000/ml")
+    fetch("http://localhost:8000/api/v1/test/echo/ml")
       .then((response) => response.json())
       .then((data) => {
-        setMessageBackendToML(data.tokens);
+        setMessageBackendToML(data.detail);
       })
       .catch((error) => console.error(error));
   }, []);
