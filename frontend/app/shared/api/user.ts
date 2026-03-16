@@ -3,7 +3,7 @@ import axios from "axios";
 
 interface LoginData {
     email: string;
-    password: string; //...
+    password: string;
 }
 
 interface AuthResponse {
@@ -11,7 +11,7 @@ interface AuthResponse {
     token: string;
 }
 
-export const registerUser = async (data: LoginData) => {
+export const registerUser = async (data: LoginData): Promise<AuthResponse | undefined> => {
     try {
         const response = await api.post<AuthResponse>("/users/", data);
         localStorage.setItem("access_token", response.data.token);
@@ -24,7 +24,7 @@ export const registerUser = async (data: LoginData) => {
     }
 };
 
-export const loginUser = async (data: LoginData) => {
+export const loginUser = async (data: LoginData): Promise<AuthResponse | undefined> => {
     try {
         const response = await api.post<AuthResponse>("/login", data);
         localStorage.setItem("access_token", response.data.token);
@@ -37,7 +37,7 @@ export const loginUser = async (data: LoginData) => {
     }
 };
 
-export const logoutUser = () => {
+export const logoutUser = async () => {
     try {
         localStorage.removeItem("access_token");
         window.location.href = "/";
