@@ -11,7 +11,7 @@ export function Register() {
   const handleRegister = async () => {
 
     const response = await fetch(
-      import.meta.env.VITE_BACKEND_URL + "/auth/user/",
+      import.meta.env.VITE_BACKEND_URL + "/users/",
       {
         method: "POST",
         headers: {
@@ -33,28 +33,42 @@ export function Register() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh"
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+          width: "250px"
+        }}
+      >
+        <h1 style={{ textAlign: "center" }}>Регистрация</h1>
 
-      <h1>Регистрация</h1>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <input
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <input
-        type="password"
-        placeholder="Пароль"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <button onClick={handleRegister}>
-        Зарегистрироваться
-      </button>
-
+        <button onClick={handleRegister}>
+          Зарегистрироваться
+        </button>
+      </div>
     </div>
   );
 }

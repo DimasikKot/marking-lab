@@ -13,7 +13,7 @@ interface AuthResponse {
 
 export const registerUser = async (data: LoginData) => {
     try {
-        const response = await api.post<AuthResponse>("/user/", data);
+        const response = await api.post<AuthResponse>("/users/", data);
         localStorage.setItem("access_token", response.data.token);
         return response.data;
     } catch (error: unknown) {

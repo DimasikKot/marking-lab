@@ -56,7 +56,7 @@ export function General() {
         </button>
 
         <button className='m-4 p-2 rounded-2xl bg-blue-500' onClick={() => {navigate("/register")}}>
-          <p>Авторизация</p>
+          <p>Регистрация</p>
         </button>
       </div>
     
