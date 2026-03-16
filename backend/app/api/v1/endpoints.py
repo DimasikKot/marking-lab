@@ -1,10 +1,11 @@
 from fastapi import APIRouter
-from app.api.v1.routers.auth import user as auth_user
-from app.api.v1.routers.test import echo as test_echo
+from app.api.v1.routers import user
+from app.api.v1.routers import echo
 
 
 api_router: APIRouter = APIRouter()
 
 
-api_router.include_router(auth_user.router, prefix="/auth/user", tags=["Auth User"])
-api_router.include_router(test_echo.router, prefix="/test/echo", tags=["Test Echo"])
+# В пути лучше всегда делать множественное число, тк так легче писать фронтэнд
+api_router.include_router(user.router, prefix="/users", tags=["Users"])
+api_router.include_router(echo.router, prefix="/echos", tags=["Echos"])

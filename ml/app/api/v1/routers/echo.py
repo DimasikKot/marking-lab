@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.test.echo import *
+from app.schemas.echo import *
 
 
 router: APIRouter = APIRouter()

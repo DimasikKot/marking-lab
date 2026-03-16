@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.test.echo import *
+from app.schemas.echo import *
 from app.core.config import settings
 import httpx
 
@@ -15,7 +15,7 @@ def test_backend():
 @router.get("/ml", response_model=EchoResponse)
 async def test_ml():
     async with httpx.AsyncClient() as client:
-        response_dict = await client.get(settings.ML_URL + "/test/echo/ml")
+        response_dict = await client.get(settings.ML_URL + "/echos/ml")
         response_json = response_dict.json()
 
     return response_json
@@ -25,7 +25,7 @@ async def test_ml():
 async def test_ml_post():
     async with httpx.AsyncClient() as client:
         response_dict = await client.post(
-            settings.ML_URL + "/test/echo/ml",
+            settings.ML_URL + "/echos/ml",
 
             # Преобразуем модель в словарь и отправляем в POST методе
             json=MLPostRequest(text="ML контейнер разделяет слова в методе POST").model_dump()

@@ -1,27 +1,33 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom";
+import { fetchBackendEcho, fetchMLEcho } from '@/shared/api/echo';
 import logo from '@/assets/logo/favicon.svg'
 
 export function General() {
   const navigate = useNavigate();
   const [messageBackend, setMessageBackend] = useState("Backend контейнер не работает");
   const [messageML, setMessageML] = useState("ML контейнер не работает");
-  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
   useEffect(() => {
-    fetch(VITE_BACKEND_URL+"/test/echo/backend")
-      .then((response) => response.json())
-      .then((data) => {
+    const load = async () => {
+      try {
+        const data = await fetchBackendEcho();
+        if (data?.detail === undefined) return;
         setMessageBackend(data.detail);
-      })
-      .catch((error) => console.error(error));
-
-    fetch(VITE_BACKEND_URL+"/test/echo/ml")
-      .then((response) => response.json())
-      .then((data) => {
+      } catch (error: unknown) {
+        console.error(error);
+      }
+      
+      try {
+        const data = await fetchMLEcho();
+        if (data?.detail === undefined) return;
         setMessageML(data.detail);
-      })
-      .catch((error) => console.error(error));
+      } catch (error: unknown) {
+        console.error(error);
+      }
+    };
+
+    load();
   });
 
   return (
