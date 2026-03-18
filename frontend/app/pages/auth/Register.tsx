@@ -15,9 +15,9 @@ export function Register() {
   };
 
   const handleRegister = async () => {
-  if (!email || !password) {
-    setError("Введите email и пароль");
-    return;
+    if (!email || !password) {
+      setError("Введите email и пароль");
+      return;
   }
 
   setError(null);
