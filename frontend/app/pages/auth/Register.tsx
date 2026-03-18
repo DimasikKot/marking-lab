@@ -9,26 +9,56 @@ export function Register() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async () => {
-    if (!email || !password) {
-      setError("Введите email и пароль");
-      return;
-    }
-
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      await registerUser({ email, password });
-      alert("Пользователь успешно создан");
-      navigate("/login");
-    } catch (err: unknown) {} finally {
-      setTimeout(() => {
-        setIsLoading(false);
-        setError("Ошибка регистрации. Попробуйте позже.");
-      }, 1000);
-    }
+  const validateEmail = (email: string): boolean => {
+    const emailVal = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailVal.test(email);
   };
+
+  const handleRegister = async () => {
+  if (!email || !password) {
+    setError("Введите email и пароль");
+    return;
+  }
+
+  setError(null);
+
+  if (!validateEmail(email)) {
+    setError("Некорректный формат email (пример: user@example.com)");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    await registerUser({ email, password });
+    alert("Пользователь успешно создан");
+    navigate("/login");
+  } catch (err: unknown) {
+    console.error("Ошибка регистрации:", err);
+
+    let errorMessage = "Ошибка регистрации. Попробуйте позже.";
+
+    if (err && typeof err === "object" && err !== null) {
+      const data = (err as any).detail !== undefined ? err : (err as any).response?.data;
+
+      if (data && typeof data.detail === "string") {
+        const detail = data.detail;
+
+        if (detail.toLowerCase().includes("already registered")) {
+          errorMessage = "Пользователь с таким email уже зарегистрирован";
+        } else {
+          errorMessage = detail;
+        }
+      }
+    }
+
+    setError(errorMessage);
+  } finally {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center">
