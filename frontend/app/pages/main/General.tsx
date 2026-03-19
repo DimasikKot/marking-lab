@@ -39,8 +39,8 @@ export function General() {
       </div>
 
       <div className='flex-row justify-center items-center m-8 rounded-4xl bg-amber-200'>
-        <button className='m-4 p-2 rounded-2xl bg-blue-200' onClick={() => {navigate("/first")}}>
-          <p>Перейти на главную страницу</p>
+        <button className='m-4 p-2 rounded-2xl bg-blue-200' onClick={() => {navigate("/markup")}}>
+          <p>Страница разметки и загрузки файлов</p>
         </button>
 
         <button className='m-4 p-2 rounded-2xl bg-blue-300' onClick={() => {navigate("/second")}}>
