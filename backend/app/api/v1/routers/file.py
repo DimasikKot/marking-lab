@@ -1,9 +1,9 @@
 from fastapi import APIRouter, File, UploadFile
-
+from app.schemas.file import *
 router = APIRouter()
 
 
-@router.post("/upload")
+@router.post("/upload", response_model=UploadPostResponse)
 async def upload_file(file: UploadFile = File(...)):
     contents = await file.read()
     try:
@@ -16,8 +16,8 @@ async def upload_file(file: UploadFile = File(...)):
         import json
         try:
             data = json.loads(text)
-            return {"content": data}
+            return UploadPostResponse(data)
         except:
             pass
 
-    return {"content": text}
+    return UploadPostResponse(text)
