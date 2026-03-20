@@ -1,5 +1,7 @@
 from fastapi import APIRouter, File, UploadFile
 from app.schemas.file import *
+
+
 router = APIRouter()
 
 
@@ -16,8 +18,8 @@ async def upload_file(file: UploadFile = File(...)):
         import json
         try:
             data = json.loads(text)
-            return UploadPostResponse(data)
+            return UploadPostResponse(content=data)
         except:
             pass
 
-    return UploadPostResponse(text)
+    return UploadPostResponse(content=text)
