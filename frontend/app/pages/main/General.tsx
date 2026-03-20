@@ -50,8 +50,16 @@ export function General() {
         <button className='m-4 p-2 rounded-2xl bg-blue-400' onClick={() => {navigate("/third")}}>
           <p>Перейти на третью страницу</p>
         </button>
-      </div>
 
+        <button className='m-4 p-2 rounded-2xl bg-blue-500' onClick={() => {navigate("/login")}}>
+          <p>Вход</p>
+        </button>
+
+        <button className='m-4 p-2 rounded-2xl bg-blue-500' onClick={() => {navigate("/register")}}>
+          <p>Регистрация</p>
+        </button>
+      </div>
+    
       <div className="absolute right-0 top-0 bg-white m-5 p-6 rounded-lg cursor-grab active:cursor-grabbing shadow-md text-center opacity-80">
         <p className={`${messageBackend === "Backend контейнер не работает" ? "text-red-700" : "text-green-700"} text-md mb-2 line-clamp-1`}>
           {messageBackend}
