@@ -33,7 +33,7 @@ export function General() {
   return (
     <div className="h-full w-full flex flex-col justify-center items-center p-8 overflow-auto">
       <div className="mb-8 flex flex-row">
-        <img src={logo} className="h-40 rounded-3xl bg-green-300" alt="React logo" />
+        <img src={logo} className="h-40 rounded-[30px] bg-green-300" alt="React logo" />
 
         <h1 className="text-4xl font-bold rounded-3xl ml-8 p-8 bg-red-200 self-center">Vite + React</h1>
       </div>
