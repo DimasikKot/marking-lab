@@ -30,7 +30,12 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
 
     # Ни в коем случае не возвращаем в чем именно проблема, возвращаем ошибку и всё
     if not user or not verify_password(password, user.hashed_password):
-        return None
+        user: User = db.query(User).filter(User.username == email).first()
+
+        # Также проверяем по имени пользователя, если пользователь не найден по email,
+        # тк в нашем случае можно использовать и email и имя пользователя для авторизации
+        if not user or not verify_password(password, user.hashed_password):
+            return None
     
     return user
 
