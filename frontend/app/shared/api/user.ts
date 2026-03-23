@@ -1,8 +1,13 @@
 import api from "@/shared/api/axios";
 import axios from "axios";
 
-interface LoginData {
+interface RegisterData {
     username: string;
+    email: string;
+    password: string;
+}
+
+interface LoginData {
     email: string;
     password: string;
 }
@@ -13,7 +18,7 @@ interface AuthResponse {
     // если в будущем добавят id или другие поля — добавишь
 }
 
-export const registerUser = async (data: LoginData): Promise<AuthResponse | undefined> => {
+export const registerUser = async (data: RegisterData): Promise<AuthResponse | undefined> => {
     try {
         const response = await api.post<AuthResponse>("/users/", data);
         localStorage.setItem("access_token", response.data.access_token);

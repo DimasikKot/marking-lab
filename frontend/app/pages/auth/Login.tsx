@@ -9,11 +9,6 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateEmail = (email: string): boolean => {
-    const emailVal = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailVal.test(email);
-  };
-
   const handleLogin = async () => {
     if (!email || !password) {
       setError("Введите email и пароль");
@@ -21,12 +16,6 @@ export function Login() {
     }
 
     setError(null);
-
-    if (!validateEmail(email)) {
-      setError("Некорректный формат email (пример: user@example.com)");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -45,7 +34,7 @@ export function Login() {
           const detail = data.detail.toLowerCase();
 
           if (detail.includes("invalid credentials")) {
-            errorMessage = "Неверный email или пароль";
+            errorMessage = "Неверный логин или пароль";
           } else {
             errorMessage = data.detail;
           }
