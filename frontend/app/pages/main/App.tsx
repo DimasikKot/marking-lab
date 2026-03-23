@@ -8,7 +8,7 @@ import { Login, Register } from '@/pages/auth/index.ts';
 export function App() {
   return (
     <Router>
-      <div className="h-dvh w-dvw bg-gray-100">
+      <div className="h-dvh w-dvw bg-white">
         <Routes>
             <Route path="/" element={<General />} />
             <Route path="/login" element={<Login />} />
