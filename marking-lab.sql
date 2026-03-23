@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS models (
     created_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     is_draft          BOOLEAN       DEFAULT TRUE,
     saved_in_memory   BOOLEAN       DEFAULT FALSE,
-    model_type        VARCHAR(50),  -- 'NER' или 'Classifier'
     parameters        JSONB
 );
 
@@ -34,7 +33,6 @@ CREATE TABLE IF NOT EXISTS experiments (
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     is_draft    BOOLEAN         DEFAULT TRUE,
     model_id    INTEGER         REFERENCES models(id) ON DELETE SET NULL,   -- если модель удаляется, эксперимент сохраняется, но без модели
-    test_type   VARCHAR(50),
     results     JSONB,          -- численные метрики
     graphs      JSONB           -- графики обучения
 );      
