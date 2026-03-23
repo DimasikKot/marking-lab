@@ -4,6 +4,7 @@ import { registerUser } from "@/shared/api/user";
 
 export function Register() {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,7 @@ export function Register() {
     setIsLoading(true);
 
     try {
-      await registerUser({ email, password });
+      await registerUser({ username, email, password });
       navigate("/login");
     } catch (err: unknown) {
       console.error("Ошибка регистрации:", err);
@@ -62,8 +63,23 @@ export function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-gray-200 p-8 rounded-xl shadow-2xl w-full max-w-xs md:max-w-sm border border-gray-700">
+      <div className="bg-gray-200 flex flex-col gap-4 p-8 rounded-xl shadow-2xl w-full max-w-xs md:max-w-sm border border-gray-700">
         <h1 className="text-3xl font-bold text-center mb-8">Регистрация</h1>
+
+        <input
+          type="text"
+          placeholder="Имя пользователя"
+          value={username}
+          onChange={(e) => setUsername(e.target.value.trim())}
+          className="
+            w-full px-4 py-3 rounded-lg 
+            bg-gray-100
+            border border-gray-600 
+            focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30
+            transition-all duration-200
+          "
+          disabled={isLoading}
+        />
 
         <input
           type="email"
@@ -86,7 +102,7 @@ export function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="
-            w-full px-4 py-3 rounded-lg mt-4
+            w-full px-4 py-3 rounded-lg
             bg-gray-100
             border border-gray-600 
             focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30
