@@ -2,6 +2,7 @@ import api from "@/shared/api/axios";
 import axios from "axios";
 
 interface LoginData {
+    username: string;
     email: string;
     password: string;
 }
