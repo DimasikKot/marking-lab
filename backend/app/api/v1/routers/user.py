@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserCreate, UserResponse
 
 # Методы взаимодействия с БД
-from app.services.user import create_user, authenticate_user, create_access_token
+from app.services.user import create_user, authenticate_user, encode_access_token, print_access_token_data
 
 # Подключение к БД
 from app.core.database import get_auth_db
@@ -34,7 +34,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_auth_db)) -> User:
         raise HTTPException(status_code=400, detail="User already registered")
 
     # Иначе создаём и возвращаем созданного пользователя
-    new_user: User = create_user(db, user.email, user.password)
+    new_user: User = create_user(db, user.username, user.email, user.password)
     return new_user
 
 
@@ -48,5 +48,8 @@ def login_user(email: str, password: str, db: Session = Depends(get_auth_db)) ->
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Создаём токен авторизации ("sub" - это стандартный параметр для задания id пользователя)
-    access_token: str = create_access_token({"sub": user.id}, expires_delta=timedelta(hours=1))
+    access_token: str = encode_access_token({"sub": str(user.id)}, expires_delta=timedelta(hours=1))
+
+    print_access_token_data(access_token)
+
     return {"access_token": access_token, "token_type": "bearer"}
