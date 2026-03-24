@@ -1,4 +1,12 @@
 
+# Отслеживание задач (Kanban-доска)
+
+https://miro.com/app/board/uXjVG9dcEnU=/?focusWidget=3458764665023327887
+
+# Функцианальная диаграмма
+
+https://miro.com/app/board/uXjVG9dcEnU=/?moveToWidget=3458764664481149269&cot=14
+
 # Модули
 
 4 главных:
