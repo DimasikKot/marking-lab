@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.api.v1.routers import user
 from app.api.v1.routers import echo
 from app.api.v1.routers import file
+from app.api.v1.routers import project
 
 api_router: APIRouter = APIRouter()
 
@@ -10,3 +11,4 @@ api_router: APIRouter = APIRouter()
 api_router.include_router(user.router, prefix="/users", tags=["Users"])
 api_router.include_router(echo.router, prefix="/echos", tags=["Echos"])
 api_router.include_router(file.router, prefix="/files", tags=["Files"])
+api_router.include_router(project.router, prefix="/projects", tags=["Projects"])
