@@ -1,10 +1,10 @@
-import { uploadFile, type UploadResponse } from '@/shared/api/file';
+import { uploadFile, type PostUploadResponse } from '@/shared/api/file';
 import React, { useState } from 'react';
 
 export function Markup() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [responseData, setResponseData] = useState<UploadResponse | null>(null);
+  const [responseData, setResponseData] = useState<PostUploadResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

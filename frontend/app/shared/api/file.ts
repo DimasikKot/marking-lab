@@ -4,17 +4,19 @@ import axios from "axios";
 
 export interface PostUploadResponse {
   content: string;
-  filename?: string;
+  filename: string;
 }
 
-export const uploadFile = async (file: File): Promise<PostUploadResponse | undefined> => {
+export const uploadFile = async (file: File, name: string | undefined = "Мой файл"): Promise<PostUploadResponse | undefined> => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("name", name);
 
   try {
     const response = await api.post<PostUploadResponse>("/files/upload", formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        "Content-Type": "multipart/form-data"
       },
     });
     return response.data;

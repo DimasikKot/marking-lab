@@ -7,14 +7,14 @@ from app.services.get_current_user_id import get_current_user_id
 router = APIRouter()
 
 
-class PostUploadRequest(BaseModel):
-    name: str
-
 class PostUploadResponse(BaseModel):
     content: str
+    filename: str
 
 @router.post("/upload", response_model=PostUploadResponse)
-async def upload_file(file: UploadFile = File(...), user_id: int = Depends(get_current_user_id)):
+# При передаче файла в виде multipart/form-data, FastAPI не может автоматически
+# извлечь имя файла из заголовков, поэтому мы добавляем его как отдельное поле формы name.
+async def upload_file(file: UploadFile = File(...), name: str = Form(...), user_id: int = Depends(get_current_user_id)):
     contents = await file.read()
     try:
         text = contents.decode("utf-8")
@@ -26,8 +26,8 @@ async def upload_file(file: UploadFile = File(...), user_id: int = Depends(get_c
         import json
         try:
             content = json.loads(text)
-            return PostUploadResponse(content=content)
+            return PostUploadResponse(content=content, filename=name)
         except:
             pass
 
-    return PostUploadResponse(content=text)
+    return PostUploadResponse(content=text, filename=name)
