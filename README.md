@@ -10,17 +10,19 @@ https://git-scm.com/
 
 3) Зайти в `GitHub` в `vscode` / `cursor`
 
-4) Настроийте `git` на устройстве
+4) Привязать почту к коммитам (обязательно)
 
 ```bash
-git config --global user.name ваш-ник
+git config --global user.email ЭЛЕКТРОННАЯ-ПОЧТА
 ```
+
+5) Установить отображаеммое при коммите имя (обязательно)
 
 ```bash
-git config --global user.email ваша-почта
+git config --global user.name ФАМИЛИЯ-ИМЯ
 ```
 
-5) Скопируйте репозиторий с `GitHub`'а
+6) Скопируйте репозиторий с `GitHub`'а
 
 ```bash
 git clone https://github.com/DimasikKot/marking-lab.git
@@ -143,6 +145,13 @@ http://localhost:8000/docs
 ### ml
 
 http://localhost:8000/docs
+
+## Скрыть лишние папки в `vscode`
+
+1) Откройте настройки (`File` > `Preferences` > `Settings` ИЛИ `F1` > `>Preferences: Open Settings (UI)`);
+2) Поищите `exclude` в строке поиска по настройкам ИЛИ `Files` > `Exclude`;
+3) Нажмите кнопку `Add Pattern` и добавьте `**/__pycache__` паттерн;
+3) По желанию добавьте `**/node_modules` паттерн для `frontend`'a;
 
 ## Включение подсветки синтаксиса в `vscode` / `cursor`
 
