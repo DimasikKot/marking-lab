@@ -26,9 +26,9 @@ class PostProjectsResponse(BaseModel):
 
 @router.post("/projects", response_model=PostProjectsResponse)
 async def create_project(
-    project: PostProjectsRequest, 
+    data: PostProjectsRequest, 
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-    new_project = create_project(db, user_id=user_id, name=project.name)
-    return new_project
+    project = create_project(db, user_id=user_id, name=data.name)
+    return project

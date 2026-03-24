@@ -36,13 +36,13 @@ class PostResponse(BaseModel):
 # Пишем метод, путь и какие данные будем возвращать
 @router.post("/", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
-def register_user(user: PostRequest, db: Session = Depends(get_auth_db)) -> PostResponse:
-    existing_username: User | None = db.query(User).filter(User.username == user.username).first()
+def register_user(data: PostRequest, db: Session = Depends(get_auth_db)) -> PostResponse:
+    existing_username: User | None = db.query(User).filter(User.username == data.username).first()
     if existing_username:
         raise HTTPException(status_code=400, detail="Username already taken")
     
     # Ищем пользователя по email, тк это уникальный атрибут
-    existing_email: User | None = db.query(User).filter(User.email == user.email).first()
+    existing_email: User | None = db.query(User).filter(User.email == data.email).first()
 
     # Если пользователь существует, то возвращаем ошибку
     if existing_email:
@@ -50,13 +50,13 @@ def register_user(user: PostRequest, db: Session = Depends(get_auth_db)) -> Post
         raise HTTPException(status_code=400, detail="User already registered")
     
     # Иначе создаём и возвращаем созданного пользователя
-    new_user: User = create_user(db, user.username, user.email, user.password)
+    user: User = create_user(db, data.username, data.email, data.password)
 
-    access_token: str = encode_access_token({"sub": str(new_user.id)}, expires_delta=timedelta(hours=1))
+    access_token: str = encode_access_token({"sub": str(user.id)}, expires_delta=timedelta(hours=1))
 
     print_access_token_data(access_token)
 
-    return PostResponse(username=new_user.username, access_token=access_token, token_type="bearer")
+    return PostResponse(username=user.username, access_token=access_token, token_type="bearer")
 
 
 class PostLoginRequest(BaseModel):
@@ -71,8 +71,8 @@ class PostLoginResponse(BaseModel):
 # Совершение авторизации
 @router.post("/login", response_model=PostLoginResponse)
 # Пишем получаемые данные и создаём сессию с БД для проверки
-def login_user(user: PostLoginRequest, db: Session = Depends(get_auth_db)) -> PostLoginResponse:
-    user: User | None = authenticate_user(db, user.login, user.password)
+def login_user(data: PostLoginRequest, db: Session = Depends(get_auth_db)) -> PostLoginResponse:
+    user: User | None = authenticate_user(db, data.login, data.password)
     if not user:
         # Ни в коем случае не пишем в чем именно проблема, возвращаем ошибку, что данные неправильно введены
         raise HTTPException(status_code=401, detail="Invalid credentials")

@@ -1,17 +1,18 @@
 import api from "./axios";
 import axios from "axios";
 
-export interface UploadResponse {
+
+export interface PostUploadResponse {
   content: string;
   filename?: string;
 }
 
-export const uploadFile = async (file: File): Promise<UploadResponse | undefined> => {
+export const uploadFile = async (file: File): Promise<PostUploadResponse | undefined> => {
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    const response = await api.post<UploadResponse>("/files/upload", formData, {
+    const response = await api.post<PostUploadResponse>("/files/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

@@ -1,14 +1,15 @@
 import api from "@/shared/api/axios";
 import axios from "axios";
 
-interface EchoResponse {
+
+interface GetBackendResponse {
     detail: string;
     status: string;
 }
 
-export const fetchBackendEcho = async (): Promise<EchoResponse | undefined> => {
+export const fetchBackendEcho = async (): Promise<GetBackendResponse | undefined> => {
     try {
-        const response = await api.get<EchoResponse>("/echos/backend");
+        const response = await api.get<GetBackendResponse>("/echos/backend");
         return response.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
@@ -17,9 +18,10 @@ export const fetchBackendEcho = async (): Promise<EchoResponse | undefined> => {
     }
 };
 
-export const fetchMLEcho = async (): Promise<EchoResponse | undefined> => {
+
+export const fetchMLEcho = async (): Promise<GetBackendResponse | undefined> => {
     try {
-        const response = await api.get<EchoResponse>("/echos/ml");
+        const response = await api.get<GetBackendResponse>("/echos/ml");
         return response.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
