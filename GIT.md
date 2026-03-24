@@ -139,4 +139,4 @@ git branch -vv | Select-String ': gone]' | ForEach-Object { $_ -replace '^\*?\s*
 git branch -vv | Select-String ': gone]' | ForEach-Object { $branch = $_ -replace '^\*?\s*', '' -replace '\s+.*$', ''; git branch -d $branch }
 ```
 
-> Если хочешь жёстко удалить такие ветки (даже не слитые в `main`) - надо поменять `-d` на `-D`.
+> Если хотите жёстко удалить такие ветки (даже не слитые в `main`) - надо поменять `-d` на `-D`.
