@@ -13,7 +13,7 @@ from app.services.user import create_user, authenticate_user, encode_access_toke
 from app.core.database import get_auth_db
 
 # Модель пользователя хранящаяся в БД
-from app.models.user import User
+from backend.app.models.db_auth import User
 from datetime import timedelta
 
 

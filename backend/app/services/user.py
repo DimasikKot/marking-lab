@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.user import User
+from backend.app.models.db_auth import User
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta, timezone
@@ -60,6 +60,7 @@ def encode_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     # Создаём токен используя данные из словаря и секретный ключ из параметров среды, и пишем используемый аргоритм
     return jwt.encode(to_encode, settings.JWT_ACCESS_TOKEN_SECRET, algorithm="HS256")
 
+
 def decode_access_token(token: str) -> dict[str, any] | None:
     """Возвращает payload из JWT-токена или None, если токен недействителен/просрочен"""
     try:
@@ -78,6 +79,7 @@ def decode_access_token(token: str) -> dict[str, any] | None:
     except Exception as e:
         print(f"Ошибка при декодировании токена: {e}")
         return None
+
 
 def print_access_token_data(token: str) -> None:
     """Печатает данные из токена, если он действителен, иначе сообщает, что токен недействителен/просрочен"""
