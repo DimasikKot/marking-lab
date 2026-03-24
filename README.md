@@ -10,17 +10,19 @@ https://git-scm.com/
 
 3) Зайти в `GitHub` в `vscode` / `cursor`
 
-4) Настроийте `git` на устройстве
+4) Привязать почту к коммитам (обязательно)
 
 ```bash
-git config --global user.name ваш-ник
+git config --global user.email ЭЛЕКТРОННАЯ-ПОЧТА
 ```
+
+5) Установить отображаеммое при коммите имя (обязательно)
 
 ```bash
-git config --global user.email ваша-почта
+git config --global user.name ФАМИЛИЯ-ИМЯ
 ```
 
-5) Скопируйте репозиторий с `GitHub`'а
+6) Скопируйте репозиторий с `GitHub`'а
 
 ```bash
 git clone https://github.com/DimasikKot/marking-lab.git
