@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from backend.app.models.db import Project
+from app.models.db import Project
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
