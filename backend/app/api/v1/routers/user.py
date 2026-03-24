@@ -30,27 +30,33 @@ class PostRequest(BaseModel):
 
 class PostResponse(BaseModel):
     username: str
-    email: str
-    id: int
-    created_at: datetime
-    class Config:
-        from_attributes = True
+    access_token: str
+    token_type: str
 
 # Пишем метод, путь и какие данные будем возвращать
 @router.post("/", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
 def register_user(user: PostRequest, db: Session = Depends(get_auth_db)) -> PostResponse:
+    existing_username: User | None = db.query(User).filter(User.username == user.username).first()
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
     # Ищем пользователя по email, тк это уникальный атрибут
-    existing_user: User | None = db.query(User).filter(User.email == user.email).first()
+    existing_email: User | None = db.query(User).filter(User.email == user.email).first()
 
     # Если пользователь существует, то возвращаем ошибку
-    if existing_user:
+    if existing_email:
         # Всегда делаем обработки ошибок
         raise HTTPException(status_code=400, detail="User already registered")
-
+    
     # Иначе создаём и возвращаем созданного пользователя
     new_user: User = create_user(db, user.username, user.email, user.password)
-    return new_user
+
+    access_token: str = encode_access_token({"sub": str(new_user.id)}, expires_delta=timedelta(hours=1))
+
+    print_access_token_data(access_token)
+
+    return PostResponse(username=new_user.username, access_token=access_token, token_type="bearer")
 
 
 class PostLoginRequest(BaseModel):

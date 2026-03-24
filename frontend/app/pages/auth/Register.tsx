@@ -32,7 +32,7 @@ export function Register() {
 
     try {
       await registerUser({ username, email, password });
-      navigate("/login");
+      navigate("/");
     } catch (err: unknown) {
       console.error("Ошибка регистрации:", err);
 

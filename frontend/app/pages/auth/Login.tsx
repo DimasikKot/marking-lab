@@ -4,14 +4,14 @@ import { loginUser } from "@/shared/api/user";
 
 export function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setError("Введите email и пароль");
+    if (!login || !password) {
+      setError("Введите логин и пароль");
       return;
     }
 
@@ -19,8 +19,8 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      await loginUser({ email, password });
-      navigate("/first");
+      await loginUser({ login, password });
+      navigate("/");
     } catch (err: unknown) {
       console.error("Ошибка входа:", err);
 
@@ -57,8 +57,8 @@ export function Login() {
         <input
           type="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value.trim())}
+          value={login}
+          onChange={(e) => setLogin(e.target.value.trim())}
           className="
             w-full px-4 py-3 rounded-lg 
             bg-gray-100

@@ -1,26 +1,23 @@
 import api from "@/shared/api/axios";
 import axios from "axios";
 
-interface RegisterData {
+
+interface PostRequest {
     username: string;
     email: string;
     password: string;
 }
 
-interface LoginData {
-    email: string;
-    password: string;
-}
-
-interface AuthResponse {
+interface PostResponse {
+    username: string;
     access_token: string;
     token_type: string;
-    // если в будущем добавят id или другие поля — добавишь
 }
 
-export const registerUser = async (data: RegisterData): Promise<AuthResponse | undefined> => {
+export const registerUser = async (data: PostRequest): Promise<PostResponse | undefined> => {
     try {
-        const response = await api.post<AuthResponse>("/users/", data);
+        const response = await api.post<PostResponse>("/users/", data);
+        localStorage.setItem("username", response.data.username);
         localStorage.setItem("access_token", response.data.access_token);
         return response.data;
     } catch (error: unknown) {
@@ -31,36 +28,30 @@ export const registerUser = async (data: RegisterData): Promise<AuthResponse | u
     }
 };
 
-export const loginUser = async (data: LoginData): Promise<AuthResponse | undefined> => {
+
+interface PostLoginRequest {
+    login: string;
+    password: string;
+}
+
+export const loginUser = async (data: PostLoginRequest): Promise<PostResponse | undefined> => {
     try {
-        const params = {
-            email: data.email.trim(),
-            password: data.password,
-        };
-
-        // Правильный путь и метод по бэкенду
-        const response = await api.get<AuthResponse>("/users/login", { params });
-
-        const token = response.data.access_token;
-
-        if (!token) {
-            throw new Error("access_token не найден в ответе сервера");
-        }
-
-        localStorage.setItem("access_token", token);
+        const response = await api.post<PostResponse>("/users/login", data);
+        localStorage.setItem("username", response.data.username);
+        localStorage.setItem("access_token", response.data.access_token);
         return response.data;
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
             console.error("Ошибка при входе:", error.response?.data || error.message);
-            // Пробрасываем дальше, чтобы компонент мог показать сообщение
             throw error.response?.data || new Error("Ошибка входа");
         }
-        throw error;
     }
 };
 
+
 export const logoutUser = async () => {
     try {
+        localStorage.removeItem("username");
         localStorage.removeItem("access_token");
         window.location.href = "/";
     } catch (error: unknown) {
