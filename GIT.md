@@ -1,4 +1,3 @@
-
 ## Git (базовые команды)
 
 ### Инициализация репозитория
@@ -99,7 +98,7 @@ git config --global user.name ФАМИЛИЯ-ИМЯ
 git config --global core.longpaths true
 ```
 
-### Чтобы был только LF, а не CRLF (обычно не используют)
+### Чтобы был только LF, а не CRLF (только для `windows`, обычно не используют)
 
 ```bash
 git config --global core.autocrlf false
