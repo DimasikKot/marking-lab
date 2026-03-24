@@ -1,16 +1,26 @@
 from fastapi import APIRouter
-from app.schemas.echo import *
+from pydantic import BaseModel
 
 
 router: APIRouter = APIRouter()
 
 
-@router.get("/ml", response_model=EchoResponse)
+class MlGetResponse(BaseModel):
+    detail: str
+    status: str = "success"
+
+@router.get("/ml", response_model=MlGetResponse)
 def test_ml():
-    return EchoResponse(detail="ML контейнер исправно работает")
+    return MlGetResponse(detail="ML контейнер исправно работает")
 
 
-@router.post("/ml", response_model=PostResponse)
-def test_ml_post(request: PostRequest):
+class MlPostRequest(BaseModel):
+    text: str
+
+class MlPostResponse(BaseModel):
+    words: list[str]
+
+@router.post("/ml", response_model=MlPostResponse)
+def test_ml_post(request: MlPostRequest):
     words = request.text.split()
-    return PostResponse(words=words)
+    return MlPostResponse(words=words)
