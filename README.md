@@ -146,6 +146,13 @@ http://localhost:8000/docs
 
 http://localhost:8000/docs
 
+## Скрыть лишние папки в `vscode`
+
+1) Откройте настройки (`File` > `Preferences` > `Settings` ИЛИ `F1` > `>Preferences: Open Settings (UI)`);
+2) Поищите `exclude` в строке поиска по настройкам ИЛИ `Files` > `Exclude`;
+3) Нажмите кнопку `Add Pattern` и добавьте `**/__pycache__` паттерн;
+3) По желанию добавьте `**/node_modules` паттерн для `frontend`'a;
+
 ## Включение подсветки синтаксиса в `vscode` / `cursor`
 
 ### `backend` / `ml`
