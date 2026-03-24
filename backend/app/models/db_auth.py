@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP
-from app.core.database import AuthBase
 from sqlalchemy.sql import func
+
+from app.core.database import AuthBase
 
 
 class User(AuthBase):

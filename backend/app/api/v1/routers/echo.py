@@ -1,7 +1,9 @@
-from fastapi import APIRouter
-from app.core.config import settings
-import httpx
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from httpx import AsyncClient
+
+from app.core.config import settings
+from app.services.project import get_current_user_id
 
 
 router: APIRouter = APIRouter()
@@ -18,7 +20,7 @@ def test_backend():
 
 @router.get("/ml", response_model=GetBackendResponse)
 async def test_ml():
-    async with httpx.AsyncClient() as client:
+    async with AsyncClient() as client:
         response_dict = await client.get(settings.ML_URL + "/echos/ml")
         response_json = response_dict.json()
 
@@ -33,7 +35,7 @@ class PostMlResponse(BaseModel):
 
 @router.get("/ml_post", response_model=PostMlResponse)
 async def test_ml_post():
-    async with httpx.AsyncClient() as client:
+    async with AsyncClient() as client:
         response_dict = await client.post(
             settings.ML_URL + "/echos/ml",
 
@@ -46,3 +48,11 @@ async def test_ml_post():
     
     # Преобразуем json в модель (чтобы взаимодействовать напрямую как с объектом)
     return PostMlResponse.model_validate(response_json)
+
+
+
+
+@router.get("/simple-data")
+async def get_simple_data(user_id: int = Depends(get_current_user_id)):
+    return {"user_id": user_id, "data": "some data"}
+

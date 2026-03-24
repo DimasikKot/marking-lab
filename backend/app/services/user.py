@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
-from app.models.db_auth import User
 from passlib.context import CryptContext
-from jose import jwt
 from datetime import datetime, timedelta, timezone
+from jose import jwt
+
 from app.core.config import settings
+from app.models.db_auth import User
 
 
 password_crypt_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")

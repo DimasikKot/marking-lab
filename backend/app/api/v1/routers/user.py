@@ -3,6 +3,12 @@ from fastapi import APIRouter, Depends, HTTPException
 # Создаём сессию для работы с БД
 from sqlalchemy.orm import Session
 
+# Время для задания срока действия токена и тип данных времени
+from datetime import datetime, timedelta
+
+# Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
+from pydantic import BaseModel
+
 # Методы взаимодействия с БД
 from app.services.user import create_user, authenticate_user, encode_access_token, print_access_token_data
 
@@ -11,12 +17,6 @@ from app.core.database import get_auth_db
 
 # Модель пользователя хранящаяся в БД
 from app.models.db_auth import User
-
-# Время для задания срока действия токена и тип данных времени
-from datetime import datetime, timedelta
-
-# Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
-from pydantic import BaseModel
 
 
 router = APIRouter()

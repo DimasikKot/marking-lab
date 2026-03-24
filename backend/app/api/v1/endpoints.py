@@ -1,8 +1,10 @@
 from fastapi import APIRouter
+
 from app.api.v1.routers import user
 from app.api.v1.routers import echo
 from app.api.v1.routers import file
 from app.api.v1.routers import project
+
 
 api_router: APIRouter = APIRouter()
 
