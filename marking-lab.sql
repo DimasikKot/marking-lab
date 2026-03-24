@@ -1,11 +1,12 @@
-DROP TABLE IF EXISTS tasks; -- удаляем тестовую таблицу, если она существует
+DROP TABLE IF EXISTS projects CASCADE; -- удаляем тестовую таблицу, если она существует
 
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL          PRIMARY KEY,
+    name            VARCHAR(255)    NOT NULL,
     user_id         INTEGER         NOT NULL,
     is_public       BOOLEAN         DEFAULT FALSE,
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    last_accessed   TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
+    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS files (

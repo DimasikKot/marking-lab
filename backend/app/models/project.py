@@ -23,11 +23,11 @@ class Project(Base):
     __tablename__ = 'projects'
 
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
     user_id = Column(Integer, nullable=False) 
     is_public = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
-    last_accessed = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
-
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     files = relationship('File', back_populates='project', cascade='all, delete-orphan')
     models = relationship('Model', back_populates='project', cascade='all, delete-orphan')
