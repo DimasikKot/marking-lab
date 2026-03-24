@@ -1,11 +1,14 @@
 from fastapi import APIRouter, File, UploadFile
-from app.schemas.file import *
+from pydantic import BaseModel
 
 
 router = APIRouter()
 
 
-@router.post("/upload", response_model=UploadPostResponse)
+class PostUploadResponse(BaseModel):
+    content: str
+
+@router.post("/upload", response_model=PostUploadResponse)
 async def upload_file(file: UploadFile = File(...)):
     contents = await file.read()
     try:
@@ -18,8 +21,8 @@ async def upload_file(file: UploadFile = File(...)):
         import json
         try:
             data = json.loads(text)
-            return UploadPostResponse(content=data)
+            return PostUploadResponse(content=data)
         except:
             pass
 
-    return UploadPostResponse(content=text)
+    return PostUploadResponse(content=text)
