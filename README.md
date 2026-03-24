@@ -151,7 +151,8 @@ http://localhost:8000/docs
 1) Откройте настройки (`File` > `Preferences` > `Settings` ИЛИ `F1` > `>Preferences: Open Settings (UI)`);
 2) Поищите `exclude` в строке поиска по настройкам ИЛИ `Files` > `Exclude`;
 3) Нажмите кнопку `Add Pattern` и добавьте `**/__pycache__` паттерн;
-3) По желанию добавьте `**/node_modules` паттерн для `frontend`'a;
+4) По желанию добавьте `**/node_modules` паттерн для `frontend`'a;
+5) По желанию добавьте `.venv` паттерн для виртуальной среды `python`'a;
 
 ## Включение подсветки синтаксиса в `vscode` / `cursor`
 
