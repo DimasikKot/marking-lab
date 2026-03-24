@@ -93,7 +93,13 @@ git config --global user.email ЭЛЕКТРОННАЯ-ПОЧТА
 git config --global user.name ФАМИЛИЯ-ИМЯ
 ```
 
-### Чтобы был только LF, а не CRLF
+### Разрешить хранить в проектах длинные пути (обычно не используют)
+
+```bash
+git config --global core.longpaths true
+```
+
+### Чтобы был только LF, а не CRLF (обычно не используют)
 
 ```bash
 git config --global core.autocrlf false
