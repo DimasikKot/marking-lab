@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 # Время для задания срока действия токена и тип данных времени
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 # Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
 from pydantic import BaseModel
