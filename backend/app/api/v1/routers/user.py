@@ -3,9 +3,6 @@ from fastapi import APIRouter, Depends, HTTPException
 # Создаём сессию для работы с БД
 from sqlalchemy.orm import Session
 
-# Модели используемые для создания пользователя и ответа в роутере
-from app.schemas.user import UserCreate, UserResponse
-
 # Методы взаимодействия с БД
 from app.services.user import create_user, authenticate_user, encode_access_token, print_access_token_data
 
@@ -14,17 +11,35 @@ from app.core.database import get_auth_db
 
 # Модель пользователя хранящаяся в БД
 from app.models.db_auth import User
-from datetime import timedelta
+
+# Время для задания срока действия токена и тип данных времени
+from datetime import datetime, timedelta
+
+# Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
+from pydantic import BaseModel
 
 
 router = APIRouter()
 
 
-# Регистрация пользователей
+# Сначала всегда модель для получаемых данных, потом для отправляемых данных
+class PostRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class PostResponse(BaseModel):
+    username: str
+    email: str
+    id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
 # Пишем метод, путь и какие данные будем возвращать
-@router.post("/", response_model=UserResponse)
+@router.post("/", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
-def register_user(user: UserCreate, db: Session = Depends(get_auth_db)) -> User:
+def register_user(user: PostRequest, db: Session = Depends(get_auth_db)) -> PostResponse:
     # Ищем пользователя по email, тк это уникальный атрибут
     existing_user: User | None = db.query(User).filter(User.email == user.email).first()
 
@@ -38,11 +53,20 @@ def register_user(user: UserCreate, db: Session = Depends(get_auth_db)) -> User:
     return new_user
 
 
+class PostLoginRequest(BaseModel):
+    login: str
+    password: str
+
+class PostLoginResponse(BaseModel):
+    username: str
+    access_token: str
+    token_type: str
+
 # Совершение авторизации
-@router.get("/login")
+@router.post("/login", response_model=PostLoginResponse)
 # Пишем получаемые данные и создаём сессию с БД для проверки
-def login_user(email: str, password: str, db: Session = Depends(get_auth_db)) -> dict[str, str]:
-    user: User | None = authenticate_user(db, email, password)
+def login_user(user: PostLoginRequest, db: Session = Depends(get_auth_db)) -> PostLoginResponse:
+    user: User | None = authenticate_user(db, user.login, user.password)
     if not user:
         # Ни в коем случае не пишем в чем именно проблема, возвращаем ошибку, что данные неправильно введены
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -52,4 +76,4 @@ def login_user(email: str, password: str, db: Session = Depends(get_auth_db)) ->
 
     print_access_token_data(access_token)
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return PostLoginResponse(username=user.username, access_token=access_token, token_type="bearer")

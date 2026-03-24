@@ -29,13 +29,13 @@ def create_user(db: Session, username: str, email: str, password: str) -> User:
     return user
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User | None:
-    """Проверяет email и пароль, возвращает пользователя, если аутентификация успешна, иначе None"""
-    user: User = db.query(User).filter(User.email == email).first()
+def authenticate_user(db: Session, login: str, password: str) -> User | None:
+    """Проверяет логин и пароль, возвращает пользователя, если аутентификация успешна, иначе None"""
+    user: User = db.query(User).filter(User.email == login).first()
 
     # Ни в коем случае не возвращаем в чем именно проблема, возвращаем ошибку и всё
     if not user or not verify_password(password, user.hashed_password):
-        user: User = db.query(User).filter(User.username == email).first()
+        user: User = db.query(User).filter(User.username == login).first()
 
         # Также проверяем по имени пользователя, если пользователь не найден по email,
         # тк в нашем случае можно использовать и email и имя пользователя для авторизации
