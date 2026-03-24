@@ -1,39 +1,48 @@
 from fastapi import APIRouter
-from app.schemas.echo import *
 from app.core.config import settings
 import httpx
+from pydantic import BaseModel
 
 
 router: APIRouter = APIRouter()
 
 
-@router.get("/backend", response_model=EchoResponse)
+class GetBackendResponse(BaseModel):
+    detail: str
+    status: str = "success"
+
+@router.get("/backend", response_model=GetBackendResponse)
 def test_backend():
-    return EchoResponse(detail="Backend контейнер исправно работает")
+    return GetBackendResponse(detail="Backend контейнер исправно работает")
 
 
-@router.get("/ml", response_model=EchoResponse)
+@router.get("/ml", response_model=GetBackendResponse)
 async def test_ml():
     async with httpx.AsyncClient() as client:
         response_dict = await client.get(settings.ML_URL + "/echos/ml")
         response_json = response_dict.json()
 
-    return response_json
+    return GetBackendResponse.model_validate(response_json)
 
 
-@router.get("/ml_post", response_model=MLPostResponse)
+class PostMlRequest(BaseModel):
+    text: str
+
+class PostMlResponse(BaseModel):
+    words: list[str]
+
+@router.get("/ml_post", response_model=PostMlResponse)
 async def test_ml_post():
     async with httpx.AsyncClient() as client:
         response_dict = await client.post(
             settings.ML_URL + "/echos/ml",
 
             # Преобразуем модель в словарь и отправляем в POST методе
-            json=MLPostRequest(text="ML контейнер разделяет слова в методе POST").model_dump()
+            json=PostMlRequest(text="ML контейнер разделяет слова в методе POST").model_dump()
         )
 
         # Преобразуем словарь в json
         response_json = response_dict.json()
     
     # Преобразуем json в модель (чтобы взаимодействовать напрямую как с объектом)
-    # В данном случае ничего не делаем, но на будущее знайте, что будем делать так
-    return MLPostResponse.model_validate(response_json)
+    return PostMlResponse.model_validate(response_json)
