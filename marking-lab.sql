@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS projects CASCADE; -- удаляем тестовую таблицу, если она существует
-
+DROP TABLE IF EXISTS projects CASCADE; -- удаляем таблицу, если она существует
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL          PRIMARY KEY,
     name            VARCHAR(255)    NOT NULL,
@@ -9,6 +8,7 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TABLE IF EXISTS files CASCADE;
 CREATE TABLE IF NOT EXISTS files (
     id              SERIAL          PRIMARY KEY,
     name            VARCHAR(255)    NOT NULL,
@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS files (
     content         JSONB           -- текст/разметка/JSON-структура
 );
 
+DROP TABLE IF EXISTS models CASCADE;
 CREATE TABLE IF NOT EXISTS models (
     id                SERIAL        PRIMARY KEY,
     name              VARCHAR(255)  NOT NULL,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS models (
     parameters        JSONB
 );
 
+DROP TABLE IF EXISTS experiments CASCADE;
 CREATE TABLE IF NOT EXISTS experiments (
     id          SERIAL          PRIMARY KEY,
     name        VARCHAR(255)    NOT NULL,
@@ -36,15 +38,17 @@ CREATE TABLE IF NOT EXISTS experiments (
     model_id    INTEGER         REFERENCES models(id) ON DELETE SET NULL,   -- если модель удаляется, эксперимент сохраняется, но без модели
     results     JSONB,          -- численные метрики
     graphs      JSONB           -- графики обучения
-);      
+);
 
-CREATE TABLE IF NOT EXISTS model_files (
+DROP TABLE IF EXISTS model_training_files;
+CREATE TABLE IF NOT EXISTS model_training_files (
     model_id   INTEGER  REFERENCES models(id) ON DELETE CASCADE, -- если модель удаляется, удаляются и связи с файлами
     file_id    INTEGER  REFERENCES files(id) ON DELETE CASCADE,  -- если файл удаляется, удаляются и связи с моделями
     PRIMARY KEY (model_id, file_id)
 );
 
-CREATE TABLE IF NOT EXISTS experiment_test_files (
+DROP TABLE IF EXISTS experiment_testing_files;
+CREATE TABLE IF NOT EXISTS experiment_testing_files (
     experiment_id  INTEGER  REFERENCES experiments(id) ON DELETE CASCADE,    -- если эксперимент удаляется, удаляются и связи с файлами
     file_id        INTEGER  REFERENCES files(id) ON DELETE CASCADE,          -- если файл удаляется, удаляются и связи с экспериментами
     PRIMARY KEY (experiment_id, file_id)

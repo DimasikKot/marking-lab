@@ -4,16 +4,16 @@ from sqlalchemy.sql import func
 from app.core.database import Base
 
 
-model_files_table = Table(
-    'model_files',
+model_training_files_table = Table(
+    'model_training_files',
     Base.metadata,
     Column('model_id', Integer, ForeignKey('models.id', ondelete='CASCADE'), primary_key=True),
     Column('file_id', Integer, ForeignKey('files.id', ondelete='CASCADE'), primary_key=True)
 )
 
 
-experiment_test_files_table = Table(
-    'experiment_test_files',
+experiment_testing_files_table = Table(
+    'experiment_testing_files',
     Base.metadata,
     Column('experiment_id', Integer, ForeignKey('experiments.id', ondelete='CASCADE'), primary_key=True),
     Column('file_id', Integer, ForeignKey('files.id', ondelete='CASCADE'), primary_key=True)
@@ -46,8 +46,8 @@ class File(Base):
 
 
     project = relationship('Project', back_populates='files')
-    models = relationship('Model', secondary=model_files_table, back_populates='files')
-    experiments = relationship('Experiment', secondary=experiment_test_files_table, back_populates='test_files')
+    models = relationship('Model', secondary=model_training_files_table, back_populates='files')
+    experiments = relationship('Experiment', secondary=experiment_testing_files_table, back_populates='test_files')
 
 
 class Model(Base):
@@ -64,7 +64,7 @@ class Model(Base):
 
     project = relationship('Project', back_populates='models')
     experiments = relationship('Experiment', back_populates='model')
-    files = relationship('File', secondary=model_files_table, back_populates='models')
+    files = relationship('File', secondary=model_training_files_table, back_populates='models')
 
 
 class Experiment(Base):
@@ -82,4 +82,4 @@ class Experiment(Base):
 
     project = relationship('Project', back_populates='experiments')
     model = relationship('Model', back_populates='experiments')
-    test_files = relationship('File', secondary=experiment_test_files_table, back_populates='experiments')
+    test_files = relationship('File', secondary=experiment_testing_files_table, back_populates='experiments')
