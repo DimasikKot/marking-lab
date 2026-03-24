@@ -50,9 +50,10 @@ async def test_ml_post():
     return PostMlResponse.model_validate(response_json)
 
 
+class GetUserResponse(BaseModel):
+    user_id: int
 
-
-@router.get("/simple-data")
+@router.get("/user", response_model=GetUserResponse)
 async def get_simple_data(user_id: int = Depends(get_current_user_id)):
-    return {"user_id": user_id, "data": "some data"}
+    return GetUserResponse(user_id=user_id)
 
