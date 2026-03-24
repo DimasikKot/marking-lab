@@ -3,7 +3,7 @@
 
 https://miro.com/app/board/uXjVG9dcEnU=/?focusWidget=3458764665023327887
 
-# Функцианальная диаграмма
+# Функциональные диаграммы
 
 https://miro.com/app/board/uXjVG9dcEnU=/?moveToWidget=3458764664481149269&cot=14
 
