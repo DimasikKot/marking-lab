@@ -24,7 +24,7 @@ export function Login() {
       toast.success("Вы успешно вошли в аккаунт");
       navigate("/");
     } catch (err: unknown) {
-      console.error("Ошибка входа:", err);
+      toast.error("Ошибка входа" + err);
 
       let errorMessage = "Ошибка входа. Попробуйте позже.";
 
