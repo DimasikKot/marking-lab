@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from '@/shared/api/echo';
-import logo from '@/assets/logo/favicon.svg'
+import logo from '@/assets/logo/logo.svg'
 
 export function General() {
   const navigate = useNavigate();
