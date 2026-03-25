@@ -36,7 +36,7 @@ export function Register() {
       toast.success("Вы успешно зарегистрировались");
       navigate("/");
     } catch (err: unknown) {
-      console.error("Ошибка регистрации:", err);
+      toast.error("Ошибка регистрации");
 
       let errorMessage = "Ошибка регистрации. Попробуйте позже.";
 
