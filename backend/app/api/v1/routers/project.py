@@ -5,6 +5,7 @@ from datetime import datetime
 
 from app.core.database import get_db
 from app.services.get_current_user_id import get_current_user_id
+from app.services.project import create_project
 
 
 router = APIRouter()
@@ -25,7 +26,7 @@ class PostProjectsResponse(BaseModel):
         from_attributes = True
 
 @router.post("/projects", response_model=PostProjectsResponse)
-async def create_project(
+async def post_create_project(
     data: PostProjectsRequest, 
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
