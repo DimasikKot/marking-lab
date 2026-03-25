@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { PrivateRoute } from "@/shared/components/PrivateRoute.tsx"; // Лучше всегда писать абсолютный путь
 
 import { General } from '@/pages/main/General';
@@ -23,6 +24,18 @@ export function App() {
             </Route>
         </Routes>
       </div>
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+            padding: '12px 16px',
+          },
+        }}
+      />
     </Router>
   );
 }

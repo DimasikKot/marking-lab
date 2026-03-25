@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "@/shared/api/user";
+import toast from "react-hot-toast";
 
 export function Register() {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ export function Register() {
 
     try {
       await registerUser({ username, email, password });
+      toast.success("Вы успешно зарегистрировались");
       navigate("/");
     } catch (err: unknown) {
       console.error("Ошибка регистрации:", err);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "@/shared/api/user";
+import toast from 'react-hot-toast';
 
 export function Login() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function Login() {
 
     try {
       await loginUser({ login, password });
+      toast.success("Вы успешно вошли в аккаунт");
       navigate("/");
     } catch (err: unknown) {
       console.error("Ошибка входа:", err);
