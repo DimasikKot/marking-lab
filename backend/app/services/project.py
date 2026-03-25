@@ -1,4 +1,4 @@
-from requests import Session
+from sqlalchemy.orm import Session
 
 from app.models.db import Project
 
