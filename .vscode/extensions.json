@@ -8,10 +8,10 @@
         "esbenp.prettier-vscode",
         "pkief.material-icon-theme",
         "eamodio.gitlens",
-        "continue.continue",
         "rvest.vs-code-prettier-eslint",
         "rodrigovallades.es7-react-js-snippets",
         "ms-vscode.vscode-typescript-next",
-        "xabikos.javascriptsnippets"
+        "xabikos.javascriptsnippets",
+        "github.copilot-chat"
     ]
 }
