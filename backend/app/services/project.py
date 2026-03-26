@@ -39,6 +39,23 @@ def fetch_project_by_id(db: Session, project_id: int, user_id: int) -> Project |
     return db.query(Project).filter(Project.id == project_id).first()
 
 
+def update_project(db: Session, project_id: int, user_id: int, new_name: str | None = None, new_is_public: bool | None = None) -> Project | None:
+    """Обновляет проект с заданным ID. Можно обновить имя и/или статус публичности."""
+    if not is_owner_of_project(db, project_id, user_id):
+        return None
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        return None
+    if new_name is not None:
+        project.name = new_name
+    if new_is_public is not None:
+        project.is_public = new_is_public
+
+    db.commit()
+    db.refresh(project)
+    return project
+
+
 def delete_project(db: Session, project_id: int, user_id: int) -> bool:
     """Удаляет проект с заданным ID. Возвращает True, если удаление прошло успешно, иначе False."""
     if not is_owner_of_project(db, project_id, user_id):
@@ -49,20 +66,3 @@ def delete_project(db: Session, project_id: int, user_id: int) -> bool:
     db.delete(project)
     db.commit()
     return True
-
-
-def update_project(db: Session, project_id: int, user_id: int, name: str | None = None, is_public: bool | None = None) -> Project | None:
-    """Обновляет проект с заданным ID. Можно обновить имя и/или статус публичности."""
-    if not is_owner_of_project(db, project_id, user_id):
-        return None
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        return None
-    if name is not None:
-        project.name = name
-    if is_public is not None:
-        project.is_public = is_public
-
-    db.commit()
-    db.refresh(project)
-    return project

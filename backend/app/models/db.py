@@ -43,6 +43,7 @@ class File(Base):
     name = Column(String(255), nullable=False)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    # updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now()) Надо добавить
     content = Column(JSON)
 
 

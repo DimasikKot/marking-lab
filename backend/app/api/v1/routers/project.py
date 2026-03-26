@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
 
+from app.api.v1.routers import file
 from app.core.database import get_db
 from app.services.get_current_user_id import get_current_user_id
 from app.services.project import create_project, delete_project, fetch_project_by_id, fetch_public_user_projects, fetch_user_projects, update_project
@@ -14,7 +15,7 @@ router = APIRouter()
 class PostProjectsRequest(BaseModel):
     name: str
 
-class PostProjectsResponse(BaseModel):
+class PostResponse(BaseModel):
     id: int
     name: str
     is_public: bool
@@ -25,7 +26,7 @@ class PostProjectsResponse(BaseModel):
     class Config:
         from_attributes = True
 
-@router.post("/projects", response_model=PostProjectsResponse)
+@router.post("/", response_model=PostResponse)
 async def post_create_project(
     data: PostProjectsRequest, 
     user_id: int = Depends(get_current_user_id),
@@ -37,12 +38,12 @@ async def post_create_project(
     return project
 
 
-class GetProjectsResponse(BaseModel):
-    data: list[PostProjectsResponse]
+class GetResponse(BaseModel):
+    data: list[PostResponse]
     class Config:
         from_attributes = True
 
-@router.get("/projects", response_model=GetProjectsResponse)
+@router.get("/", response_model=GetResponse)
 async def get_user_projects(
     public: bool = False,
     user_id: int = Depends(get_current_user_id),
@@ -52,10 +53,10 @@ async def get_user_projects(
         projects = fetch_public_user_projects(db, user_id=user_id)
     else:
         projects = fetch_user_projects(db, user_id=user_id)
-    return GetProjectsResponse(data=projects)
+    return GetResponse(data=projects)
 
 
-@router.get("/projects/{project_id}", response_model=PostProjectsResponse)
+@router.get("/{project_id}", response_model=PostResponse)
 async def get_project_by_id(
     project_id: int,
     user_id: int = Depends(get_current_user_id),
@@ -67,10 +68,30 @@ async def get_project_by_id(
     return project
 
 
-class DeleteProjectResponse(BaseModel):
+class UpdateRequest(BaseModel):
+    name: str | None = None
+    is_public: bool | None = None
+
+@router.patch("/{project_id}", response_model=PostResponse)
+async def update_project_by_id(
+    project_id: int,
+    data: UpdateRequest,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    updated_project = update_project(db, project_id=project_id, user_id=user_id, new_name=data.name, new_is_public=data.is_public)
+    if updated_project is None:
+        raise HTTPException(status_code=400, detail="Ошибка при обновлении проекта")
+
+    db.commit()
+    db.refresh(updated_project)
+    return updated_project
+
+
+class DeleteResponse(BaseModel):
     detail: str
 
-@router.delete("/projects/{project_id}", response_model=DeleteProjectResponse)
+@router.delete("/{project_id}", response_model=DeleteResponse)
 async def delete_project_by_id(
     project_id: int,
     user_id: int = Depends(get_current_user_id),
@@ -79,24 +100,7 @@ async def delete_project_by_id(
     success = delete_project(db, project_id=project_id, user_id=user_id)
     if not success:
         raise HTTPException(status_code=404, detail="Ошибка при удалении проекта")
-    return DeleteProjectResponse(detail="Проект успешно удалён")
+    return DeleteResponse(detail="Проект успешно удалён")
 
 
-class UpdateProjectRequest(BaseModel):
-    name: str | None = None
-    is_public: bool | None = None
-
-@router.patch("/projects/{project_id}", response_model=PostProjectsResponse)
-async def update_project_by_id(
-    project_id: int,
-    data: UpdateProjectRequest,
-    user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
-):
-    updated_project = update_project(db, project_id=project_id, user_id=user_id, name=data.name, is_public=data.is_public)
-    if updated_project is None:
-        raise HTTPException(status_code=400, detail="Ошибка при обновлении проекта")
-
-    db.commit()
-    db.refresh(updated_project)
-    return updated_project
+router.include_router(file.router, prefix="/{project_id}/files", tags=["Files"])
