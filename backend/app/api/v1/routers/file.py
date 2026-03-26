@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel
 
@@ -31,12 +33,17 @@ async def post_file(file: UploadFile = File(...), name: str = Form(...), user_id
     return data
 
 
-class GetRequest(BaseModel):
+class GetFileResponse(BaseModel):
+    id: int
     name: str
-    content: int
+    content: str
+    created_at: datetime
+    updated_at: datetime
+    class Config:
+        from_attributes = True
 
 class GetResponse(BaseModel):
-    data: list[PostRequest]
+    data: list[GetFileResponse]
 
 @router.get("/", response_model=GetResponse)
 async def get_files(project_id: int, user_id: int = Depends(get_current_user_id)):
