@@ -3,7 +3,7 @@ import axios from "axios";
 
 export interface PostUploadResponse {
   content: string;
-  filename: string;
+  name: string;
 }
 
 export const uploadFile = async (
