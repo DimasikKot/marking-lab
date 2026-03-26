@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import logo from "@/assets/logo/logo.svg";
 
-export function General() {
+export function Home() {
   const navigate = useNavigate();
   const [messageBackend, setMessageBackend] = useState(
     "Backend контейнер не работает",

@@ -1,8 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { PrivateRoute } from "@/shared/components/PrivateRoute.tsx"; // Лучше всегда писать абсолютный путь
 
-import { General } from "@/pages/main/General";
+import { PrivateRoute } from "@/shared/components/PrivateRoute.tsx"; // Лучше всегда писать абсолютный путь
+import { Home, NotFound } from "@/pages/main/index";
+import { Login, Register } from "@/pages/auth/index.ts";
 import {
   Project,
   Projects,
@@ -13,14 +14,15 @@ import {
   Experiment,
   Experiments,
 } from "@/pages/projects/index.ts";
-import { Login, Register } from "@/pages/auth/index.ts";
 
 export function App() {
   return (
     <Router>
       <div className="h-dvh w-auto bg-white">
         <Routes>
-          <Route path="/" element={<General />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/not-found" element={<NotFound />} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 

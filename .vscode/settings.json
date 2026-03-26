@@ -26,19 +26,34 @@
     "frontend/index.html": true,
     ".gitattributes": true
   },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "prettier.tabWidth": 2,
+    "editor.insertSpaces": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "prettier.tabWidth": 2,
+    "editor.insertSpaces": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "prettier.tabWidth": 2,
+    "editor.insertSpaces": true
+  },
+  "[python]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 4,
+    "prettier.tabWidth": 4,
+    "editor.insertSpaces": true
+  },
   "files.eol": "\n",
   "editor.detectIndentation": true,
   "editor.mouseWheelZoom": true,
   "explorerExclude.backup": {},
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
   "indentRainbow.colors": [
     "rgba(255,255,64,0.02)",
     "rgba(127,255,127,0.02)",

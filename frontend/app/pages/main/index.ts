@@ -1,1 +1,2 @@
-export { General } from "../main/General.tsx";
+export { Home } from "./Home.tsx";
+export { NotFound } from "./NotFound.tsx";
