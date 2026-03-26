@@ -1,30 +1,48 @@
 {
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        ".venv": true,
-        "**/.vscode": true,
-        "**/__pycache__": true,
-        "backend/backend.Dockerfile": true,
-        ".dockerignore": true,
-        "ml/ml.Dockerfile": true,
-        "frontend/node_modules": true,
-        "frontend/eslint.config.js": true,
-        "frontend/frontend.Dockerfile": true,
-        "frontend/index.css": true,
-        "frontend/main.tsx": true,
-        "frontend/package-lock.json": true,
-        "frontend/tsconfig.app.json": true,
-        "frontend/tsconfig.json": true,
-        "frontend/tsconfig.node.json": true,
-        "frontend/vite.config.ts": true,
-        "backend/main.py": true,
-        "ml/main.py": true,
-        ".gitignore": true,
-        "frontend/index.html": true
-    },
-    "explorerExclude.backup": {}
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    ".venv": true,
+    "**/.vscode": false,
+    "**/__pycache__": true,
+    "backend/backend.Dockerfile": true,
+    ".dockerignore": true,
+    "ml/ml.Dockerfile": true,
+    "frontend/node_modules": true,
+    "frontend/eslint.config.js": true,
+    "frontend/frontend.Dockerfile": true,
+    "frontend/index.css": true,
+    "frontend/main.tsx": true,
+    "frontend/package-lock.json": true,
+    "frontend/tsconfig.app.json": true,
+    "frontend/tsconfig.json": true,
+    "frontend/tsconfig.node.json": true,
+    "frontend/vite.config.ts": true,
+    "backend/main.py": true,
+    "ml/main.py": true,
+    ".gitignore": true,
+    "frontend/index.html": true
+  },
+  "files.eol": "\n",
+  "editor.detectIndentation": true,
+  "editor.mouseWheelZoom": true,
+  "explorerExclude.backup": {},
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "indentRainbow.colors": [
+    "rgba(255,255,64,0.04)",
+    "rgba(127,255,127,0.04)",
+    "rgba(255,127,255,0.04)",
+    "rgba(79,236,236,0.04)"
+  ]
 }

@@ -3,5 +3,5 @@ export function Second() {
     <div>
       <p>Вторая</p>
     </div>
-  )
+  );
 }

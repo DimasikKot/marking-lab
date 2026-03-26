@@ -1,10 +1,12 @@
-import { uploadFile, type PostUploadResponse } from '@/shared/api/file';
-import React, { useState } from 'react';
+import { uploadFile, type PostUploadResponse } from "@/shared/api/file";
+import React, { useState } from "react";
 
 export function Markup() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [responseData, setResponseData] = useState<PostUploadResponse | null>(null);
+  const [responseData, setResponseData] = useState<PostUploadResponse | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -17,7 +19,7 @@ export function Markup() {
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Пожалуйста, выберите файл');
+      setError("Пожалуйста, выберите файл");
       return;
     }
 
@@ -29,7 +31,7 @@ export function Markup() {
     if (data) {
       setResponseData(data);
     } else {
-      setError('Не удалось загрузить файл. Проверьте консоль для деталей.');
+      setError("Не удалось загрузить файл. Проверьте консоль для деталей.");
     }
 
     setUploading(false);
@@ -42,30 +44,32 @@ export function Markup() {
     // Предполагаем, что сервер возвращает объект с полем 'content'
     const content = responseData.content || responseData;
 
-    if (file?.type === 'application/json' || file?.name.endsWith('.json')) {
+    if (file?.type === "application/json" || file?.name.endsWith(".json")) {
       return (
         <pre className="bg-gray-100 p-4 rounded overflow-auto">
           {JSON.stringify(content, null, 2)}
         </pre>
       );
-    } else if (file?.type === 'text/csv' || file?.name.endsWith('.csv')) {
+    } else if (file?.type === "text/csv" || file?.name.endsWith(".csv")) {
       return (
         <div className="bg-gray-100 p-4 rounded overflow-auto whitespace-pre-wrap font-mono">
-          {typeof content === 'string' ? content : JSON.stringify(content)}
+          {typeof content === "string" ? content : JSON.stringify(content)}
         </div>
       );
-    } else if (file?.name.endsWith('.md')) {
+    } else if (file?.name.endsWith(".md")) {
       // Для Markdown можно добавить библиотеку react-markdown, но пока просто текст
       return (
         <div className="bg-gray-100 p-4 rounded prose max-w-none">
-          {typeof content === 'string' ? content : JSON.stringify(content)}
+          {typeof content === "string" ? content : JSON.stringify(content)}
         </div>
       );
     } else {
       // TXT и другие текстовые форматы
       return (
         <pre className="bg-gray-100 p-4 rounded overflow-auto whitespace-pre-wrap">
-          {typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
+          {typeof content === "string"
+            ? content
+            : JSON.stringify(content, null, 2)}
         </pre>
       );
     }
@@ -73,8 +77,10 @@ export function Markup() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Страница разметки и загрузки файлов</h1>
-      
+      <h1 className="text-2xl font-bold mb-4">
+        Страница разметки и загрузки файлов
+      </h1>
+
       <div className="mb-6">
         <label className="block mb-2 text-sm font-medium text-gray-700">
           Выберите файл (JSON, TXT, CSV, MD)
@@ -97,13 +103,11 @@ export function Markup() {
         disabled={!file || uploading}
         className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-blue-300 hover:bg-blue-700 transition"
       >
-        {uploading ? 'Загрузка...' : 'Загрузить на сервер'}
+        {uploading ? "Загрузка..." : "Загрузить на сервер"}
       </button>
 
       {error && (
-        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
-          {error}
-        </div>
+        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>
       )}
 
       {responseData && (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "@/shared/api/user";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 export function Login() {
   const navigate = useNavigate();
@@ -29,8 +29,9 @@ export function Login() {
       let errorMessage = "Ошибка входа. Попробуйте позже.";
 
       if (err && typeof err === "object" && err !== null) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = (err as any).detail !== undefined ? err : (err as any).response?.data;
+        const data =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (err as any).detail !== undefined ? err : (err as any).response?.data;
 
         if (data && typeof data.detail === "string") {
           const detail = data.detail.toLowerCase();

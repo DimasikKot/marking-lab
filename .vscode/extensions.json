@@ -1,17 +1,17 @@
 {
-    "recommendations": [
-        "peterschmalfeldt.explorer-exclude",
-        "dbaeumer.vscode-eslint",
-        "bradlc.vscode-tailwindcss",
-        "ms-python.python",
-        "inferrinizzard.prettier-sql-vscode",
-        "esbenp.prettier-vscode",
-        "pkief.material-icon-theme",
-        "eamodio.gitlens",
-        "rvest.vs-code-prettier-eslint",
-        "rodrigovallades.es7-react-js-snippets",
-        "ms-vscode.vscode-typescript-next",
-        "xabikos.javascriptsnippets",
-        "github.copilot-chat"
-    ]
+  "recommendations": [
+    "peterschmalfeldt.explorer-exclude",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "ms-python.python",
+    "inferrinizzard.prettier-sql-vscode",
+    "esbenp.prettier-vscode",
+    "pkief.material-icon-theme",
+    "eamodio.gitlens",
+    "rodrigovallades.es7-react-js-snippets",
+    "ms-vscode.vscode-typescript-next",
+    "xabikos.javascriptsnippets",
+    "github.copilot-chat",
+    "oderwat.indent-rainbow"
+  ]
 }

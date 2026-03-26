@@ -1,1 +1,1 @@
-export { General } from '../main/General.tsx';
+export { General } from "../main/General.tsx";

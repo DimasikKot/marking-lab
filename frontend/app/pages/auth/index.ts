@@ -1,2 +1,2 @@
-export { Login } from './Login.tsx';
-export { Register } from './Register.tsx';
+export { Login } from "./Login.tsx";
+export { Register } from "./Register.tsx";

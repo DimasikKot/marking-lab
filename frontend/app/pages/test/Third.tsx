@@ -3,5 +3,5 @@ export function Third() {
     <div>
       <p>Третья</p>
     </div>
-  )
+  );
 }

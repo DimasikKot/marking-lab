@@ -41,8 +41,9 @@ export function Register() {
       let errorMessage = "Ошибка регистрации. Попробуйте позже.";
 
       if (err && typeof err === "object" && err !== null) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = (err as any).detail !== undefined ? err : (err as any).response?.data;
+        const data =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (err as any).detail !== undefined ? err : (err as any).response?.data;
 
         if (data && typeof data.detail === "string") {
           const detail = data.detail;
