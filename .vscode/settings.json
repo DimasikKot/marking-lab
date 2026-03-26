@@ -6,7 +6,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     ".venv": true,
-    "**/.vscode": false,
+    "**/.vscode": true,
     "**/__pycache__": true,
     "backend/backend.Dockerfile": true,
     ".dockerignore": true,
@@ -24,7 +24,8 @@
     "backend/main.py": true,
     "ml/main.py": true,
     ".gitignore": true,
-    "frontend/index.html": true
+    "frontend/index.html": true,
+    ".gitattributes": true
   },
   "files.eol": "\n",
   "editor.detectIndentation": true,
