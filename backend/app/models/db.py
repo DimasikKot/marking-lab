@@ -25,8 +25,8 @@ class Project(Base):
     __tablename__ = 'projects'
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
     name = Column(String(255), nullable=False)
-    user_id = Column(Integer, nullable=False) 
     is_public = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
@@ -40,10 +40,10 @@ class File(Base):
     __tablename__ = 'files'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
-    # updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now()) Надо добавить
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     content = Column(JSON)
 
 
@@ -56,9 +56,10 @@ class Model(Base):
     __tablename__ = 'models'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     is_draft = Column(Boolean, default=True)
     saved_in_memory = Column(Boolean, default=False)
     parameters = Column(JSON)
@@ -73,13 +74,13 @@ class Experiment(Base):
     __tablename__ = 'experiments'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     is_draft = Column(Boolean, default=True)
     model_id = Column(Integer, ForeignKey('models.id', ondelete='SET NULL'), nullable=True)
-    results = Column(JSON) 
-    graphs = Column(JSON)   
+    results = Column(JSON)
+    graphs = Column(JSON)
 
 
     project = relationship('Project', back_populates='experiments')
