@@ -22,12 +22,12 @@ def create_project(db: Session, user_id: int, name: str) -> Project:
     return project
 
 
-def fetch_user_projects(db: Session, user_id: int) -> list[Project]:
+def fetch_projects_by_user_id(db: Session, user_id: int) -> list[Project]:
     """Получает все проекты, принадлежащие пользователю"""
     return db.query(Project).filter(Project.user_id == user_id).all()
 
 
-def fetch_public_user_projects(db: Session, user_id: int) -> list[Project]:
+def fetch_public_projects_by_user_id(db: Session, user_id: int) -> list[Project]:
     """Получает все публичные проекты, принадлежащие пользователю"""
     return db.query(Project).filter(Project.is_public == True, Project.user_id == user_id).all()
 
@@ -39,7 +39,7 @@ def fetch_project_by_id(db: Session, project_id: int, user_id: int) -> Project |
     return db.query(Project).filter(Project.id == project_id).first()
 
 
-def update_project(db: Session, project_id: int, user_id: int, new_name: str | None = None, new_is_public: bool | None = None) -> Project | None:
+def update_project_by_id(db: Session, project_id: int, user_id: int, new_name: str | None = None, new_is_public: bool | None = None) -> Project | None:
     """Обновляет проект с заданным ID. Можно обновить имя и/или статус публичности."""
     if not is_owner_of_project(db, project_id, user_id):
         return None
@@ -56,7 +56,7 @@ def update_project(db: Session, project_id: int, user_id: int, new_name: str | N
     return project
 
 
-def delete_project(db: Session, project_id: int, user_id: int) -> bool:
+def delete_project_by_id(db: Session, project_id: int, user_id: int) -> bool:
     """Удаляет проект с заданным ID. Возвращает True, если удаление прошло успешно, иначе False."""
     if not is_owner_of_project(db, project_id, user_id):
         return False
