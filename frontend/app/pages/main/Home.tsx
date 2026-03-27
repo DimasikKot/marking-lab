@@ -2,8 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import logo from "@/assets/logo/logo.svg";
+import { logoutUser } from "@/shared/api/user";
 
 export function Home() {
+  const [showMenu, setShowMenu] = useState(false);
+  const handleLogout = () => {
+    logoutUser();      // функция выхода (очистка токена, состояния и т.п.)
+    setShowMenu(false);
+  };
+  const username = localStorage.getItem("username");
   const navigate = useNavigate();
   const [messageBackend, setMessageBackend] = useState(
     "Backend контейнер не работает",
@@ -35,21 +42,19 @@ export function Home() {
   return (
     <div className="h-full w-full flex flex-col p-8 overflow-auto bg-white text-gray-900">
       {/* Верхняя панель */}
-      <div className="grid grid-cols-3 items-center mb-8">
-        {/* Левая часть: логотип и название в одной панели */}
-        <div className="flex items-center gap-4 rounded-3xl p-4 bg-gray-100 text-gray-900">
+      <div className="flex items-center justify-between mb-8">
+        {/* Левая часть: логотип и название */}
+        <div className="flex items-center gap-4 rounded-3xl p-4">
           <img
             src={logo}
             className="h-12 w-auto object-contain"
             alt="React logo"
           />
-          <h1 className="text-2xl font-bold">
-            Лаборатория разметки
-          </h1>
+          <h1 className="text-2xl font-bold">Лаборатория разметки</h1>
         </div>
 
         {/* Правая часть: индикаторы и кнопки */}
-        <div className="flex justify-end items-center gap-6">
+        <div className="flex items-center gap-4 rounded-3xl p-4">
           {/* Индикаторы состояния контейнеров */}
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
@@ -73,46 +78,44 @@ export function Home() {
               <span className="text-sm text-gray-600">ML</span>
             </div>
           </div>
-
           {/* Кнопки входа и регистрации */}
           <div className="flex gap-2">
-            <button
-              className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
-              onClick={() => navigate("/login")}
-            >
-              Вход
-            </button>
-            <button
-              className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
-              onClick={() => navigate("/register")}
-            >
-              Регистрация
-            </button>
+            {username ? (
+              <div className="relative">
+                <button
+                  className="w-10 h-10 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center hover:bg-blue-600 transition"
+                  onClick={() => setShowMenu(!showMenu)}
+                >
+                  {username[0].toUpperCase()}
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border">
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setShowMenu(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Выйти
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
+                onClick={() => navigate("/login")}
+              >
+                Вход
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Блок с основными кнопками навигации */}
-      <div className="flex flex-wrap justify-center items-center gap-4 m-8 rounded-4xl p-4 bg-gray-100 border border-gray-200 shadow-sm">
-        <button
-          className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
-          onClick={() => navigate("/markup")}
-        >
-          Страница разметки и загрузки файлов
-        </button>
-        <button
-          className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
-          onClick={() => navigate("/second")}
-        >
-          Перейти на вторую страницу
-        </button>
-        <button
-          className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
-          onClick={() => navigate("/third")}
-        >
-          Перейти на третью страницу
-        </button>
-      </div>
+      <div className="flex flex-wrap justify-center items-center gap-4 m-8 rounded-4xl p-4 bg-gray-100 border border-gray-200 shadow-sm"></div>
     </div>
   );
 }
