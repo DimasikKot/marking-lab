@@ -72,6 +72,7 @@ async def get_project(
 
 class UpdateRequest(BaseModel):
     name: str | None = None
+    description: str | None = None
     is_public: bool | None = None
 
 @router.patch("/{project_id}", response_model=PostResponse)
@@ -81,7 +82,7 @@ async def patch_project(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-    updated_project = update_project_by_id(db, project_id=project_id, user_id=user_id, new_name=data.name, new_is_public=data.is_public, description=data.description)
+    updated_project = update_project_by_id(db, project_id=project_id, user_id=user_id, new_name=data.name, new_is_public=data.is_public, new_description=data.description)
     if updated_project is None:
         raise HTTPException(status_code=400, detail="Ошибка при обновлении проекта")
     return updated_project
