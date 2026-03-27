@@ -18,7 +18,8 @@ export function Projects() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<PostProjectRequest>({
     name: "",
-    is_public: false,
+    description: "",
+    is_public: false
   });
 
   const loadProjects = async () => {
@@ -47,14 +48,14 @@ export function Projects() {
   // Обработка открытия формы создания
   const handleCreateClick = () => {
     setEditingProject(null);
-    setFormData({ name: "", is_public: false });
+    setFormData({name: "", is_public: false, description: ""});
     setIsModalOpen(true);
   };
 
   // Обработка открытия формы редактирования
   const handleEditClick = (project: Project) => {
     setEditingProject(project);
-    setFormData({ name: project.name, is_public: false });
+    setFormData({name: project.name, is_public: false, description: ""});
     setIsModalOpen(true);
   };
 
@@ -131,7 +132,7 @@ export function Projects() {
               className="border rounded-lg p-4 shadow hover:shadow-md transition"
             >
               <h2 className="text-xl font-semibold mb-2">{project.name}</h2>
-              <p className="text-gray-600 mb-4">{project.name}</p>
+              <p className="text-gray-600 mb-4">{project.description}</p>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={() => handleEditClick(project)}
@@ -187,6 +188,7 @@ export function Projects() {
                   id="description"
                   name="description"
                   rows={3}
+                  value={formData.description}
                   onChange={handleFormChange}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
