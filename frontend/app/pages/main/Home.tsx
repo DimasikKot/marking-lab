@@ -33,78 +33,81 @@ export function Home() {
   });
 
   return (
-    <div className="h-full w-full flex flex-col justify-center items-center p-8 overflow-auto">
-      <div className="mb-8 flex flex-row">
-        <img
-          src={logo}
-          className="h-40 rounded-[30px] bg-green-300"
-          alt="React logo"
-        />
+<div className="h-full w-full flex flex-col p-8 overflow-auto">
+      {/* Верхняя панель */}
+      <div className="flex justify-between items-center mb-8">
+        {/* Левая часть: логотип и название */}
+        <div className="flex items-center gap-4">
+          <img
+            src={logo}
+            className="h-12 w-auto rounded-[30px] bg-grey-500"
+            alt="React logo"
+          />
+          <h1 className="text-2xl font-bold rounded-3xl p-4 bg-red-200">
+            Лаборатория разметки
+          </h1>
+        </div>
 
-        <h1 className="text-4xl font-bold rounded-3xl ml-8 p-8 bg-red-200 self-center">
-          Vite + React
-        </h1>
+        {/* Правая часть: индикаторы и кнопки */}
+        <div className="flex items-center gap-6">
+          {/* Индикаторы состояния контейнеров */}
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  messageBackend ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              />
+              <span className="text-sm text-gray-600">Backend</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  messageML ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              />
+              <span className="text-sm text-gray-600">ML</span>
+            </div>
+          </div>
+
+          {/* Кнопки входа и регистрации */}
+          <div className="flex gap-2">
+            <button
+              className="px-4 py-2 rounded-2xl bg-blue-500 text-white"
+              onClick={() => navigate("/login")}
+            >
+              Вход
+            </button>
+            <button
+              className="px-4 py-2 rounded-2xl bg-blue-500 text-white"
+              onClick={() => navigate("/register")}
+            >
+              Регистрация
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="flex-row justify-center items-center m-8 rounded-4xl bg-amber-200">
+      {/* Блок с основными кнопками навигации */}
+      <div className="flex flex-wrap justify-center items-center gap-4 m-8 rounded-4xl bg-amber-200 p-4">
         <button
-          className="m-4 p-2 rounded-2xl bg-blue-200"
-          onClick={() => {
-            navigate("/markup");
-          }}
+          className="px-4 py-2 rounded-2xl bg-blue-200"
+          onClick={() => navigate("/markup")}
         >
-          <p>Страница разметки и загрузки файлов</p>
+          Страница разметки и загрузки файлов
         </button>
-
         <button
-          className="m-4 p-2 rounded-2xl bg-blue-300"
-          onClick={() => {
-            navigate("/second");
-          }}
+          className="px-4 py-2 rounded-2xl bg-blue-300"
+          onClick={() => navigate("/second")}
         >
-          <p>Перейти на вторую страницу</p>
+          Перейти на вторую страницу
         </button>
-
         <button
-          className="m-4 p-2 rounded-2xl bg-blue-400"
-          onClick={() => {
-            navigate("/third");
-          }}
+          className="px-4 py-2 rounded-2xl bg-blue-400"
+          onClick={() => navigate("/third")}
         >
-          <p>Перейти на третью страницу</p>
+          Перейти на третью страницу
         </button>
-
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-500"
-          onClick={() => {
-            navigate("/login");
-          }}
-        >
-          <p>Вход</p>
-        </button>
-
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-500"
-          onClick={() => {
-            navigate("/register");
-          }}
-        >
-          <p>Регистрация</p>
-        </button>
-      </div>
-
-      <div className="absolute right-0 top-0 bg-white m-5 p-6 rounded-lg cursor-grab active:cursor-grabbing shadow-md text-center opacity-80">
-        <p
-          className={`${messageBackend === "Backend контейнер не работает" ? "text-red-700" : "text-green-700"} text-md mb-2 line-clamp-1`}
-        >
-          {messageBackend}
-        </p>
-
-        <p
-          className={`${messageML === "ML контейнер не работает" ? "text-red-700" : "text-green-700"} text-md line-clamp-1`}
-        >
-          {messageML}
-        </p>
       </div>
     </div>
   );
