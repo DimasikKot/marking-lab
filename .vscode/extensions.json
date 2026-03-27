@@ -12,6 +12,7 @@
     "ms-vscode.vscode-typescript-next",
     "xabikos.javascriptsnippets",
     "github.copilot-chat",
-    "oderwat.indent-rainbow"
+    "oderwat.indent-rainbow",
+    "ms-python.black-formatter"
   ]
 }
