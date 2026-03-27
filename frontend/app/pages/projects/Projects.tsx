@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchProjects,
   createProject,
   patchProjectById,
   deleteProjectById,
+  fetchProjectById,
   type Project,
   type PostProjectRequest,
-} from "@/shared/api/projects"; // путь к вашему API файлу
+} from "@/shared/api/projects";
 
 export function Projects() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +22,7 @@ export function Projects() {
   const [formData, setFormData] = useState<PostProjectRequest>({
     name: "",
     description: "",
-    is_public: false
+    is_public: false,
   });
 
   const loadProjects = async () => {
@@ -48,14 +51,14 @@ export function Projects() {
   // Обработка открытия формы создания
   const handleCreateClick = () => {
     setEditingProject(null);
-    setFormData({name: "", is_public: false, description: ""});
+    setFormData({ name: "", is_public: false, description: "" });
     setIsModalOpen(true);
   };
 
   // Обработка открытия формы редактирования
   const handleEditClick = (project: Project) => {
     setEditingProject(project);
-    setFormData({name: project.name, is_public: false, description: ""});
+    setFormData({ name: project.name, is_public: false, description: "" });
     setIsModalOpen(true);
   };
 
@@ -103,13 +106,25 @@ export function Projects() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleGoHome = () => {
+    navigate("/");
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Проекты</h1>
+      <div className="flex justify-between items-center mb-6 mt-8">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleGoHome}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-lg transition duration-200"
+          >
+            На главную
+          </button>
+          <h1 className="text-2xl font-bold">Проекты</h1>
+        </div>
         <button
           onClick={handleCreateClick}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-lg transition duration-200"
         >
           + Новый проект
         </button>
@@ -119,9 +134,7 @@ export function Projects() {
       {error && <p className="text-center text-red-500">{error}</p>}
 
       {!loading && !error && projects.length === 0 && (
-        <p className="text-center text-gray-500">
-          Нет проектов. Создайте первый!
-        </p>
+        <p className="text-center text-gray-500">Нет проектов</p>
       )}
 
       {!loading && projects.length > 0 && (
@@ -145,6 +158,12 @@ export function Projects() {
                   className="text-red-600 hover:text-red-800"
                 >
                   Удалить
+                </button>
+                <button
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                  className="text-green-600 hover:text-green-800"
+                >
+                  Перейти в проект
                 </button>
               </div>
             </div>
