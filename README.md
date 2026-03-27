@@ -156,6 +156,14 @@ http://localhost:8000/docs
 
 ## Включение подсветки синтаксиса в `vscode` / `cursor`
 
+### `extensions`
+
+Во вкладке дополнений в `vscode` напишите текст ниже и установите все дополнения
+
+```bash
+@recommended
+```
+
 ### `backend` / `ml`
 
 1) Установите `Python` (советую 3.13)
@@ -164,6 +172,7 @@ http://localhost:8000/docs
 
 ```bash
 pip install --no-cache-dir -r requirements.txt
+
 ```
 
 > Эта же команда используется для добавления и обновления уже установленных библиотек
@@ -178,12 +187,14 @@ pip install --no-cache-dir -r requirements.txt
 
 ```bash
 Set-ExecutionPolicy RemoteSigned
+
 ```
 
 3) Загрузите библиотеки из `package.json`
 
 ```bash
 npm install
+
 ```
 
 > Эта же команда используется для добавления и обновления уже установленных библиотек
@@ -193,26 +204,36 @@ npm install
 
 ### Установка новых библиотек:
 
-1) Остановить все контенеры: 
+1) Установить нужные библиотеки:
+
+```bash
+npm install НАЗВАНИЕ
+```
+
+2) Обновить зависимости:
+
+```bash
+npm audit fix
+
+```
+
+3) Остановить все контенеры: 
 
 ```bash
 docker-compose down
+
 ```
 
-2) Установить нужные библиотеки:
-
-```bash
-npm install Название
-```
-
-3) Удалить volumes:
+4) Удалить volumes:
 
 ```bash
 docker volume prune -a
+
 ```
 
-4) Перезапустить контейнеры
+5) Перезапустить контейнеры:
 
 ```bash
 docker-compose up --build
+
 ```

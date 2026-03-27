@@ -13,10 +13,8 @@
     "frontend/node_modules": true,
     "frontend/eslint.config.js": true,
     "frontend/frontend.Dockerfile": true,
-    "frontend/index.css": true,
     "frontend/main.tsx": true,
     "frontend/package-lock.json": true,
-    "frontend/tsconfig.app.json": true,
     "frontend/tsconfig.json": true,
     "frontend/tsconfig.node.json": true,
     "frontend/vite.config.ts": true,
@@ -24,7 +22,8 @@
     "ml/main.py": true,
     ".gitignore": true,
     "frontend/index.html": true,
-    ".gitattributes": true
+    ".gitattributes": true,
+    "**/.vscode": true
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
