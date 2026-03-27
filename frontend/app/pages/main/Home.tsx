@@ -6,17 +6,16 @@ import { logoutUser } from "@/shared/api/user";
 
 export function Home() {
   const [showMenu, setShowMenu] = useState(false);
-  const handleLogout = () => {
-    logoutUser();      // функция выхода (очистка токена, состояния и т.п.)
-    setShowMenu(false);
-  };
   const username = localStorage.getItem("username");
   const navigate = useNavigate();
   const [messageBackend, setMessageBackend] = useState(
     "Backend контейнер не работает",
   );
   const [messageML, setMessageML] = useState("ML контейнер не работает");
-
+  const handleLogout = () => {
+    logoutUser(); // функция выхода (очистка токена, состояния и т.п.)
+    setShowMenu(false);
+  };
   useEffect(() => {
     const load = async () => {
       try {
@@ -115,7 +114,10 @@ export function Home() {
       </div>
 
       {/* Блок с основными кнопками навигации */}
-      <div className="flex flex-wrap justify-center items-center gap-4 m-8 rounded-4xl p-4 bg-gray-100 border border-gray-200 shadow-sm"></div>
+      <button onClick={() => navigate("/projects")}className="p-4 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm">
+          Создать проект
+      </button>
+      
     </div>
   );
 }
