@@ -13,7 +13,6 @@
     "frontend/node_modules": true,
     "frontend/eslint.config.js": true,
     "frontend/frontend.Dockerfile": true,
-    "frontend/index.css": true,
     "frontend/main.tsx": true,
     "frontend/package-lock.json": true,
     "frontend/tsconfig.app.json": true,

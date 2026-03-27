@@ -1,7 +1,7 @@
 import api from "./axios";
 import axios from "axios";
 
-interface Project {
+export interface Project {
   id: number;
   name: string;
   is_public: boolean;
@@ -9,16 +9,16 @@ interface Project {
   updated_at: string;
 }
 
-interface GetProjectsResponse {
+export interface GetProjectsResponse {
   data: Project[];
 }
 
-interface PostProjectRequest {
+export interface PostProjectRequest {
   name: string;
   is_public: boolean;
 }
 
-interface DeleteProjectResponce {
+export interface DeleteProjectResponce {
   detail: string;
 }
 
@@ -66,7 +66,7 @@ export const patchProjectById = async (
   data: PostProjectRequest,
 ): Promise<Project | undefined> => {
   try {
-    const response = await api.patch<Project>(`/projects${id}`, data);
+    const response = await api.patch<Project>(`/projects/${id}`, data);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -79,7 +79,7 @@ export const deleteProjectById = async (
   id: string | number,
 ): Promise<DeleteProjectResponce | undefined> => {
   try {
-    const response = await api.delete<DeleteProjectResponce>(`/projects${id}`);
+    const response = await api.delete<DeleteProjectResponce>(`/projects/${id}`);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
