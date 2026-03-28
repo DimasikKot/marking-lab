@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 
 export const PrimaryButton = ({
   onClick = () => {
-    toast.error("Кнопка без действия");
+    toast.success("Кнопка без действия");
   },
   size = "medium",
   font = "medium",
