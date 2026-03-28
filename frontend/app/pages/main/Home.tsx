@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import logo from "@/assets/logo/logo.svg";
 import { logoutUser } from "@/shared/api/user";
-import { PrimaryButton } from "@/pages/main/Components";
+import { PrimaryButton } from "@/shared/components/PrimaryButton";
 
 export function Home() {
   const [showMenu, setShowMenu] = useState(false);
