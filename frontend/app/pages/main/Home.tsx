@@ -2,14 +2,20 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import logo from "@/assets/logo/logo.svg";
+import { logoutUser } from "@/shared/api/user";
 
 export function Home() {
+  const [showMenu, setShowMenu] = useState(false);
+  const username = localStorage.getItem("username");
   const navigate = useNavigate();
   const [messageBackend, setMessageBackend] = useState(
     "Backend контейнер не работает",
   );
   const [messageML, setMessageML] = useState("ML контейнер не работает");
-
+  const handleLogout = () => {
+    logoutUser(); // функция выхода (очистка токена, состояния и т.п.)
+    setShowMenu(false);
+  };
   useEffect(() => {
     const load = async () => {
       try {
@@ -30,82 +36,90 @@ export function Home() {
     };
 
     load();
-  });
+  }, []);
 
   return (
-    <div className="h-full w-full flex flex-col justify-center items-center p-8 overflow-auto">
-      <div className="mb-8 flex flex-row">
-        <img
-          src={logo}
-          className="h-40 rounded-[30px] bg-green-300"
-          alt="React logo"
-        />
+    <div className="h-full w-full flex flex-col p-8 overflow-auto bg-white text-gray-900">
+      {/* Верхняя панель */}
+      <div className="flex items-center justify-between mb-8">
+        {/* Левая часть: логотип и название */}
+        <div className="flex items-center gap-4 rounded-3xl p-4">
+          <img
+            src={logo}
+            className="h-12 w-auto object-contain"
+            alt="React logo"
+          />
+          <h1 className="text-2xl font-bold">Лаборатория разметки</h1>
+        </div>
 
-        <h1 className="text-4xl font-bold rounded-3xl ml-8 p-8 bg-red-200 self-center">
-          Vite + React
-        </h1>
+        {/* Правая часть: индикаторы и кнопки */}
+        <div className="flex items-center gap-4 rounded-3xl p-4">
+          {/* Индикаторы состояния контейнеров */}
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  messageBackend !== "Backend контейнер не работает"
+                    ? "bg-green-500"
+                    : "bg-red-500"
+                }`}
+              />
+              <span className="text-sm text-gray-600">Backend</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  messageML !== "ML контейнер не работает"
+                    ? "bg-green-500"
+                    : "bg-red-500"
+                }`}
+              />
+              <span className="text-sm text-gray-600">ML</span>
+            </div>
+          </div>
+          {/* Кнопки входа и регистрации */}
+          <div className="flex gap-2">
+            {username ? (
+              <div className="relative">
+                <button
+                  className="w-10 h-10 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center hover:bg-blue-600 transition"
+                  onClick={() => setShowMenu(!showMenu)}
+                >
+                  {username[0].toUpperCase()}
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border">
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setShowMenu(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Выйти
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                className="px-4 py-2 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
+                onClick={() => navigate("/login")}
+              >
+                Вход
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="flex-row justify-center items-center m-8 rounded-4xl bg-amber-200">
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-200"
-          onClick={() => {
-            navigate("/markup");
-          }}
-        >
-          <p>Страница разметки и загрузки файлов</p>
-        </button>
-
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-300"
-          onClick={() => {
-            navigate("/second");
-          }}
-        >
-          <p>Перейти на вторую страницу</p>
-        </button>
-
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-400"
-          onClick={() => {
-            navigate("/third");
-          }}
-        >
-          <p>Перейти на третью страницу</p>
-        </button>
-
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-500"
-          onClick={() => {
-            navigate("/login");
-          }}
-        >
-          <p>Вход</p>
-        </button>
-
-        <button
-          className="m-4 p-2 rounded-2xl bg-blue-500"
-          onClick={() => {
-            navigate("/register");
-          }}
-        >
-          <p>Регистрация</p>
-        </button>
-      </div>
-
-      <div className="absolute right-0 top-0 bg-white m-5 p-6 rounded-lg cursor-grab active:cursor-grabbing shadow-md text-center opacity-80">
-        <p
-          className={`${messageBackend === "Backend контейнер не работает" ? "text-red-700" : "text-green-700"} text-md mb-2 line-clamp-1`}
-        >
-          {messageBackend}
-        </p>
-
-        <p
-          className={`${messageML === "ML контейнер не работает" ? "text-red-700" : "text-green-700"} text-md line-clamp-1`}
-        >
-          {messageML}
-        </p>
-      </div>
+      {/* Блок с основными кнопками навигации */}
+      <button
+        onClick={() => navigate("/projects")}
+        className="p-4 rounded-2xl transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 shadow-sm"
+      >
+        Создать проект
+      </button>
     </div>
   );
 }

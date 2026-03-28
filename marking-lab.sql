@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL          PRIMARY KEY,
     user_id         INTEGER         NOT NULL,
     name            VARCHAR(255)    NOT NULL,
+    description     VARCHAR(255),
     is_public       BOOLEAN         DEFAULT FALSE,
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP

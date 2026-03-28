@@ -27,6 +27,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False)
     name = Column(String(255), nullable=False)
+    description = Column(String(255))
     is_public = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
