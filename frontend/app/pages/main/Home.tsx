@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import logo from "@/assets/logo/logo.svg";
 import { logoutUser } from "@/shared/api/user";
+import { PrimaryButton } from "@/pages/main/Components";
 
 export function Home() {
   const [showMenu, setShowMenu] = useState(false);
@@ -76,6 +77,9 @@ export function Home() {
               />
               <span className="text-sm text-gray-600">ML</span>
             </div>
+            <PrimaryButton onClick={() => navigate("/components")}>
+              Компоненты
+            </PrimaryButton>
           </div>
           {/* Кнопки входа и регистрации */}
           <div className="flex gap-2">

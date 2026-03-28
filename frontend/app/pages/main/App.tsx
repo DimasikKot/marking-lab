@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import { PrivateRoute } from "@/shared/components/PrivateRoute.tsx"; // Лучше всегда писать абсолютный путь
-import { Home, NotFound } from "@/pages/main/index";
+import { Home, NotFound, Components } from "@/pages/main/index";
 import { Login, Register } from "@/pages/auth/index.ts";
 import {
   Project,
@@ -18,10 +18,11 @@ import {
 export function App() {
   return (
     <Router>
-      <div className="h-dvh w-auto bg-white">
+      <div className="bg-white">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/not-found" element={<NotFound />} />
+          <Route path="/components" element={<Components />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
