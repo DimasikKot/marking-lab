@@ -35,8 +35,8 @@ export function Projects() {
       } else {
         setError("Не удалось загрузить проекты: неверный формат ответа");
       }
-    } catch (err) {
-      setError(err.message || "Ошибка загрузки проектов");
+    } catch {
+      setError("Ошибка загрузки проектов");
     } finally {
       setLoading(false);
     }
