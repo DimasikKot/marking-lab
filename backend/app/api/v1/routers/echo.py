@@ -11,11 +11,11 @@ router: APIRouter = APIRouter()
 
 class GetBackendResponse(BaseModel):
     detail: str
-    status: str = "success"
+    status: bool
 
 @router.get("/backend", response_model=GetBackendResponse)
 def test_backend():
-    return GetBackendResponse(detail="Backend контейнер исправно работает")
+    return GetBackendResponse(detail="Backend контейнер исправно работает", status=True)
 
 
 @router.get("/ml", response_model=GetBackendResponse)

@@ -25,14 +25,17 @@ export function Components() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col p-8 overflow-auto bg-white text-black items-center">
+    <div className="h-full w-full flex flex-col py-8 overflow-auto bg-white text-black items-center">
       <h1 className="text-2xl font-medium">Страница компонентов</h1>
-      <p className="text-gray-700">
-        Эта страница предназначена для управления компонентами приложения. Здесь
-        можно смотреть информацию о компонентах и тестировать их.
-      </p>
 
-      <div className="flex flex-col gap-4 mt-4">
+      <div className="w-full flex flex-col gap-4 mt-4">
+        <div className="flex flex-col items-center gap-2">
+          <p>Header</p>
+          <div className="w-full flex flex-row gap-2">
+            <Header />
+          </div>
+        </div>
+
         <div className="flex flex-col items-center gap-2">
           <p>PrimaryButton</p>
           <div className="flex flex-row gap-1">
@@ -108,13 +111,6 @@ export function Components() {
           <div className="flex flex-row gap-2">
             <FileCard file={fileInList} />
             <FileCard file={fileInList} />
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <p>Header</p>
-          <div className="flex flex-row gap-2">
-            <Header />
           </div>
         </div>
       </div>
