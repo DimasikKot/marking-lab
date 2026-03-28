@@ -18,6 +18,7 @@ import { CustomToaster } from "@/shared/components/CustomToaster";
 export function App() {
   return (
     <Router>
+      <CustomToaster />
       <div className="bg-white">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -55,7 +56,6 @@ export function App() {
           </Route>
         </Routes>
       </div>
-      <CustomToaster />
     </Router>
   );
 }

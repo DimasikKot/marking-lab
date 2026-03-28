@@ -1,6 +1,5 @@
 import type { FileInList } from "@/shared/api/file";
 import type { Project } from "@/shared/api/projects";
-import { ErrorToast, SuccesToast } from "@/shared/components/CustomToaster";
 import { FileCard } from "@/shared/components/FileCard";
 import { Header } from "@/shared/components/Header";
 import { PrimaryButton } from "@/shared/components/PrimaryButton";
@@ -109,14 +108,6 @@ export function Components() {
           <div className="flex flex-row gap-2">
             <FileCard file={fileInList} />
             <FileCard file={fileInList} />
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <p>Toasts</p>
-          <div className="flex flex-row gap-2">
-            <SuccesToast />
-            <ErrorToast />
           </div>
         </div>
 

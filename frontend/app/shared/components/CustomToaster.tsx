@@ -3,22 +3,42 @@ import { Toaster } from "react-hot-toast";
 export const CustomToaster = () => (
   <Toaster
     position="top-center"
+    gutter={8}
     toastOptions={{
-      duration: 4000,
+      duration: 3000,
+
+      // Общий стиль
       style: {
-        background: "#333",
-        color: "#fff",
-        borderRadius: "10px",
-        padding: "12px 16px",
+        background: "#ffffff",
+        color: "#111111",
+        border: "1px solid #e5e5e5",
+        borderRadius: "12px",
+        padding: "8px 16px",
+        boxShadow:
+          "0 10px 16px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        fontSize: "16px",
+        maxWidth: "380px",
+      },
+
+      success: {
+        iconTheme: {
+          primary: "#10b981",
+          secondary: "#ffffff",
+        },
+        style: {
+          borderColor: "#10b981",
+        },
+      },
+
+      error: {
+        iconTheme: {
+          primary: "#ef4444",
+          secondary: "#ffffff",
+        },
+        style: {
+          borderColor: "#ef4444",
+        },
       },
     }}
   />
 );
-
-export const SuccesToast = () => (
-  <div></div>
-)
-
-export const ErrorToast = () => (
-  <div></div>
-)
