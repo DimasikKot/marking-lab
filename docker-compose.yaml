@@ -32,8 +32,8 @@ services:
     #   - "8000"
 
     # Добавьте в сервис `backend`'а строки ниже если вы запускаете на `Linux` (нельзя коммитить в основную ветку)
-    # extra_hosts:
-    #   - "host.docker.internal:172.17.0.1"
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
     
     # Указываем сети, к которым будет подключён контейнер. Сети нужно создавать заранее командой `docker network create <network-name>`
     networks:

@@ -32,6 +32,7 @@ class PostResponse(BaseModel):
     username: str
     access_token: str
     token_type: str
+    created_at: str
 
 # Пишем метод, путь и какие данные будем возвращать
 @router.post("/", response_model=PostResponse)
@@ -56,7 +57,7 @@ def register_user(data: PostRequest, db: Session = Depends(get_auth_db)) -> Post
 
     print_access_token_data(access_token)
 
-    return PostResponse(username=user.username, access_token=access_token, token_type="bearer")
+    return PostResponse(username=user.username, access_token=access_token, token_type="bearer", created_at=user.created_at.isoformat())
 
 
 class PostLoginRequest(BaseModel):
@@ -67,6 +68,7 @@ class PostLoginResponse(BaseModel):
     username: str
     access_token: str
     token_type: str
+    created_at: str
 
 # Совершение авторизации
 @router.post("/login", response_model=PostLoginResponse)
@@ -82,4 +84,4 @@ def login_user(data: PostLoginRequest, db: Session = Depends(get_auth_db)) -> Po
 
     print_access_token_data(access_token)
 
-    return PostLoginResponse(username=user.username, access_token=access_token, token_type="bearer")
+    return PostLoginResponse(username=user.username, access_token=access_token, token_type="bearer", created_at=user.created_at.isoformat())

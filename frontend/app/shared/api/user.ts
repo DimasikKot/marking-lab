@@ -11,6 +11,7 @@ interface PostResponse {
   username: string;
   access_token: string;
   token_type: string;
+  created_at: string;
 }
 
 export const registerUser = async (
@@ -20,6 +21,7 @@ export const registerUser = async (
     const response = await api.post<PostResponse>("/users/", data);
     localStorage.setItem("username", response.data.username);
     localStorage.setItem("access_token", response.data.access_token);
+    localStorage.setItem("created_at", response.data.created_at);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -44,6 +46,7 @@ export const loginUser = async (
     const response = await api.post<PostResponse>("/users/login", data);
     localStorage.setItem("username", response.data.username);
     localStorage.setItem("access_token", response.data.access_token);
+    localStorage.setItem("created_at", response.data.created_at);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -57,6 +60,7 @@ export const logoutUser = async () => {
   try {
     localStorage.removeItem("username");
     localStorage.removeItem("access_token");
+    localStorage.removeItem("created_at");
     window.location.href = "/";
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
