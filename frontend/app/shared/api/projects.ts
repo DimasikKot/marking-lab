@@ -1,5 +1,7 @@
-import api from "./axios";
 import axios from "axios";
+import toast from "react-hot-toast";
+
+import api from "@/shared/api/axios";
 
 export interface Project {
   id: number;
@@ -22,6 +24,7 @@ export interface PostProjectRequest {
 
 export interface DeleteProjectResponce {
   detail: string;
+  success: boolean;
 }
 
 export const fetchProjects = async (): Promise<
@@ -32,7 +35,7 @@ export const fetchProjects = async (): Promise<
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при запросе:", error.message);
+      toast.error("Ошибка при получении проектов: " + error.message);
     }
   }
 };
@@ -45,7 +48,7 @@ export const fetchProjectById = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при запросе:", error.message);
+      toast.error("Ошибка при получении проекта: " + error.message);
     }
   }
 };
@@ -58,7 +61,7 @@ export const createProject = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при запросе:", error.message);
+      toast.error("Ошибка при создании проекта: " + error.message);
     }
   }
 };
@@ -72,7 +75,7 @@ export const patchProjectById = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при запросе:", error.message);
+      toast.error("Ошибка при обновлении проекта: " + error.message);
     }
   }
 };
@@ -85,7 +88,7 @@ export const deleteProjectById = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при запросе:", error.message);
+      toast.error("Ошибка при удалении проекта: " + error.message);
     }
   }
 };

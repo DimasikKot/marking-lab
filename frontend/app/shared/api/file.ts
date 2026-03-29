@@ -1,5 +1,7 @@
-import api from "./axios";
 import axios from "axios";
+import toast from "react-hot-toast";
+
+import api from "@/shared/api/axios";
 
 export interface FileInList {
   id: number;
@@ -17,6 +19,11 @@ export interface PostUploadResponse {
   name: string;
 }
 
+export interface DeleteFileResponce {
+  detail: string;
+  success: boolean;
+}
+
 export const uploadFile = async (
   file: File,
   name: string | undefined = "Мой файл",
@@ -29,18 +36,12 @@ export const uploadFile = async (
     const response = await api.post<PostUploadResponse>(
       "/files/upload",
       formData,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          "Content-Type": "multipart/form-data",
-        },
-      },
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при загрузке файла:", error.message);
+      toast.error("Ошибка при загрузке файла: " + error.message);
     }
-    return undefined;
   }
 };

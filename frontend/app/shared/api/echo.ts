@@ -1,5 +1,7 @@
-import api from "@/shared/api/axios";
+import axios from "axios";
 import toast from "react-hot-toast";
+
+import api from "@/shared/api/axios";
 
 interface GetBackendResponse {
   detail: string;
@@ -23,8 +25,10 @@ export const fetchBackendEcho = async (): Promise<
   try {
     const response = await api.get<GetBackendResponse>("/echos/backend");
     return response.data;
-  } catch {
-    toast.error("Ошибка при запросе backend");
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      toast.error("Ошибка при запросе backend: " + error.message);
+    }
   }
 };
 
@@ -34,7 +38,9 @@ export const fetchMLEcho = async (): Promise<
   try {
     const response = await api.get<GetBackendResponse>("/echos/ml");
     return response.data;
-  } catch {
-    toast.error("Ошибка при запросе ml");
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      toast.error("Ошибка при запросе ml: " + error.message);
+    }
   }
 };

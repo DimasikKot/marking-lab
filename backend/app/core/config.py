@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
-class Settings(BaseSettings):
+class __Settings__(BaseSettings):
     ML_URL: str
 
     # Основная БД
@@ -21,9 +21,9 @@ class Settings(BaseSettings):
 
     # JWT-токены
     JWT_ACCESS_TOKEN_SECRET: str
-    JWT_ACCESS_TOKEN_EXPIRATION: str
+    JWT_ACCESS_TOKEN_EXPIRATION_HOURS: int
     JWT_REFRESH_TOKEN_SECRET: str
-    JWT_REFRESH_TOKEN_EXPIRATION: str
+    JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int
 
     @property
     def DATABASE_URL(self) -> str:
@@ -39,8 +39,8 @@ class Settings(BaseSettings):
 
 # Не выгружаем из памяти
 @lru_cache
-def get_settings():
-    return Settings()
+def __get_settings__():
+    return __Settings__()
 
 
-settings: Settings = get_settings()
+settings: __Settings__ = __get_settings__()

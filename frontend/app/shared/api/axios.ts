@@ -24,6 +24,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("access_token"); // Удаляем токен, если невалидный
+      localStorage.removeItem("username");
       window.location.href = "/login"; // Редирект на страницу входа
     }
     return Promise.reject(error);

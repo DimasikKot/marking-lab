@@ -1,5 +1,7 @@
-import api from "@/shared/api/axios";
 import axios from "axios";
+import toast from "react-hot-toast";
+
+import api from "@/shared/api/axios";
 
 interface PostRequest {
   username: string;
@@ -23,11 +25,7 @@ export const registerUser = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error(
-        "Ошибка при регистрации:",
-        error.response?.data || error.message,
-      );
-      throw error.response?.data || new Error("Ошибка регистрации");
+      toast.error("Ошибка при регистрации: " + error.message);
     }
   }
 };
@@ -47,8 +45,7 @@ export const loginUser = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при входе:", error.response?.data || error.message);
-      throw error.response?.data || new Error("Ошибка входа");
+      toast.error("Ошибка при входе: " + error.message);
     }
   }
 };
@@ -60,7 +57,7 @@ export const logoutUser = async () => {
     window.location.href = "/";
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Ошибка при выходе:", error.message);
+      toast.error("Ошибка при выходе: " + error.message);
     }
   }
 };
