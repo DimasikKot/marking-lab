@@ -25,21 +25,7 @@ export function Projects() {
   });
 
   const loadProjects = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchProjects();
-      if (data && data.data) {
-        // проверяем наличие data.data
-        setProjects(data.data);
-      } else {
-        setError("Не удалось загрузить проекты: неверный формат ответа");
-      }
-    } catch {
-      setError("Ошибка загрузки проектов");
-    } finally {
-      setLoading(false);
-    }
+    await fetchProjects(setProjects, setLoading);
   };
 
   // Загрузка списка проектов при монтировании
@@ -57,45 +43,47 @@ export function Projects() {
   // Обработка открытия формы редактирования
   const handleEditClick = (project: Project) => {
     setEditingProject(project);
-    setFormData({ name: project.name, is_public: false, description: "" });
+    setFormData({
+      name: project.name,
+      description: project.description,
+      is_public: project.is_public,
+    });
     setIsModalOpen(true);
   };
 
   // Обработка отправки формы
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const handleSubmit = async () => {
     if (editingProject) {
-      // Обновление проекта
-      const updated = await patchProjectById(editingProject.id, formData);
-      if (updated) {
-        await loadProjects(); // обновляем список
+      const handleResponse = () => {
+        loadProjects();
         setIsModalOpen(false);
-      } else {
-        setError("Ошибка при обновлении проекта");
-      }
+        setEditingProject(null);
+      };
+      patchProjectById(
+        editingProject.id,
+        formData,
+        handleResponse,
+        setLoading,
+        setError,
+      );
     } else {
-      // Создание проекта
-      const created = await createProject(formData);
-      if (created) {
-        await loadProjects();
+      const handleResponse = () => {
+        loadProjects();
         setIsModalOpen(false);
-      } else {
-        setError("Ошибка при создании проекта");
-      }
+        setEditingProject(null);
+      };
+      createProject(formData, handleResponse, setLoading, setError);
     }
   };
 
   // Удаление проекта
   const handleDelete = async (id: number) => {
     if (!window.confirm("Вы уверены, что хотите удалить проект?")) return;
-    setError(null);
-    const result = await deleteProjectById(id);
-    if (result?.detail) {
-      await loadProjects();
-    } else {
-      setError("Ошибка при удалении проекта");
-    }
+
+    const handleResponse = () => {
+      loadProjects();
+    };
+    deleteProjectById(id, handleResponse);
   };
 
   // Обработка изменения полей формы
@@ -177,7 +165,7 @@ export function Projects() {
             <h2 className="text-xl font-bold mb-4">
               {editingProject ? "Редактировать проект" : "Создать проект"}
             </h2>
-            <form onSubmit={handleSubmit}>
+            <div>
               <div className="mb-4">
                 <label
                   htmlFor="name"
@@ -213,20 +201,19 @@ export function Projects() {
               </div>
               <div className="flex justify-end space-x-2">
                 <button
-                  type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
                 >
                   Отмена
                 </button>
                 <button
-                  type="submit"
+                  onClick={handleSubmit}
                   className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 >
                   {editingProject ? "Сохранить" : "Создать"}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

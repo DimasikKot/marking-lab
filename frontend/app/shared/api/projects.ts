@@ -27,41 +27,61 @@ export interface DeleteProjectResponce {
   success: boolean;
 }
 
-export const fetchProjects = async (): Promise<
-  GetProjectsResponse | undefined
-> => {
+export const fetchProjects = async (
+  handleResponse: (data: Project[]) => void,
+  setLoading?: (_: boolean) => void,
+  setError?: (_: string) => void,
+) => {
   try {
+    setLoading?.(true);
     const response = await api.get<GetProjectsResponse>("/projects");
-    return response.data;
+    handleResponse(response.data.data);
+    setLoading?.(false);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при получении проектов: " + error.message);
+      const error_text = "Ошибка при получении проектов: " + error.message;
+      toast.error(error_text);
+      setError?.(error_text);
     }
   }
 };
 
 export const fetchProjectById = async (
   id: string | number,
-): Promise<Project | undefined> => {
+  handleResponse: (data: Project) => void,
+  setLoading?: (_: boolean) => void,
+  setError?: (_: string) => void,
+) => {
   try {
+    setLoading?.(true);
     const response = await api.get<Project>(`/projects/${id}`);
-    return response.data;
+    handleResponse(response.data);
+    setLoading?.(false);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при получении проекта: " + error.message);
+      const error_text = "Ошибка при получении проекта: " + error.message;
+      toast.error(error_text);
+      setError?.(error_text);
     }
   }
 };
 
 export const createProject = async (
   data: PostProjectRequest,
-): Promise<Project | undefined> => {
+  handleResponse: (data: Project) => void,
+  setLoading?: (_: boolean) => void,
+  setError?: (_: string) => void,
+) => {
   try {
+    setLoading?.(true);
     const response = await api.post<Project>("/projects", data);
-    return response.data;
+    handleResponse(response.data);
+    setLoading?.(false);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при создании проекта: " + error.message);
+      const error_text = "Ошибка при создании проекта: " + error.message;
+      toast.error(error_text);
+      setError?.(error_text);
     }
   }
 };
@@ -69,26 +89,40 @@ export const createProject = async (
 export const patchProjectById = async (
   id: string | number,
   data: PostProjectRequest,
-): Promise<Project | undefined> => {
+  handleResponse: (data: Project) => void,
+  setLoading?: (_: boolean) => void,
+  setError?: (_: string) => void,
+) => {
   try {
+    setLoading?.(true);
     const response = await api.patch<Project>(`/projects/${id}`, data);
-    return response.data;
+    handleResponse(response.data);
+    setLoading?.(false);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при обновлении проекта: " + error.message);
+      const error_text = "Ошибка при обновлении проекта: " + error.message;
+      toast.error(error_text);
+      setError?.(error_text);
     }
   }
 };
 
 export const deleteProjectById = async (
   id: string | number,
-): Promise<DeleteProjectResponce | undefined> => {
+  handleResponse: (data: boolean) => void,
+  setLoading?: (_: boolean) => void,
+  setError?: (_: string) => void,
+) => {
   try {
+    setLoading?.(true);
     const response = await api.delete<DeleteProjectResponce>(`/projects/${id}`);
-    return response.data;
+    handleResponse(response.data.success);
+    setLoading?.(false);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при удалении проекта: " + error.message);
+      const error_text = "Ошибка при удалении проекта: " + error.message;
+      toast.error(error_text);
+      setError?.(error_text);
     }
   }
 };
