@@ -17,7 +17,7 @@ export const SecondaryButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`text-[#165FD2] hover:text-[#124DB0] font-medium py-1 px-2 transition duration-300 ${
+    className={`h-min w-auto text-[#165FD2] hover:text-[#124DB0] font-medium py-1 px-2 transition duration-300 ${
       size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg"
     } ${font === "regular" ? "font-normal" : "font-medium"} ${className}`}
   >

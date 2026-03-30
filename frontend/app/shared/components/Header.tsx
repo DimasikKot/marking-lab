@@ -8,8 +8,8 @@ import { logoutUser } from "../api/user";
 import { SecondaryButton } from "./SecondaryButton";
 import { fetchBackendEcho, fetchMLEcho } from "../api/echo";
 
-const Logo = () => (
-  <div className="flex items-center gap-2 p-2">
+const Logo = ({ onClick }: { onClick?: () => void }) => (
+  <div onClick={onClick} className="flex items-center gap-2 p-4">
     <img src={logo} alt="React logo" />
     <h1 className="text-2xl font-bold">Лаборатория разметки</h1>
   </div>
@@ -30,7 +30,7 @@ const UserIcon = ({
   </button>
 );
 
-export function Header() {
+export function Header({ children }: { children?: React.ReactElement }) {
   const navigate = useNavigate();
 
   const [backendStatus, setBackendStatus] = useState(false);
@@ -58,10 +58,12 @@ export function Header() {
   }, []); // <- пустой массив = выполнится только один раз при монтировани
 
   return (
-    <div className="h-auto w-full flex flex-row justify-between">
-      <Logo />
+    <div className="h-auto w-full flex flex-row items-center justify-between">
+      <Logo onClick={() => navigate("/")} />
 
-      <div className="flex items-center gap-4 rounded-3xl p-4">
+      {children}
+
+      <div className="flex gap-4 items-center rounded-3xl p-4">
         {/* Индикаторы состояния контейнеров */}
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
@@ -76,7 +78,7 @@ export function Header() {
         </div>
 
         {/* Кнопки входа и регистрации */}
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <PrimaryButton onClick={() => navigate("/components")}>
             Компоненты
           </PrimaryButton>
