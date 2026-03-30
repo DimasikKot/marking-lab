@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import logo from "@/assets/logo/logo.svg";
 import { logoutUser } from "@/shared/api/user";
+import { InfoCard } from "@/shared/components/InfoCard";
+import { CenterButton } from "@/shared/components/CenterButton";
 
 
 export function Home() {
@@ -149,67 +151,31 @@ export function Home() {
       <div className="flex-1 flex items-start justify-center gap-8 pt-8">
         
         {/* Левая карточка — Наши плюсы */}
-        <div className="w-80 shrink-0">
-          <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all hover:-rotate-1 active:rotate-1 h-full">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center text-4xl mb-6 mx-auto">
-              <span className="material-icons text-[28px]">
-                rocket_launch
-              </span>
-            </div>
-            <h4 className="text-2xl font-semibold text-center mb-4">Наши плюсы</h4>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Современные инструменты разметки, высокая точность и удобный интерфейс для каждого пользователя.
-            </p>
-          </div>
-        </div>
+        <InfoCard
+          icon="rocket_launch"
+          iconBgClass="bg-emerald-100"
+          iconTextClass="text-emerald-600"
+          title="Наши плюсы"
+          description="Современные инструменты разметки, высокая точность и удобный интерфейс для каждого пользователя."
+        />
 
-        {/* Центральная большая кнопка */}
-        <div className="w-105 shrink-0 flex items-center justify-center">
-          <button
-            onClick={() => navigate("/projects")}
-            className="group relative flex flex-col 
-            items-center justify-center gap-6 px-16 py-14 
-            bg-neutral-600 hover:bg-neutral-700 text-white rounded-3xl 
-            border border-zinc-700 shadow-2xl hover:shadow-3xl 
-            transition-all duration-300 hover:-translate-y-1 active:scale-95"
-          >
-            <div className="absolute inset-0 bg-linear-to-br from-blue-500/10 to-indigo-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-
-            <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-              <span className="material-icons text-36 text-white">
-                auto_awesome
-              </span>
-            </div>
-
-            <div className="text-center">
-              <h2 className="text-3xl font-semibold mb-2 tracking-tight">Создать новый проект</h2>
-              <p className="text-zinc-400 max-w-xs">
-                Начните работать с данными уже сегодня!
-              </p>
-            </div>
-
-            <div className="mt-4 px-10 py-3.5 bg-white text-zinc-900 rounded-2xl font-medium flex items-center gap-3 
-                            group-hover:bg-zinc-100 transition-colors shadow-md">
-              Перейти к проектам
-              <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
-            </div>
-          </button>
-        </div>
+        {/* Центральная */}
+        <CenterButton
+          icon="auto_awesome"
+          title="Создать новый проект"
+          description="Начните работать с данными уже сегодня!"
+          ctaText="Перейти к проектам"
+          onClick={() => navigate("/projects")}
+        />
 
         {/* Правая карточка */}
-        <div className="w-80 shrink-0">
-          <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all hover:-rotate-1 active:rotate-1 h-full">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center text-4xl mb-6 mx-auto">
-              <span className="material-icons text-[28px]">
-                bolt
-              </span>
-            </div>
-            <h4 className="text-2xl font-semibold text-center mb-4">Мы предлагаем</h4>
-            <p className="text-gray-600 text-center leading-relaxed">
-              Удобную платформу для разметки и работы с данными.
-            </p>
-          </div>
-        </div>
+        <InfoCard
+          icon="bolt"
+          iconBgClass="bg-blue-100"
+          iconTextClass="text-blue-600"
+          title="Мы предлагаем"
+          description="Удобную платформу для разметки и работы с данными."
+        />
       </div>
 
       {/* Нижняя надпись */}
