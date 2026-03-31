@@ -1,4 +1,4 @@
-export function CenterButton({
+export function BigInfoCard({
   icon,
   title,
   description,

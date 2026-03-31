@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/shared/components/Header";
 import { PrimaryButton } from "@/shared/components/PrimaryButton";
 import { InfoCard } from "@/shared/components/InfoCard";
-import { CenterButton } from "@/shared/components/CenterButton";
+import { BigInfoCard } from "@/shared/components/BigInfoCard";
 
 export function Home() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export function Home() {
         />
 
         {/* Центральная */}
-        <CenterButton
+        <BigInfoCard
           icon="auto_awesome"
           title="Создать новый проект"
           description="Начните работать с данными уже сегодня!"
