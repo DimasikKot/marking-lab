@@ -15,6 +15,7 @@
     "axios": "^1.13.6",
     "dayjs": "^1.11.19",
     "eslint-plugin-perfectionist": "^5.6.0",
+    "material-icons": "^1.13.14",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",

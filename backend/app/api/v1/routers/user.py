@@ -82,18 +82,12 @@ class PostLoginRequest(BaseModel):
     password: str
 
 
-class PostLoginResponse(BaseModel):
-    username: str
-    access_token: str
-    token_type: str
-
-
 # Совершение авторизации
-@router.post("/login", response_model=PostLoginResponse)
+@router.post("/login", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД для проверки
 def login_user(
     data: PostLoginRequest, db: Session = Depends(get_auth_db)
-) -> PostLoginResponse:
+) -> PostResponse:
     user: User | None = authenticate_user(db, data.login, data.password)
     if not user:
         # Ни в коем случае не пишем в чем именно проблема, возвращаем ошибку, что данные неправильно введены
@@ -107,6 +101,6 @@ def login_user(
 
     print_access_token_data(access_token)
 
-    return PostLoginResponse(
+    return PostResponse(
         username=user.username, access_token=access_token, token_type="bearer"
     )

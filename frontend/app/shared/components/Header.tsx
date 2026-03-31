@@ -23,8 +23,10 @@ const UserIcon = ({
   username: string;
 }) => (
   <button
-    className="w-12 h-12 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center hover:bg-blue-600 transition"
     onClick={onClick}
+    className="w-12 h-12 rounded-full bg-linear-to-br
+    from-blue-500 to-indigo-600 text-white font-semibold flex items-center justify-center 
+    shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95"
   >
     {username[0].toUpperCase()}
   </button>
@@ -91,8 +93,15 @@ export function Header({ children }: { children?: React.ReactElement }) {
               />
 
               {showMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border">
-                  <SecondaryButton onClick={() => handleLogout()}>
+                <div className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start gap-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 overflow-hidden">
+                  <p className="font-medium text-gray-800">{username}</p>
+
+                  <div className="w-full border-b border-gray-100" />
+
+                  <SecondaryButton
+                    onClick={() => handleLogout()}
+                    className="text-red-600"
+                  >
                     Выйти
                   </SecondaryButton>
                 </div>
