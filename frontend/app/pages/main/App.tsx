@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import "material-icons/iconfont/material-icons.css";
 
 import { PrivateRoute } from "@/shared/components/PrivateRoute.tsx"; // Лучше всегда писать абсолютный путь
 import { Home, NotFound, Components } from "@/pages/main/index";
