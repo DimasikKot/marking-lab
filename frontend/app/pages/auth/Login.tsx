@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "@/shared/api/user";
 import toast from "react-hot-toast";
+import { TextField } from "@/shared/components/TextField";
+import { Text } from "@/shared/components/Text";
+import { PrimaryButton } from "@/shared/components/PrimaryButton";
+import { SecondaryButton } from "@/shared/components/SecondaryButton";
 
 export function Login() {
   const navigate = useNavigate();
@@ -11,111 +15,72 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    setIsLoading(true);
+    setError(null);
     if (!login || !password) {
       setError("Введите логин и пароль");
       return;
     }
-
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      await loginUser({ login, password });
-      toast.success("Вы успешно вошли в аккаунт");
-      navigate("/");
-    } catch (err: unknown) {
-      toast.error("Ошибка входа" + err);
-
-      let errorMessage = "Ошибка входа. Попробуйте позже.";
-
-      if (err && typeof err === "object" && err !== null) {
-        const data =
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (err as any).detail !== undefined ? err : (err as any).response?.data;
-
-        if (data && typeof data.detail === "string") {
-          const detail = data.detail.toLowerCase();
-
-          if (detail.includes("invalid credentials")) {
-            errorMessage = "Неверный логин или пароль";
-          } else {
-            errorMessage = data.detail;
-          }
-        }
-      }
-
-      setError(errorMessage);
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
+    const response = await loginUser({ login, password });
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    if (response === undefined) {
+      setError("Ошибка входа. Попробуйте позже");
+      return;
     }
+    toast.success("Вы успешно вошли в аккаунт");
+    navigate("/");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-gray-200 p-8 rounded-xl shadow-2xl w-full max-w-xs md:max-w-sm border border-gray-700">
-        <h1 className="text-3xl font-bold text-center mb-8">Вход</h1>
+      <div className="bg-gray-200 flex flex-col gap-4 p-8 rounded-xl shadow-2xl w-full max-w-xs md:max-w-sm border border-gray-700">
+        <Text size="xl" className="text-center">
+          Вход
+        </Text>
 
-        <input
-          type="email"
-          placeholder="Email"
+        <TextField
           value={login}
-          onChange={(e) => setLogin(e.target.value.trim())}
-          className="
-            w-full px-4 py-3 rounded-lg 
-            bg-gray-100
-            border border-gray-600 
-            focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30
-            transition-all duration-200
-          "
+          setValue={setLogin}
+          placeholder="Имя пользователя или Email"
           disabled={isLoading}
+          className="mt-4"
+          type="email"
         />
 
-        <input
-          type="password"
-          placeholder="Пароль"
+        <TextField
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="
-            w-full px-4 py-3 rounded-lg mt-4
-            bg-gray-100
-            border border-gray-600 
-            focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30
-            transition-all duration-200
-          "
+          setValue={setPassword}
+          placeholder="Пароль"
           disabled={isLoading}
+          type="password"
         />
 
         {error && (
-          <p className="mt-3 text-red-600 text-center text-sm">{error}</p>
+          <Text size="small" className="text-red-600">
+            {error}
+          </Text>
         )}
 
-        <button
+        <PrimaryButton
           onClick={handleLogin}
           disabled={isLoading}
-          className="
-            w-full mt-6 py-3 px-4 font-medium
-            bg-blue-600 text-white
-            rounded-lg shadow-lg
-            transition-all duration-200
-            active:scale-[0.98]
-            disabled:opacity-50 disabled:cursor-not-allowed
-          "
+          className="mt-4"
         >
           {isLoading ? "Вход..." : "Войти"}
-        </button>
+        </PrimaryButton>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <Text size="small" className="text-center text-gray-100">
           Нет аккаунта?{" "}
-          <button
-            type="button"
+          <SecondaryButton
+            size="small"
             onClick={() => navigate("/register")}
-            className="text-blue-600 hover:underline font-medium"
+            className="hover:underline"
           >
             Зарегистрироваться
-          </button>
-        </p>
+          </SecondaryButton>
+        </Text>
       </div>
     </div>
   );

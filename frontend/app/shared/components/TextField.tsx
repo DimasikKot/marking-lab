@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
 export const TextField = ({
   size = "medium",
-  font = "regular",
+  font = "medium",
   className = "",
   placeholder = "",
-  type = "text",
   disabled = false,
+  type = "text",
   value,
   setValue,
 }: {
@@ -14,20 +14,25 @@ export const TextField = ({
   font?: "regular" | "medium";
   className?: string;
   placeholder?: string;
-  type?: "text" | "email" | "password";
   disabled?: boolean;
+  type?: "text" | "email" | "password";
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
 }) => (
   <input
     type={type}
     className={`
-      ${size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg"}
-      ${font === "regular" ? "font-normal" : "font-medium"}
+      w-full px-4 py-3 rounded-lg 
+      bg-gray-100 
+      border border-gray-600 
+      focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+      transition-all duration-200 
+      ${size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg"} 
+      ${font === "regular" ? "font-normal" : "font-medium"} 
       ${className}
     `}
     value={value}
-    onChange={(e) => setValue(e.target.value)}
+    onChange={(e) => setValue(e.target.value.trim())}
     placeholder={placeholder}
     disabled={disabled}
   />

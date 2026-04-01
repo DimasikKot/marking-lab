@@ -104,9 +104,7 @@ export function Projects() {
 
   return (
     <div>
-      <Header>
-        <h1 className="text-2xl font-bold">Проекты</h1>
-      </Header>
+      <Header>Проекты</Header>
 
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6 mt-8">
@@ -132,9 +130,10 @@ export function Projects() {
 
         {/* Модальное окно формы */}
         {isFormOpen && (
-          <div className="fixed inset-0 flex  bg-black/50 items-center justify-center p-4 z-50"
-            onClick={() => setIsFormOpen(false)}>
-
+          <div
+            className="fixed inset-0 flex  bg-black/50 items-center justify-center p-4 z-50"
+            onClick={() => setIsFormOpen(false)}
+          >
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
               <h2 className="text-xl font-bold mb-4">
                 {editingProject ? "Редактировать проект" : "Создать проект"}

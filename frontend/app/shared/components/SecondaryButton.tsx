@@ -7,19 +7,27 @@ export const SecondaryButton = ({
   size = "medium",
   font = "medium",
   className = "",
+  disabled = false,
   children,
 }: {
   onClick?: () => void;
   size?: "small" | "medium" | "large";
   font?: "regular" | "medium";
   className?: string;
+  disabled?: boolean;
   children: React.ReactNode;
 }) => (
   <button
     onClick={onClick}
-    className={`h-min w-auto text-[#165FD2] hover:text-[#124DB0] font-medium transition duration-300 ${
-      size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg"
-    } ${font === "regular" ? "font-normal" : "font-medium"} ${className}`}
+    disabled={disabled}
+    className={`text-blue-600 hover:text-blue-800 hover:scale-105 active:scale-95 transition duration-200 
+      h-min w-auto font-medium ${
+        size === "small"
+          ? "text-sm"
+          : size === "medium"
+            ? "text-base"
+            : "text-lg"
+      } ${font === "regular" ? "font-normal" : "font-medium"} ${className}`}
   >
     {children}
   </button>

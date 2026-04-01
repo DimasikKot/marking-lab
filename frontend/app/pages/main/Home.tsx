@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/shared/components/Header";
-import { PrimaryButton } from "@/shared/components/PrimaryButton";
 import { InfoCard } from "@/shared/components/InfoCard";
 import { BigInfoCard } from "@/shared/components/BigInfoCard";
 
@@ -8,19 +7,11 @@ export function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full w-full flex flex-col overflow-auto">
-      <Header>
-        <h1 className="text-2xl font-bold">Главная</h1>
-      </Header>
-
-      <div className="flex justify-center p-4">
-        <PrimaryButton onClick={() => navigate("/projects")}>
-          Страница проектов
-        </PrimaryButton>
-      </div>
+    <div className="min-h-screen w-full flex flex-col overflow-auto">
+      <Header>Главная</Header>
 
       {/* левая карточка + центр + правая карточка */}
-      <div className="flex-1 flex items-start justify-center gap-8 pt-8">
+      <div className="flex-1 flex items-center justify-center gap-8 py-8">
         {/* Левая карточка — Наши плюсы */}
         <InfoCard
           icon="rocket_launch"
@@ -50,7 +41,7 @@ export function Home() {
       </div>
 
       {/* Нижняя надпись */}
-      <div className="text-center mt-12">
+      <div className="text-center my-12">
         <p className="text-xs text-gray-400">Лаборатория разметки © 2026</p>
       </div>
     </div>

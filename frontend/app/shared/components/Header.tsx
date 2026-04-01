@@ -2,16 +2,20 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo/logo.svg";
-import { StatusIndicator } from "./StatusIndicator";
-import { PrimaryButton } from "./PrimaryButton";
-import { logoutUser } from "../api/user";
-import { SecondaryButton } from "./SecondaryButton";
-import { fetchBackendEcho, fetchMLEcho } from "../api/echo";
+import { StatusIndicator } from "@/shared/components/StatusIndicator";
+import { PrimaryButton } from "@/shared/components/PrimaryButton";
+import { logoutUser } from "@/shared/api/user";
+import { SecondaryButton } from "@/shared/components/SecondaryButton";
+import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
+import { Text } from "@/shared/components/Text";
 
 const Logo = ({ onClick }: { onClick?: () => void }) => (
-  <div onClick={onClick} className="flex items-center gap-2 p-4">
+  <div
+    onClick={onClick}
+    className="h-12 hover:scale-102 active:scale-95 transition duration-200 flex items-center gap-2"
+  >
     <img src={logo} alt="React logo" />
-    <h1 className="text-2xl font-bold">Лаборатория разметки</h1>
+    <h1 className="text-2xl font-bold mb-1">Лаборатория разметки</h1>
   </div>
 );
 
@@ -32,7 +36,7 @@ const UserIcon = ({
   </button>
 );
 
-export function Header({ children }: { children?: React.ReactElement }) {
+export function Header({ children }: { children?: React.ReactNode }) {
   const navigate = useNavigate();
 
   const [backendStatus, setBackendStatus] = useState(false);
@@ -60,12 +64,18 @@ export function Header({ children }: { children?: React.ReactElement }) {
   }, []); // <- пустой массив = выполнится только один раз при монтировани
 
   return (
-    <div className="h-auto w-full flex flex-row items-center justify-between">
+    <div className="h-auto w-full flex items-center justify-between p-3">
       <Logo onClick={() => navigate("/")} />
 
-      {children}
+      {/* <div className="h-full p-1 mt-1 items-center justify-center flex flex-row text-2xl font-bold">
+        {children}
+      </div> */}
 
-      <div className="flex gap-4 items-center rounded-3xl p-4">
+      <Text size="xl" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
+        {children}
+      </Text>
+
+      <div className="flex gap-4 items-center rounded-3xl">
         {/* Индикаторы состояния контейнеров */}
         <div className="flex gap-4">
           <div className="flex items-center gap-2">

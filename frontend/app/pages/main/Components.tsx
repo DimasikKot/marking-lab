@@ -26,34 +26,31 @@ export function Components() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col py-8 overflow-auto bg-white text-black items-center">
-      <h1 className="text-2xl font-medium">Страница компонентов</h1>
+    <div className="h-full w-full flex flex-col pb-8 overflow-auto bg-white text-black items-center">
+      <Header>Страница компонентов</Header>
 
       <div className="w-full flex flex-col gap-4 mt-4">
         <div className="flex flex-col items-center gap-2">
-          <p>Header</p>
-          <div className="w-full flex flex-row gap-2">
-            <Header />
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <p>PrimaryButton</p>
+          <p>Text</p>
           <div className="flex flex-row gap-1">
             <div className="flex flex-col items-center justify-center gap-1">
-              <PrimaryButton font="regular" size="small">
+              <Text font="regular" size="small">
                 Regular Small
-              </PrimaryButton>
-              <PrimaryButton font="regular">Regular Stand</PrimaryButton>
-              <PrimaryButton font="regular" size="large">
+              </Text>
+              <Text font="regular">Regular Stand</Text>
+              <Text font="regular" size="large">
                 Regular Large
-              </PrimaryButton>
+              </Text>
+              <Text font="regular" size="xl">
+                Regular Large
+              </Text>
             </div>
 
             <div className="flex flex-col items-center justify-center gap-1">
-              <PrimaryButton size="small">Medium Small</PrimaryButton>
-              <PrimaryButton>Medium Stand</PrimaryButton>
-              <PrimaryButton size="large">Medium Large</PrimaryButton>
+              <Text size="small">Medium Small</Text>
+              <Text>Medium Stand</Text>
+              <Text size="large">Medium Large</Text>
+              <Text size="xl">Medium Large</Text>
             </div>
           </div>
         </div>
@@ -75,6 +72,27 @@ export function Components() {
               <SecondaryButton size="small">Medium Small</SecondaryButton>
               <SecondaryButton>Medium Stand</SecondaryButton>
               <SecondaryButton size="large">Medium Large</SecondaryButton>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-2">
+          <p>PrimaryButton</p>
+          <div className="flex flex-row gap-1">
+            <div className="flex flex-col items-center justify-center gap-1">
+              <PrimaryButton font="regular" size="small">
+                Regular Small
+              </PrimaryButton>
+              <PrimaryButton font="regular">Regular Stand</PrimaryButton>
+              <PrimaryButton font="regular" size="large">
+                Regular Large
+              </PrimaryButton>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-1">
+              <PrimaryButton size="small">Medium Small</PrimaryButton>
+              <PrimaryButton>Medium Stand</PrimaryButton>
+              <PrimaryButton size="large">Medium Large</PrimaryButton>
             </div>
           </div>
         </div>
@@ -112,27 +130,6 @@ export function Components() {
           <div className="flex flex-row gap-2">
             <FileCard file={fileInList} />
             <FileCard file={fileInList} />
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <p>Text</p>
-          <div className="flex flex-row gap-1">
-            <div className="flex flex-col items-center justify-center gap-1">
-              <Text font="regular" size="small">
-                Regular Small
-              </Text>
-              <Text font="regular" size="medium">Regular Stand</Text>
-              <Text font="regular" size="large">
-                Regular Large
-              </Text>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-1">
-              <Text size="small" font="medium">Medium Small</Text>
-              <Text size="medium" font="medium">Medium Stand</Text>
-              <Text size="large" font="medium">Medium Large</Text>
-            </div>
           </div>
         </div>
       </div>
