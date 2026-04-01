@@ -132,11 +132,8 @@ export function Projects() {
 
         {/* Модальное окно формы */}
         {isFormOpen && (
-          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
-            <div
-              onClick={() => setIsFormOpen(false)}
-              className="fixed inset-0 flex bg-black opacity-50 -z-10"
-            />
+          <div className="fixed inset-0 flex  bg-black/50 items-center justify-center p-4 z-50"
+            onClick={() => setIsFormOpen(false)}>
 
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
               <h2 className="text-xl font-bold mb-4">

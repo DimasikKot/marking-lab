@@ -6,6 +6,7 @@ import { PrimaryButton } from "@/shared/components/PrimaryButton";
 import { ProjectCard } from "@/shared/components/ProjectCard";
 import { SecondaryButton } from "@/shared/components/SecondaryButton";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
+import { Text } from "@/shared/components/Text";
 
 export function Components() {
   const project: Project = {
@@ -111,6 +112,27 @@ export function Components() {
           <div className="flex flex-row gap-2">
             <FileCard file={fileInList} />
             <FileCard file={fileInList} />
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-2">
+          <p>Text</p>
+          <div className="flex flex-row gap-1">
+            <div className="flex flex-col items-center justify-center gap-1">
+              <Text font="regular" size="small">
+                Regular Small
+              </Text>
+              <Text font="regular" size="medium">Regular Stand</Text>
+              <Text font="regular" size="large">
+                Regular Large
+              </Text>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-1">
+              <Text size="small" font="medium">Medium Small</Text>
+              <Text size="medium" font="medium">Medium Stand</Text>
+              <Text size="large" font="medium">Medium Large</Text>
+            </div>
           </div>
         </div>
       </div>
