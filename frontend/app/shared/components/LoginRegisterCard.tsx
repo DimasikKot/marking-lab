@@ -31,10 +31,11 @@ export function LoginRegisterCard({
     text?: string;
     onClick: () => void;
   };}) {
+  const isFirstStep = !backButton; 
+
   return (
     <div className="w-full max-w-200 mx-auto">
       <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-300">
-        {/* Логотип в левом верхнем углу */}
         <div className="flex justify-start mb-6">
           <img
             src={logo}
@@ -48,23 +49,22 @@ export function LoginRegisterCard({
             <Text size="xl" className="text-left mb-2">
               {title}
             </Text>
+
             {subtitle && (
               <Text
                 size="medium"
                 font="regular"
-                className="text-left"
+                className="text-gray-600 text-left"
               >
                 {subtitle}
               </Text>
             )}
           </div>
 
-          
           <div className="flex-1">
-            <div className="space-y-5">{children}</div>
-
+            <div className="space-y-">{children}</div>
             {hasAccountLink && (
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-start mt-4">
                 <SecondaryButton
                   onClick={hasAccountLink.onClick}
                   size="medium"
@@ -77,10 +77,7 @@ export function LoginRegisterCard({
           </div>
         </div>
 
-
-        {/* Блок кнопок внизу (Назад слева + Основная кнопка справа) */}
-        <div className="flex items-center justify-between mt-8">
-          {/* Кнопка Назад (если передана) */}
+        <div className="mt-8 flex items-center justify-between">
           {backButton && (
             <SecondaryButton
               onClick={backButton.onClick}
@@ -91,15 +88,16 @@ export function LoginRegisterCard({
             </SecondaryButton>
           )}
 
-          {/* Основная кнопка справа */}
-          <PrimaryButton
-            onClick={onButtonClick}
-            disabled={isLoading}
-            size="medium"
-            className="px-8 py-3"
-          >
-            {isLoading ? "Загрузка..." : buttonText}
-          </PrimaryButton>
+          <div className={isFirstStep ? "ml-auto" : ""}>
+            <PrimaryButton
+              onClick={onButtonClick}
+              disabled={isLoading}
+              size="medium"
+              className="px-8 py-3"
+            >
+              {isLoading ? "Загрузка..." : buttonText}
+            </PrimaryButton>
+          </div>
         </div>
       </div>
     </div>

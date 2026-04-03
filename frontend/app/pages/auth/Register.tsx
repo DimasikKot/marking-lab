@@ -77,12 +77,19 @@ export function Register() {
         buttonText: "Далее",
         onClick: handleNext,
         children: (
-          <TextField
-            value={username}
-            setValue={setUsername}
-            placeholder="@ username"
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <span
+              className="material-icons absolute -left-8 top-1/2 -translate-y-1/2 text-gray-600 text-2xl pointer-events-none"
+            >
+              alternate_email
+            </span>
+            <TextField
+              value={username}
+              setValue={setUsername}
+              placeholder="username"
+              disabled={isLoading}
+            />
+          </div>
         ),
         backButton: undefined,
       };
