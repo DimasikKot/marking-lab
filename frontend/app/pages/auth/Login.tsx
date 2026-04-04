@@ -74,7 +74,6 @@ export function Login() {
         backButton: undefined,
       };
     }
-
     return {
       title: "Введите пароль",
       subtitle: `Для аккаунта: ${login}`,
