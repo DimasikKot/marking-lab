@@ -13,8 +13,10 @@ const Logo = ({ onClick }: { onClick?: () => void }) => (
     onClick={onClick}
     className="h-12 hover:scale-102 active:scale-95 transition duration-200 flex items-center gap-2"
   >
-    <img src={logo} alt="React logo" />
-    <h1 className="text-2xl font-bold mb-1">Лаборатория разметки</h1>
+    <img src={logo} alt="React logo" className="select-none" />
+    <Text variant="logo" className="mb-1">
+      Лаборатория разметки
+    </Text>
   </div>
 );
 
@@ -27,8 +29,8 @@ const UserIcon = ({
 }) => (
   <button
     onClick={onClick}
-    className="w-12 h-12 rounded-full bg-linear-to-br
-    from-blue-500 to-indigo-600 text-white font-semibold flex items-center justify-center 
+    className="w-12 h-12 rounded-full bg-linear-to-br select-none
+    from-blue-500 to-indigo-600 text-white font-semibold flex items-center justify-center
     shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95"
   >
     {username[0].toUpperCase()}
@@ -66,10 +68,6 @@ export function Header({ children }: { children?: React.ReactNode }) {
     <div className="h-auto w-full flex items-center justify-between p-3">
       <Logo onClick={() => navigate("/")} />
 
-      {/* <div className="h-full p-1 mt-1 items-center justify-center flex flex-row text-2xl font-bold">
-        {children}
-      </div> */}
-
       <Text variant="header" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
         {children}
       </Text>
@@ -79,12 +77,16 @@ export function Header({ children }: { children?: React.ReactNode }) {
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
             <StatusIndicator status={backendStatus} />
-            <span className="text-sm text-gray-600">Backend</span>
+            <Text variant="desc" isSpan>
+              Backend
+            </Text>
           </div>
 
           <div className="flex items-center gap-2">
             <StatusIndicator status={mlStatus} />
-            <span className="text-sm text-gray-600">ML</span>
+            <Text variant="desc" isSpan>
+              ML
+            </Text>
           </div>
         </div>
 
@@ -100,10 +102,10 @@ export function Header({ children }: { children?: React.ReactNode }) {
               />
 
               {showMenu && (
-                <div className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start gap-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 overflow-hidden">
-                  <p className="font-medium text-gray-800">{username}</p>
+                <div className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start gap-2 bg-white rounded-2xl shadow-xl border border-gray-300 z-20 overflow-hidden">
+                  <Text>{username}</Text>
 
-                  <div className="w-full border-b border-gray-100" />
+                  <div className="w-full border-b border-gray-300" />
 
                   <Button
                     onClick={() => handleLogout()}

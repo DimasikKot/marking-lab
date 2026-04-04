@@ -1,22 +1,52 @@
 export const Text = ({
   variant = "normal",
   className = "",
+  isSelectable = false,
+  isSpan = false,
   children,
 }: {
-  variant?: "description" | "normal" | "title" | "header";
+  variant?: "desc" | "label" | "error" | "normal" | "title" | "logo" | "header";
   className?: string;
+  isSelectable?: boolean;
+  isSpan?: boolean;
   children: React.ReactNode;
-}) => (
-  <p
-    className={`${
-      {
-        description: "text-gray-600 text-sm font-normal",
-        normal: "text-base font-medium",
-        title: "text-xl font-bold",
-        header: "text-3xl font-bold",
-      }[variant]
-    } ${className}`}
-  >
-    {children}
-  </p>
-);
+}) =>
+  isSpan ? (
+    <span
+      className={`line-clamp-3 leading-relaxed
+        ${isSelectable ? "select-text" : "select-none"}
+        ${
+          {
+            desc: "text-gray-600 text-sm font-normal",
+            label: "text-gray-700 text-sm font-medium",
+            error: "text-red-600 text-sm font-medium",
+            normal: "text-black text-base font-medium",
+            title: "text-black text-xl font-bold",
+            logo: "text-black text-2xl font-bold",
+            header: "text-black text-3xl font-bold",
+          }[variant]
+        }
+        ${className}`}
+    >
+      {children}
+    </span>
+  ) : (
+    <p
+      className={`line-clamp-3 leading-relaxed
+        ${isSelectable ? "select-text" : "select-none"}
+        ${
+          {
+            desc: "text-gray-600 text-sm font-normal",
+            label: "text-gray-700 text-sm font-medium",
+            error: "text-red-600 text-sm font-medium",
+            normal: "text-black text-base font-medium",
+            title: "text-black text-xl font-bold",
+            logo: "text-black text-2xl font-bold",
+            header: "text-black text-3xl font-bold",
+          }[variant]
+        }
+        ${className}`}
+    >
+      {children}
+    </p>
+  );

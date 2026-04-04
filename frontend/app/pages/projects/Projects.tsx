@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   fetchProjects,
   createProject,
@@ -12,6 +13,7 @@ import { Button } from "@/shared/components/Button";
 import { ProjectCard } from "@/shared/components/ProjectCard";
 import { Header } from "@/shared/components/Header";
 import { Text } from "@/shared/components/Text";
+import { TextField } from "@/shared/components/TextField";
 
 export function Projects() {
   const navigate = useNavigate();
@@ -111,7 +113,7 @@ export function Projects() {
           <Button onClick={handleCreateClick}>+ Новый проект</Button>
         </div>
 
-        {loading && <Text variant="description">Загрузка...</Text>}
+        {loading && <Text variant="desc">Загрузка...</Text>}
 
         {!loading && projects.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -134,45 +136,34 @@ export function Projects() {
               className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
             />
 
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10">
+            <div className="flex flex-col gap-4 bg-white rounded-lg shadow-xl w-xl p-6 z-10">
               <Text variant="title">
                 {editingProject ? "Редактировать проект" : "Создать проект"}
               </Text>
 
-              <div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Название
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
+              <div className="flex flex-col gap-4">
+                <div>
+                  <Text variant="label">Название</Text>
+
+                  <TextField
                     value={formData.name}
                     onChange={handleFormChange}
-                    required
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    name="name"
                   />
                 </div>
-                <div className="mb-6">
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Описание
-                  </label>
-                  <textarea
-                    id="description"
+
+                <div>
+                  <Text variant="label">Описание</Text>
+
+                  <TextField
                     name="description"
-                    rows={3}
                     value={formData.description}
                     onChange={handleFormChange}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    isArea={true}
+                    rows={4}
                   />
                 </div>
+
                 <div className="flex justify-between">
                   <Button
                     onClick={() => setIsFormOpen(false)}
@@ -180,6 +171,7 @@ export function Projects() {
                   >
                     Отмена
                   </Button>
+
                   <Button onClick={handleSubmitClick}>
                     {editingProject ? "Сохранить" : "Создать"}
                   </Button>

@@ -78,9 +78,7 @@ export function Register() {
         onClick: handleNext,
         children: (
           <div className="relative">
-            <span
-              className="material-icons absolute -left-8 top-1/2 -translate-y-1/2 text-gray-600 text-2xl pointer-events-none"
-            >
+            <span className="material-icons absolute -left-8 top-1/2 -translate-y-1/2 text-gray-600 text-2xl pointer-events-none">
               alternate_email
             </span>
             <TextField
@@ -114,7 +112,8 @@ export function Register() {
     }
     return {
       title: "Создайте сложный пароль",
-      subtitle: "Создайте надёжный пароль, используя комбинацию букв, цифр и символов",
+      subtitle:
+        "Создайте надёжный пароль, используя комбинацию букв, цифр и символов",
       buttonText: "Зарегистрироваться",
       onClick: handleRegister,
       children: (
@@ -130,7 +129,8 @@ export function Register() {
     };
   };
 
-  const { title, subtitle, buttonText, onClick, children, backButton } = getStepContent();
+  const { title, subtitle, buttonText, onClick, children, backButton } =
+    getStepContent();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8">
