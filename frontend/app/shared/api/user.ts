@@ -25,7 +25,10 @@ export const registerUser = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при регистрации: " + (error.response?.data?.detail || error.message));
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при регистрации: " + error.message;
+      toast.error(error_text);
     }
   }
 };
@@ -45,7 +48,9 @@ export const loginUser = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при входе: " + error.message);
+      const error_text =
+        error.response?.data?.detail || "Ошибка при входе: " + error.message;
+      toast.error(error_text);
     }
   }
 };
@@ -57,7 +62,9 @@ export const logoutUser = async () => {
     window.location.href = "/";
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при выходе: " + error.message);
+      const error_text =
+        error.response?.data?.detail || "Ошибка при выходе: " + error.message;
+      toast.error(error_text);
     }
   }
 };

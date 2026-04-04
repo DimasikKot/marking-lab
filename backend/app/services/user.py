@@ -46,14 +46,14 @@ def authenticate_user(db: Session, login: str, password: str) -> User | None:
     return user
 
 
-def encode_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+def encode_access_token(data: dict) -> str:
     """Создаёт JWT-токен с данными из словаря и временем истечения, если указано"""
     # Копируем, чтобы не изменять передаваемый словарь
     # Данные в словаре будут зашифрованы, но их можно прочитать зная секретный ключ из параметров среды
     to_encode: dict = data.copy()
 
     # expire - дата истечения токена (expires_delta - время действия токена)
-    expire: datetime = datetime.now(tz=timezone.utc) + (expires_delta if expires_delta else timedelta(hours=1))
+    expire: datetime = datetime.now(tz=timezone.utc) + timedelta(hours=settings.JWT_ACCESS_TOKEN_EXPIRATION_HOURS)
 
     # Добавляем параметр истечения токена ("exp" - это стандартный параметр для задания времени истечения)
     to_encode.update({"exp": expire})
@@ -80,15 +80,3 @@ def decode_access_token(token: str) -> dict[str, any] | None:
     except Exception as e:
         print(f"Ошибка при декодировании токена: {e}")
         return None
-
-
-def print_access_token_data(token: str) -> None:
-    """Печатает данные из токена, если он действителен, иначе сообщает, что токен недействителен/просрочен"""
-    data = decode_access_token(token)
-
-    if data:
-        print("Данные из токена:", data)
-        print("ID пользователя:", data.get("sub"))
-        print("Дата истечения:", datetime.fromtimestamp(data["exp"], tz=timezone.utc))
-    else:
-        print("Токен недействителен или просрочен")

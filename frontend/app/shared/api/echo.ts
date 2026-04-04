@@ -27,7 +27,10 @@ export const fetchBackendEcho = async (): Promise<
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при запросе backend: " + error.message);
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при запросе backend: " + error.message;
+      toast.error(error_text);
     }
   }
 };
@@ -40,7 +43,10 @@ export const fetchMLEcho = async (): Promise<
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при запросе ml: " + error.message);
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при запросе ml: " + error.message;
+      toast.error(error_text);
     }
   }
 };

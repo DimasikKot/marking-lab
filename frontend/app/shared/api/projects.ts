@@ -35,7 +35,9 @@ export const fetchProjects = async (): Promise<
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const error_text = "Ошибка при получении проектов: " + error.message;
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при получении проектов: " + error.message;
       toast.error(error_text);
     }
   }
@@ -47,7 +49,9 @@ export const fetchProjectById = async (id: string | number) => {
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const error_text = "Ошибка при получении проекта: " + error.message;
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при получении проекта: " + error.message;
       toast.error(error_text);
     }
   }
@@ -59,7 +63,9 @@ export const createProject = async (data: PostProjectRequest) => {
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const error_text = "Ошибка при создании проекта: " + error.message;
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при создании проекта: " + error.message;
       toast.error(error_text);
     }
   }
@@ -74,7 +80,9 @@ export const patchProjectById = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const error_text = "Ошибка при обновлении проекта: " + error.message;
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при обновлении проекта: " + error.message;
       toast.error(error_text);
     }
   }
@@ -86,7 +94,9 @@ export const deleteProjectById = async (id: string | number) => {
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const error_text = "Ошибка при удалении проекта: " + error.message;
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при удалении проекта: " + error.message;
       toast.error(error_text);
     }
   }

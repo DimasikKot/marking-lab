@@ -41,7 +41,10 @@ export const uploadFile = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при загрузке файла: " + error.message);
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при загрузке файла: " + error.message;
+      toast.error(error_text);
     }
   }
 };
