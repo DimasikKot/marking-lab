@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/shared/components/Header";
 import { InfoCard } from "@/shared/components/InfoCard";
 import { BigInfoCard } from "@/shared/components/BigInfoCard";
+import { Text } from "@/shared/components/Text";
 
 export function Home() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export function Home() {
 
       {/* Нижняя надпись */}
       <div className="text-center my-12">
-        <p className="text-xs text-gray-400">Лаборатория разметки © 2026</p>
+        <Text variant="description">Лаборатория разметки © 2026</Text>
       </div>
     </div>
   );
