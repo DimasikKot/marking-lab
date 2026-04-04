@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+
 import { Header } from "@/shared/components/Header";
 import { InfoCard } from "@/shared/components/InfoCard";
 import { BigInfoCard } from "@/shared/components/BigInfoCard";
@@ -41,7 +42,7 @@ export function Home() {
 
       {/* Нижняя надпись */}
       <div className="text-center my-12">
-        <Text variant="description">Лаборатория разметки © 2026</Text>
+        <Text variant="desc">Лаборатория разметки © 2026</Text>
       </div>
     </div>
   );

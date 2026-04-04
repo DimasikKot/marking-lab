@@ -28,12 +28,12 @@ export function Components() {
     <div className="h-full w-full flex flex-col pb-8 overflow-auto bg-white text-black items-center">
       <Header>Страница компонентов</Header>
 
-      <div className="w-full flex flex-col gap-4 mt-4">
+      <div className="w-6xl flex flex-col gap-4 mt-4">
         <div className="flex flex-col items-center gap-2">
           <Text variant="title">Компонент Text</Text>
 
           <div className="flex flex-col items-center justify-center gap-1">
-            <Text variant="description">description</Text>
+            <Text variant="desc">description</Text>
             <Text variant="normal">normal</Text>
             <Text variant="title">title</Text>
             <Text variant="header">header</Text>

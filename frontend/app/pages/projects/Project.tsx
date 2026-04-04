@@ -1,5 +1,6 @@
-import { Button } from "@/shared/components/Button";
 import { useNavigate, useParams } from "react-router-dom";
+
+import { Button } from "@/shared/components/Button";
 
 export function Project() {
   const navigate = useNavigate();
