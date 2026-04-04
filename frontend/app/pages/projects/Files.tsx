@@ -1,5 +1,9 @@
-import { uploadFile, type PostUploadResponse } from "@/shared/api/file";
 import React, { useState } from "react";
+
+import { uploadFile, type PostUploadResponse } from "@/shared/api/file";
+import { Button } from "@/shared/components/Button";
+import { Header } from "@/shared/components/Header";
+import { Text } from "@/shared/components/Text";
 
 export function Files() {
   const [file, setFile] = useState<File | null>(null);
@@ -9,9 +13,9 @@ export function Files() {
   );
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);
       setError(null);
       setResponseData(null);
     }
@@ -76,46 +80,48 @@ export function Files() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">
-        Страница разметки и загрузки файлов
-      </h1>
+    <div>
+      <Header>Файлы</Header>
 
-      <div className="mb-6">
-        <label className="block mb-2 text-sm font-medium text-gray-700">
-          Выберите файл (JSON, TXT, CSV, MD)
-        </label>
-        <input
-          type="file"
-          accept=".json,.txt,.csv,.md,application/json,text/plain,text/csv,text/markdown"
-          onChange={handleFileChange}
-          className="block w-auto text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-        {file && (
-          <p className="mt-2 text-sm text-gray-600">
-            Выбран файл: {file.name} ({(file.size / 1024).toFixed(2)} KB)
-          </p>
+      <div className="flex max-w-4xl mx-auto flex-col gap-4">
+        <Text variant="title">Страница разметки и загрузки файлов</Text>
+
+        <div className="flex flex-col gap-2">
+          <Text variant="label">Выберите файл (JSON, TXT, CSV, MD)</Text>
+
+          <input
+            type="file"
+            accept=".json,.txt,.csv,.md,application/json,text/plain,text/csv,text/markdown"
+            onChange={handleFileChange}
+            className="block w-auto text-sm text-gray-500 
+          file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 
+          file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+
+          {file && (
+            <Text variant="desc">
+              Выбран файл: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+            </Text>
+          )}
+        </div>
+
+        <Button onClick={handleUpload} disabled={!file || uploading}>
+          {uploading ? "Загрузка..." : "Загрузить на сервер"}
+        </Button>
+
+        {error && (
+          <Text variant="error">
+            {error}
+          </Text>
+        )}
+
+        {responseData && (
+          <div>
+            <Text variant="title">Содержимое файла:</Text>
+            {renderContent()}
+          </div>
         )}
       </div>
-
-      <button
-        onClick={handleUpload}
-        disabled={!file || uploading}
-        className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-blue-300 hover:bg-blue-700 transition"
-      >
-        {uploading ? "Загрузка..." : "Загрузить на сервер"}
-      </button>
-
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>
-      )}
-
-      {responseData && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Содержимое файла:</h2>
-          {renderContent()}
-        </div>
-      )}
     </div>
   );
 }

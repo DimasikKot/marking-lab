@@ -57,7 +57,7 @@ export function Login() {
         />
 
         {error && (
-          <Text variant="description" className="text-red-600">
+          <Text variant="desc" className="text-red-600">
             {error}
           </Text>
         )}
@@ -66,12 +66,9 @@ export function Login() {
           {isLoading ? "Вход..." : "Войти"}
         </Button>
 
-        <Text variant="description" className="text-center">
+        <Text variant="desc" className="text-center">
           Нет аккаунта?{" "}
-          <Button
-            variant="link"
-            onClick={() => navigate("/register")}
-          >
+          <Button variant="link" onClick={() => navigate("/register")}>
             Зарегистрироваться
           </Button>
         </Text>

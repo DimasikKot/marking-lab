@@ -2,6 +2,7 @@ import toast from "react-hot-toast";
 
 import type { Project } from "@/shared/api/projects";
 import { Button } from "@/shared/components/Button";
+import { Text } from "@/shared/components/Text";
 
 export const ProjectCard = ({
   project,
@@ -23,36 +24,40 @@ export const ProjectCard = ({
   return (
     <div
       className={`
-        flex flex-col justify-between 
-        bg-white border border-gray-300 rounded-2xl p-4 
-        hover:border-gray-400 hover:shadow-md 
-        transition-all duration-200 cursor-pointer 
+        flex flex-col justify-between
+        bg-white border border-gray-300 rounded-2xl p-4
+        hover:border-gray-400 hover:shadow-md
+        transition-all duration-200 cursor-pointer
         ${className}
       `}
     >
       <div>
-        <p className="font-semibold text-lg text-gray-900 line-clamp-2">
+        <Text variant="title" isSpan>
           {project.name}
-        </p>
+        </Text>
 
         {project.description && (
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+          <Text variant="desc" isSpan>
             {project.description}
-          </p>
+          </Text>
         )}
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{project.is_public ? "Публичный" : "Приватный"}</span>
+        <div className="flex items-center justify-between">
+          <Text variant="desc" isSpan>
+            {project.is_public ? "Публичный" : "Приватный"}
+          </Text>
 
-          {new Date(date).toLocaleDateString("ru-RU", {
-            month: "short",
-            day: "numeric",
-          })}
+          <Text variant="desc" isSpan>
+            {new Date(date).toLocaleDateString("ru-RU", {
+              month: "short",
+              day: "numeric",
+            })}
+          </Text>
         </div>
 
-        <div className="flex flex-row justify-between px-4">
+        <div className="flex flex-row justify-between mt-4">
           <Button
             onClick={handleNavigateClick}
             variant="secondary"

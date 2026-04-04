@@ -46,20 +46,17 @@ export function LoginRegisterCard({
             </Text>
 
             {subtitle && (
-              <Text variant="description" className="text-left">
+              <Text variant="desc" className="text-left">
                 {subtitle}
               </Text>
             )}
           </div>
 
           <div className="flex-1">
-            <div className="space-y-">{children}</div>
+            <div>{children}</div>
             {hasAccountLink && (
               <div className="flex justify-start mt-4">
-                <Button
-                  onClick={hasAccountLink.onClick}
-                  variant="link"
-                >
+                <Button onClick={hasAccountLink.onClick} variant="link">
                   {hasAccountLink.text}
                 </Button>
               </div>
