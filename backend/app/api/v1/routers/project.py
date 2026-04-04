@@ -96,6 +96,11 @@ async def patch_project(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
+    if len(data.name) > 255:
+        raise HTTPException(status_code=400, detail="Название проекта слишком длинное")
+    if len(data.description) > 255:
+        raise HTTPException(status_code=400, detail="Описание проекта слишком длинное")
+
     updated_project = update_project_by_id(
         db,
         project_id=project_id,
