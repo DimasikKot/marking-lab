@@ -1,5 +1,3 @@
-import datetime
-
 from sqlalchemy.orm import Session
 
 from app.models.db import Project

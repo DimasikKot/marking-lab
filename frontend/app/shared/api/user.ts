@@ -25,7 +25,7 @@ export const registerUser = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error("Ошибка при регистрации: " + error.message);
+      toast.error("Ошибка при регистрации: " + (error.response?.data?.detail || error.message));
     }
   }
 };
