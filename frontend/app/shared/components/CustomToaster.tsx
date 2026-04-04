@@ -17,7 +17,7 @@ export const CustomToaster = () => (
         boxShadow:
           "0 10px 16px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
         fontSize: "16px",
-        maxWidth: "380px",
+        maxWidth: "480px",
       },
 
       success: {

@@ -24,13 +24,13 @@ export function Login() {
     const response = await loginUser({ login, password });
     setTimeout(() => {
       setIsLoading(false);
+      if (response === undefined) {
+        setError("Ошибка входа. Попробуйте позже");
+        return;
+      }
+      toast.success("Вы успешно вошли в аккаунт");
+      navigate("/");
     }, 1000);
-    if (response === undefined) {
-      setError("Ошибка входа. Попробуйте позже");
-      return;
-    }
-    toast.success("Вы успешно вошли в аккаунт");
-    navigate("/");
   };
 
   return (
