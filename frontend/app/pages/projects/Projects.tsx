@@ -8,10 +8,10 @@ import {
   type Project,
   type PostProjectRequest,
 } from "@/shared/api/projects";
-import { PrimaryButton } from "@/shared/components/PrimaryButton";
+import { Button } from "@/shared/components/Button";
 import { ProjectCard } from "@/shared/components/ProjectCard";
-import { SecondaryButton } from "@/shared/components/SecondaryButton";
 import { Header } from "@/shared/components/Header";
+import { Text } from "@/shared/components/Text";
 
 export function Projects() {
   const navigate = useNavigate();
@@ -108,9 +108,7 @@ export function Projects() {
 
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6 mt-8">
-          <PrimaryButton onClick={handleCreateClick}>
-            + Новый проект
-          </PrimaryButton>
+          <Button onClick={handleCreateClick}>+ Новый проект</Button>
         </div>
 
         {loading && <p className="text-center text-gray-500">Загрузка...</p>}
@@ -130,14 +128,17 @@ export function Projects() {
 
         {/* Модальное окно формы */}
         {isFormOpen && (
-          <div
-            className="fixed inset-0 flex  bg-black/50 items-center justify-center p-4 z-50"
-            onClick={() => setIsFormOpen(false)}
-          >
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h2 className="text-xl font-bold mb-4">
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+            <div
+              onClick={() => setIsFormOpen(false)}
+              className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
+            />
+
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10">
+              <Text variant="title">
                 {editingProject ? "Редактировать проект" : "Создать проект"}
-              </h2>
+              </Text>
+
               <div>
                 <div className="mb-4">
                   <label
@@ -173,12 +174,15 @@ export function Projects() {
                   />
                 </div>
                 <div className="flex justify-between">
-                  <SecondaryButton onClick={() => setIsFormOpen(false)}>
+                  <Button
+                    onClick={() => setIsFormOpen(false)}
+                    variant="secondary"
+                  >
                     Отмена
-                  </SecondaryButton>
-                  <PrimaryButton onClick={handleSubmitClick}>
+                  </Button>
+                  <Button onClick={handleSubmitClick}>
                     {editingProject ? "Сохранить" : "Создать"}
-                  </PrimaryButton>
+                  </Button>
                 </div>
               </div>
             </div>

@@ -2,9 +2,7 @@ import React from "react";
 import logo from "@/assets/logo/logo.svg";
 
 import { Text } from "@/shared/components/Text";
-import { PrimaryButton } from "@/shared/components/PrimaryButton";
-import { SecondaryButton } from "@/shared/components/SecondaryButton";
-
+import { Button } from "@/shared/components/Button";
 
 export function LoginRegisterCard({
   title,
@@ -14,7 +12,7 @@ export function LoginRegisterCard({
   onButtonClick,
   isLoading = false,
   hasAccountLink,
-  backButton
+  backButton,
 }: {
   title: string;
   subtitle?: string;
@@ -30,32 +28,25 @@ export function LoginRegisterCard({
   backButton?: {
     text?: string;
     onClick: () => void;
-  };}) {
-  const isFirstStep = !backButton; 
+  };
+}) {
+  const isFirstStep = !backButton;
 
   return (
     <div className="w-full max-w-200 mx-auto">
       <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-300">
         <div className="flex justify-start mb-6">
-          <img
-            src={logo}
-            alt="Logo"
-            className="w-12 h-12"
-          />
+          <img src={logo} alt="Logo" className="w-12 h-12" />
         </div>
 
         <div className="flex gap-12">
           <div className="flex-1">
-            <Text size="xl" className="text-left mb-2">
+            <Text variant="title" className="text-left mb-2">
               {title}
             </Text>
 
             {subtitle && (
-              <Text
-                size="medium"
-                font="regular"
-                className="text-gray-600 text-left"
-              >
+              <Text variant="description" className="text-left">
                 {subtitle}
               </Text>
             )}
@@ -65,13 +56,12 @@ export function LoginRegisterCard({
             <div className="space-y-">{children}</div>
             {hasAccountLink && (
               <div className="flex justify-start mt-4">
-                <SecondaryButton
+                <Button
                   onClick={hasAccountLink.onClick}
-                  size="medium"
-                  className="text-sm"
+                  variant="link"
                 >
                   {hasAccountLink.text}
-                </SecondaryButton>
+                </Button>
               </div>
             )}
           </div>
@@ -79,24 +69,23 @@ export function LoginRegisterCard({
 
         <div className="mt-8 flex items-center justify-between">
           {backButton && (
-            <SecondaryButton
+            <Button
               onClick={backButton.onClick}
-              size="medium"
+              variant="secondary"
               className="px-6 py-3"
             >
               {backButton.text || "Назад"}
-            </SecondaryButton>
+            </Button>
           )}
 
           <div className={isFirstStep ? "ml-auto" : ""}>
-            <PrimaryButton
+            <Button
               onClick={onButtonClick}
               disabled={isLoading}
-              size="medium"
               className="px-8 py-3"
             >
               {isLoading ? "Загрузка..." : buttonText}
-            </PrimaryButton>
+            </Button>
           </div>
         </div>
       </div>

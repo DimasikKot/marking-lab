@@ -1,24 +1,20 @@
 export const Text = ({
-  size = "small",
-  font = "medium",
+  variant = "normal",
   className = "",
   children,
 }: {
-  size?: "small" | "medium" | "large" | "xl";
-  font?: "regular" | "medium";
-  colorClass?: string;
+  variant?: "description" | "normal" | "title" | "header";
   className?: string;
   children: React.ReactNode;
 }) => (
   <p
-    className={`text-gray-900 ${font === "regular" ? "font-normal" : "font-medium"} ${
-      size === "small"
-        ? "text-sm"
-        : size === "medium"
-          ? "text-base"
-          : size === "large"
-            ? "text-lg"
-            : "text-3xl font-bold"
+    className={`${
+      {
+        description: "text-gray-600 text-sm font-normal",
+        normal: "text-base font-medium",
+        title: "text-xl font-bold",
+        header: "text-3xl font-bold",
+      }[variant]
     } ${className}`}
   >
     {children}

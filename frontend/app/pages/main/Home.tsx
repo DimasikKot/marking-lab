@@ -15,8 +15,7 @@ export function Home() {
         {/* Левая карточка — Наши плюсы */}
         <InfoCard
           icon="rocket_launch"
-          iconBgClass="bg-emerald-100"
-          iconTextClass="text-emerald-600"
+          iconClassName="bg-emerald-100 text-emerald-600"
           title="Наши плюсы"
           description="Современные инструменты разметки, высокая точность и удобный интерфейс для каждого пользователя."
         />
@@ -33,8 +32,7 @@ export function Home() {
         {/* Правая карточка */}
         <InfoCard
           icon="bolt"
-          iconBgClass="bg-blue-100"
-          iconTextClass="text-blue-600"
+          iconClassName="bg-blue-100 text-blue-600"
           title="Мы предлагаем"
           description="Удобную платформу для разметки и работы с данными."
         />

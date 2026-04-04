@@ -1,8 +1,6 @@
 import React from "react";
 
 export const TextField = ({
-  size = "medium",
-  font = "medium",
   className = "",
   placeholder = "",
   disabled = false,
@@ -10,8 +8,6 @@ export const TextField = ({
   value,
   setValue,
 }: {
-  size?: "small" | "medium" | "large";
-  font?: "regular" | "medium";
   className?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -27,8 +23,6 @@ export const TextField = ({
       border border-gray-600 
       focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
       transition-all duration-200 
-      ${size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg"} 
-      ${font === "regular" ? "font-normal" : "font-medium"} 
       ${className}
     `}
     value={value}

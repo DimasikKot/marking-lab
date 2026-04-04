@@ -4,8 +4,7 @@ import { loginUser } from "@/shared/api/user";
 import toast from "react-hot-toast";
 import { TextField } from "@/shared/components/TextField";
 import { Text } from "@/shared/components/Text";
-import { PrimaryButton } from "@/shared/components/PrimaryButton";
-import { SecondaryButton } from "@/shared/components/SecondaryButton";
+import { Button } from "@/shared/components/Button";
 
 export function Login() {
   const navigate = useNavigate();
@@ -36,7 +35,7 @@ export function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-gray-200 flex flex-col gap-4 p-8 rounded-xl shadow-2xl w-full max-w-xs md:max-w-sm border border-gray-700">
-        <Text size="xl" className="text-center">
+        <Text variant="header" className="text-center">
           Вход
         </Text>
 
@@ -58,28 +57,23 @@ export function Login() {
         />
 
         {error && (
-          <Text size="small" className="text-red-600">
+          <Text variant="description" className="text-red-600">
             {error}
           </Text>
         )}
 
-        <PrimaryButton
-          onClick={handleLogin}
-          disabled={isLoading}
-          className="mt-4"
-        >
+        <Button onClick={handleLogin} disabled={isLoading} className="mt-4">
           {isLoading ? "Вход..." : "Войти"}
-        </PrimaryButton>
+        </Button>
 
-        <Text size="small" className="text-center text-gray-100">
+        <Text variant="description" className="text-center">
           Нет аккаунта?{" "}
-          <SecondaryButton
-            size="small"
+          <Button
+            variant="link"
             onClick={() => navigate("/register")}
-            className="hover:underline"
           >
             Зарегистрироваться
-          </SecondaryButton>
+          </Button>
         </Text>
       </div>
     </div>

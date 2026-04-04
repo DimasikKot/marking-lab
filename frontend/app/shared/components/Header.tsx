@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo/logo.svg";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
-import { PrimaryButton } from "@/shared/components/PrimaryButton";
+import { Button } from "@/shared/components/Button";
 import { logoutUser } from "@/shared/api/user";
-import { SecondaryButton } from "@/shared/components/SecondaryButton";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import { Text } from "@/shared/components/Text";
 
@@ -71,7 +70,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
         {children}
       </div> */}
 
-      <Text size="xl" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
+      <Text variant="header" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
         {children}
       </Text>
 
@@ -91,9 +90,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
 
         {/* Кнопки входа и регистрации */}
         <div className="flex items-center gap-2">
-          <PrimaryButton onClick={() => navigate("/components")}>
-            Компоненты
-          </PrimaryButton>
+          <Button onClick={() => navigate("/components")}>Компоненты</Button>
 
           {username ? (
             <div className="relative">
@@ -108,19 +105,18 @@ export function Header({ children }: { children?: React.ReactNode }) {
 
                   <div className="w-full border-b border-gray-100" />
 
-                  <SecondaryButton
+                  <Button
                     onClick={() => handleLogout()}
+                    variant="secondary"
                     className="text-red-600"
                   >
                     Выйти
-                  </SecondaryButton>
+                  </Button>
                 </div>
               )}
             </div>
           ) : (
-            <PrimaryButton onClick={() => navigate("/login")}>
-              Войти
-            </PrimaryButton>
+            <Button onClick={() => navigate("/login")}>Войти</Button>
           )}
         </div>
       </div>

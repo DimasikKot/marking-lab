@@ -2,9 +2,8 @@ import type { FileInList } from "@/shared/api/file";
 import type { Project } from "@/shared/api/projects";
 import { FileCard } from "@/shared/components/FileCard";
 import { Header } from "@/shared/components/Header";
-import { PrimaryButton } from "@/shared/components/PrimaryButton";
+import { Button } from "@/shared/components/Button";
 import { ProjectCard } from "@/shared/components/ProjectCard";
-import { SecondaryButton } from "@/shared/components/SecondaryButton";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
 import { Text } from "@/shared/components/Text";
 
@@ -31,94 +30,38 @@ export function Components() {
 
       <div className="w-full flex flex-col gap-4 mt-4">
         <div className="flex flex-col items-center gap-2">
-          <p>Text</p>
-          <div className="flex flex-row gap-1">
-            <div className="flex flex-col items-center justify-center gap-1">
-              <Text font="regular" size="small">
-                Regular Small
-              </Text>
-              <Text font="regular">Regular Stand</Text>
-              <Text font="regular" size="large">
-                Regular Large
-              </Text>
-              <Text font="regular" size="xl">
-                Regular Large
-              </Text>
-            </div>
+          <Text variant="title">Компонент Text</Text>
 
-            <div className="flex flex-col items-center justify-center gap-1">
-              <Text size="small">Medium Small</Text>
-              <Text>Medium Stand</Text>
-              <Text size="large">Medium Large</Text>
-              <Text size="xl">Medium Large</Text>
-            </div>
+          <div className="flex flex-col items-center justify-center gap-1">
+            <Text variant="description">description</Text>
+            <Text variant="normal">normal</Text>
+            <Text variant="title">title</Text>
+            <Text variant="header">header</Text>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <p>SecondaryButton</p>
-          <div className="flex flex-row gap-1">
-            <div className="flex flex-col items-center justify-center gap-1">
-              <SecondaryButton font="regular" size="small">
-                Regular Small
-              </SecondaryButton>
-              <SecondaryButton font="regular">Regular Stand</SecondaryButton>
-              <SecondaryButton font="regular" size="large">
-                Regular Large
-              </SecondaryButton>
-            </div>
+          <Text variant="title">Компонент Button</Text>
 
-            <div className="flex flex-col items-center justify-center gap-1">
-              <SecondaryButton size="small">Medium Small</SecondaryButton>
-              <SecondaryButton>Medium Stand</SecondaryButton>
-              <SecondaryButton size="large">Medium Large</SecondaryButton>
-            </div>
+          <div className="flex flex-col items-center justify-center gap-1">
+            <Button variant="primary">Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="link">Link</Button>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <p>PrimaryButton</p>
-          <div className="flex flex-row gap-1">
-            <div className="flex flex-col items-center justify-center gap-1">
-              <PrimaryButton font="regular" size="small">
-                Regular Small
-              </PrimaryButton>
-              <PrimaryButton font="regular">Regular Stand</PrimaryButton>
-              <PrimaryButton font="regular" size="large">
-                Regular Large
-              </PrimaryButton>
-            </div>
+          <Text variant="title">Компонент StatusIndicator</Text>
 
-            <div className="flex flex-col items-center justify-center gap-1">
-              <PrimaryButton size="small">Medium Small</PrimaryButton>
-              <PrimaryButton>Medium Stand</PrimaryButton>
-              <PrimaryButton size="large">Medium Large</PrimaryButton>
-            </div>
+          <div className="flex flex-row items-center justify-center gap-1">
+            <StatusIndicator status={true} />
+            <StatusIndicator status={false} />
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <p>StatusIndicator</p>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-row items-center justify-center gap-1">
-              <StatusIndicator status={true} size="small" />
-              <StatusIndicator status={false} size="small" />
-            </div>
+          <Text variant="title">Компонент ProjectCard</Text>
 
-            <div className="flex flex-row items-center justify-center gap-1">
-              <StatusIndicator status={true} />
-              <StatusIndicator status={false} />
-            </div>
-
-            <div className="flex flex-row items-center justify-center gap-1">
-              <StatusIndicator status={true} size="large" />
-              <StatusIndicator status={false} size="large" />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <p>ProjectCard</p>
           <div className="flex flex-row gap-2">
             <ProjectCard project={project} />
             <ProjectCard project={project} />
@@ -126,7 +69,8 @@ export function Components() {
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <p>FileCard</p>
+          <Text variant="title">Компонент FileCard</Text>
+
           <div className="flex flex-row gap-2">
             <FileCard file={fileInList} />
             <FileCard file={fileInList} />

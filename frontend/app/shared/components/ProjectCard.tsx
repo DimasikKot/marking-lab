@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
+
 import type { Project } from "@/shared/api/projects";
-import { SecondaryButton } from "./SecondaryButton";
+import { Button } from "@/shared/components/Button";
 
 export const ProjectCard = ({
   project,
@@ -52,26 +53,29 @@ export const ProjectCard = ({
         </div>
 
         <div className="flex flex-row justify-between px-4">
-          <SecondaryButton
+          <Button
             onClick={handleNavigateClick}
+            variant="secondary"
             className="text-green-600 hover:text-green-800"
           >
             Перейти в проект
-          </SecondaryButton>
+          </Button>
 
-          <SecondaryButton
+          <Button
             onClick={handleEditClick}
+            variant="secondary"
             className="text-blue-600 hover:text-blue-800"
           >
             Редактировать
-          </SecondaryButton>
+          </Button>
 
-          <SecondaryButton
+          <Button
             onClick={handleDeleteClick}
+            variant="secondary"
             className="text-red-600 hover:text-red-800"
           >
             Удалить
-          </SecondaryButton>
+          </Button>
         </div>
       </div>
     </div>
