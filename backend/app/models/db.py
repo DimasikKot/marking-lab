@@ -45,8 +45,7 @@ class File(Base):
     name = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
-    content = Column(JSON)
-
+    # content удалено — файлы хранятся на диске ./files/{project_id}/{file_id}
 
     project = relationship('Project', back_populates='files')
     models = relationship('Model', secondary=model_training_files_table, back_populates='files')
@@ -63,7 +62,7 @@ class Model(Base):
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     is_draft = Column(Boolean, default=True)
     saved_in_memory = Column(Boolean, default=False)
-    parameters = Column(JSON)
+    parameters = Column(JSON)          # сюда сохраняются веса/параметры после обучения
 
 
     project = relationship('Project', back_populates='models')
