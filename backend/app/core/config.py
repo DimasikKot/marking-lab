@@ -25,6 +25,9 @@ class __Settings__(BaseSettings):
     JWT_REFRESH_TOKEN_SECRET: str
     JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int
 
+    # Хранилище файлов (новый параметр)
+    FILE_STORAGE_PATH: str = "./files"
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -37,7 +40,6 @@ class __Settings__(BaseSettings):
         env_file = ".env.local"
 
 
-# Не выгружаем из памяти
 @lru_cache
 def __get_settings__():
     return __Settings__()
