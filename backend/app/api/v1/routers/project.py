@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
 
-from app.api.v1.routers import file
 from app.core.database import get_db
 from app.services.get_current_user_id import get_current_user_id
 from app.services.project import (
@@ -131,4 +130,11 @@ async def delete_project(
     return DeleteResponse(detail="Проект успешно удалён", success=True)
 
 
+from app.api.v1.routers import file
+from app.api.v1.routers import model
+from app.api.v1.routers import experiment
+
+
 router.include_router(file.router, prefix="/{project_id}/files", tags=["Files"])
+router.include_router(model.router, prefix="/{project_id}/models", tags=["Models"])
+router.include_router(experiment.router, prefix="/{project_id}/experiments", tags=["Experiments"])
