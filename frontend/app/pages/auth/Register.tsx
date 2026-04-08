@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { registerUser } from "@/shared/api/user";
+import { registerUser, validateUsername, validateEmail } from "@/shared/api/user";
 import { LoginRegisterCard } from "@/shared/components/LoginRegisterCard";
 import { TextField } from "@/shared/components/TextField";
 
@@ -15,19 +15,38 @@ export function Register() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setError(null);
+
     if (step === 1) {
       if (!username.trim()) {
         toast.error("Введите имя пользователя");
         return;
       }
+
+      setIsLoading(true);
+      const response = await validateUsername({username});
+      setIsLoading(false);
+
+      if (response === undefined) {
+        return; 
+      }
+
       setStep(2);
     } else if (step === 2) {
       if (!email) {
         toast.error("Введите электронную почту");
         return;
       }
+
+      setIsLoading(true);
+      const response = await validateEmail({email});
+      setIsLoading(false);
+
+      if (response === undefined) {
+        return;
+      }
+
       setStep(3);
     }
   };

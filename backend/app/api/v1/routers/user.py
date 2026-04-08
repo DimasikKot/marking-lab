@@ -48,19 +48,6 @@ class PostResponse(BaseModel):
 def register_user(
     data: PostRequest, db: Session = Depends(get_auth_db)
 ) -> PostResponse:
-    username_regex = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
-    
-    if not re.match(username_regex, data.username):
-        raise HTTPException(status_code=400,
-            detail="Имя пользователя должно быть от 5 до 32 символов, "
-            "начинаться с буквы и содержать только латинские буквы, "
-            "цифры и подчёркивание (_)"
-        )
-    #Сравнение по шаблону
-    email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    if not re.match(email_regex, data.email):
-        raise HTTPException(status_code=400, detail="Неверный формат email")
-
     existing_username: User | None = (
         db.query(User).filter(User.username == data.username).first()
     )
@@ -111,3 +98,48 @@ def login_user(
     return PostResponse(
         username=user.username, access_token=access_token, token_type="bearer"
     )
+
+class ValidateUsernameRequest(BaseModel):
+    username: str
+
+class ValidateEmailRequest(BaseModel):
+    email: str
+
+username_patt = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
+email_patt = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.(ru|com)$"
+
+@router.post("/validate-username")
+def validate_username(
+    data: ValidateUsernameRequest, db: Session = Depends(get_auth_db)
+):
+    if not re.match(username_patt, data.username):
+        raise HTTPException(status_code=400,
+            detail="Имя пользователя должно начинаться с буквы, " \
+            "содержать только буквы, цифры и подчёркивания и быть " \
+            "длиной от 5 до 32 символов",
+        )
+
+    existing_username: User | None = (
+        db.query(User).filter(User.username == data.username).first()
+    )
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Имя пользователя уже занято")
+
+    return {"ok"}
+
+@router.post("/validate-email")
+def validate_email(
+    data: ValidateEmailRequest, db: Session = Depends(get_auth_db)
+):
+    if not re.match(email_patt, data.email):
+        raise HTTPException(
+            status_code=400, detail="Неверный формат электронной почты"
+        )
+
+    existing_email: User | None = (
+        db.query(User).filter(User.email == data.email).first()
+    )
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Пользователь уже зарегестрирован")
+
+    return {"ok"}
