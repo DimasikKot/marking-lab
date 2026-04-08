@@ -48,22 +48,7 @@ class PostResponse(BaseModel):
 def register_user(
     data: PostRequest, db: Session = Depends(get_auth_db)
 ) -> PostResponse:
-    existing_username: User | None = (
-        db.query(User).filter(User.username == data.username).first()
-    )
-    if existing_username:
-        raise HTTPException(status_code=400, detail="Имя пользователя уже занято")
-
-    # Ищем пользователя по email, тк это уникальный атрибут
-    existing_email: User | None = (
-        db.query(User).filter(User.email == data.email).first()
-    )
-
-    # Если пользователь существует, то возвращаем ошибку
-    if existing_email:
-        # Всегда делаем обработки ошибок
-        raise HTTPException(status_code=400, detail="Пользователь уже зарегестрирован")
-
+    
     # Иначе создаём и возвращаем созданного пользователя
     user: User = create_user(db, data.username, data.email, data.password)
 
