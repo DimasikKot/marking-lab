@@ -15,11 +15,6 @@ export function Register() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateEmail = (email: string): boolean => {
-    const emailVal = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailVal.test(email);
-  };
-
   const handleNext = () => {
     setError(null);
     if (step === 1) {
@@ -31,10 +26,6 @@ export function Register() {
     } else if (step === 2) {
       if (!email) {
         toast.error("Введите электронную почту");
-        return;
-      }
-      if (!validateEmail(email)) {
-        toast.error("Некорректный формат email (пример: user@example.com)");
         return;
       }
       setStep(3);

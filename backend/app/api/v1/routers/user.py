@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 # Создаём сессию для работы с БД
 from sqlalchemy.orm import Session
 
+import re
+
 # Время для задания срока действия токена и тип данных времени
 from datetime import timedelta
 
@@ -46,6 +48,19 @@ class PostResponse(BaseModel):
 def register_user(
     data: PostRequest, db: Session = Depends(get_auth_db)
 ) -> PostResponse:
+    username_regex = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
+    
+    if not re.match(username_regex, data.username):
+        raise HTTPException(status_code=400,
+            detail="Имя пользователя должно быть от 5 до 32 символов, "
+            "начинаться с буквы и содержать только латинские буквы, "
+            "цифры и подчёркивание (_)"
+        )
+    #Сравнение по шаблону
+    email_regex = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if not re.match(email_regex, data.email):
+        raise HTTPException(status_code=400, detail="Неверный формат email")
+
     existing_username: User | None = (
         db.query(User).filter(User.username == data.username).first()
     )
