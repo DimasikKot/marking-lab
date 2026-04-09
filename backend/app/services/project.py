@@ -17,9 +17,10 @@ def delete_project_from_disk(project_id: int) -> None:
     project_path = get_project_path(project_id)
 
     if not project_path.exists():
-        raise HTTPException(
-            status_code=404, detail="Проект не найден на диске или уже удалён"
-        )
+        # raise HTTPException(
+        #     status_code=404, detail="Проект не найден на диске или уже удалён"
+        # )
+        return
 
     try:
         shutil.rmtree(project_path)
