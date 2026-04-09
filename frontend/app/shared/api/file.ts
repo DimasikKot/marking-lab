@@ -27,6 +27,7 @@ export interface DeleteFileResponce {
 export const uploadFile = async (
   file: File,
   name: string | undefined = "Мой файл",
+  projectId: string | number,
 ): Promise<PostUploadResponse | undefined> => {
   const formData = new FormData();
   formData.append("file", file);
@@ -34,7 +35,7 @@ export const uploadFile = async (
 
   try {
     const response = await api.post<PostUploadResponse>(
-      "/files/upload",
+      `/projects/${projectId}/files/`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },
     );

@@ -4,8 +4,11 @@ import { uploadFile, type PostUploadResponse } from "@/shared/api/file";
 import { Button } from "@/shared/components/Button";
 import { Header } from "@/shared/components/Header";
 import { Text } from "@/shared/components/Text";
+import { useParams } from "react-router-dom";
 
 export function Files() {
+  const { projectId } = useParams();
+
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [responseData, setResponseData] = useState<PostUploadResponse | null>(
@@ -30,7 +33,13 @@ export function Files() {
     setUploading(true);
     setError(null);
 
-    const data = await uploadFile(file);
+    if (!projectId) {
+      setError("ID проекта не найден в URL");
+      setUploading(false);
+      return;
+    }
+
+    const data = await uploadFile(file, undefined, projectId);
 
     if (data) {
       setResponseData(data);
@@ -109,11 +118,7 @@ export function Files() {
           {uploading ? "Загрузка..." : "Загрузить на сервер"}
         </Button>
 
-        {error && (
-          <Text variant="error">
-            {error}
-          </Text>
-        )}
+        {error && <Text variant="error">{error}</Text>}
 
         {responseData && (
           <div>
