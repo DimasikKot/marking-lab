@@ -1,3 +1,4 @@
+from pyexpat import model
 from typing import List
 from httpx import AsyncClient
 from sqlalchemy.orm import Session
@@ -5,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.db import Experiment, Model, File
 from app.services.project import is_owner_of_project
-from app.services.file import read_file_from_disk
+from app.services.file import parse_bio_csv, read_file_from_disk
 
 
 def is_owner_of_experiment(db: Session, project_id: int, user_id: int, experiment_id: int) -> bool:
@@ -65,7 +66,7 @@ async def run_experiment(
     for f in experiment.test_files:
         content = read_file_from_disk(project_id, f.id)
         if content:
-            test_data.append({"name": f.name, "content": content})
+            test_data.extend(parse_bio_csv(content))   # flat list of sentences
 
     async with AsyncClient(timeout=180.0) as client:
         response = await client.post(

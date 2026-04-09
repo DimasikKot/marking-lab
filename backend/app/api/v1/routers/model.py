@@ -57,14 +57,14 @@ async def get_models(
     return models
 
 
-@router.post("/{model_id}/train", response_model=ModelResponse)
+@router.post("/train")
 async def post_train_model(
     project_id: int = Path(...),
-    model_id: int = Path(...),
+    file_id: int = Form(...),
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    model = await train_model(db, project_id, user_id, model_id)
+    model = await train_model(db, project_id, file_id)
     if not model:
         raise HTTPException(status_code=400, detail="Не удалось запустить обучение")
     return model

@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS files (
     project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,  -- если проект удаляется, удаляются и файлы
     name            VARCHAR(255)    NOT NULL,
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    content         JSONB           -- текст/разметка/JSON-структура
+    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS models CASCADE;
