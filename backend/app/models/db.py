@@ -45,7 +45,7 @@ class File(Base):
     name = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
-    # content удалено — файлы хранятся на диске ./files/{project_id}/{file_id}
+    # content удалено — файлы хранятся на диске ./{STORAGE_PATH}/{project_id}/files/{file_id}
 
     project = relationship('Project', back_populates='files')
     models = relationship('Model', secondary=model_training_files_table, back_populates='files')

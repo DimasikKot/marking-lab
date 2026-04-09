@@ -1,28 +1,27 @@
-
 ## Действия перед запуском
 
 ### Настройте `git`
 
-1) Установите `vscode` / `cursor`
-2) Установите `git`
+1. Установите `vscode` / `cursor`
+2. Установите `git`
 
 https://git-scm.com/
 
-3) Зайти в `GitHub` в `vscode` / `cursor`
+3. Зайти в `GitHub` в `vscode` / `cursor`
 
-4) Привязать почту к коммитам (обязательно)
+4. Привязать почту к коммитам (обязательно)
 
 ```bash
 git config --global user.email ЭЛЕКТРОННАЯ-ПОЧТА
 ```
 
-5) Установить отображаеммое при коммите имя (обязательно)
+5. Установить отображаеммое при коммите имя (обязательно)
 
 ```bash
 git config --global user.name ФАМИЛИЯ-ИМЯ
 ```
 
-6) Скопируйте репозиторий с `GitHub`'а
+6. Скопируйте репозиторий с `GitHub`'а
 
 ```bash
 git clone https://github.com/DimasikKot/marking-lab.git
@@ -31,15 +30,15 @@ git clone https://github.com/DimasikKot/marking-lab.git
 
 ### Настройте `Docker`
 
-1) Установите `docker`
+1. Установите `docker`
 
-2) Выдайте `docker`'у права супер-пользователя, чтобы не вводить постоянно `sudo` (если на `Linux`)
+2. Выдайте `docker`'у права супер-пользователя, чтобы не вводить постоянно `sudo` (если на `Linux`)
 
 ```bash
 sudo usermod -aG docker $USER
 ```
 
-3) Создайте общие сети
+3. Создайте общие сети
 
 ```bash
 docker network create ml-back
@@ -49,22 +48,22 @@ docker network create front-back
 
 ### Настройте `PostgreSQL`
 
-1) Установите `PostgreSQL` на хост (ваш ПК/ноутбук)
+1. Установите `PostgreSQL` на хост (ваш ПК/ноутбук)
 
-2) Подтвердите установку `pgAdmin 4`
+2. Подтвердите установку `pgAdmin 4`
 
-3) Создайте две базы данных, советую данные названия:
+3. Создайте две базы данных, советую данные названия:
 
 - `marking-lab`
 - `marking-lab-auth`
 
-4) Активируйте два скрипта для создания таблиц, они в корне проекта с расширением `.sql`
+4. Активируйте два скрипта для создания таблиц, они в корне проекта с расширением `.sql`
 
-5) Добавьте в сервис `backend`'а данную строку если вы запускаете на `Linux` (нельзя коммитить в основную ветку)
+5. Добавьте в сервис `backend`'а данную строку если вы запускаете на `Linux` (нельзя коммитить в основную ветку)
 
 ```yaml
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+extra_hosts:
+  - "host.docker.internal:172.17.0.1"
 ```
 
 Должно получится как-то так:
@@ -81,37 +80,39 @@ services:
 
 ### Задание своих переменных среды
 
-1) Создайте `.env.local` файлы в папках `backend` и `frontend` сервисов
+1. Создайте `.env.local` файлы в папках `backend` и `frontend` сервисов
 
-2) Заполните `.env.local` по примерам `.env.example`
+2. Заполните `.env.local` по примерам `.env.example`
 
 `backend`
 
 ```js
-ML_URL="http://ml:8001/api/v1"
+ML_URL = "http://ml:8001/api/v1";
 
-DB_HOST="host.docker.internal"
-DB_PORT=5432
-DB_USERNAME="postgres"
-DB_PASSWORD="password"
-DB_NAME="marking-lab"
+DB_HOST = "host.docker.internal";
+DB_PORT = 5432;
+DB_USERNAME = "postgres";
+DB_PASSWORD = "password";
+DB_NAME = "marking-lab";
 
-AUTH_DB_HOST="host.docker.internal"
-AUTH_DB_PORT=5432
-AUTH_DB_USERNAME="postgres"
-AUTH_DB_PASSWORD="password"
-AUTH_DB_NAME="marking-lab-auth"
+AUTH_DB_HOST = "host.docker.internal";
+AUTH_DB_PORT = 5432;
+AUTH_DB_USERNAME = "postgres";
+AUTH_DB_PASSWORD = "password";
+AUTH_DB_NAME = "marking-lab-auth";
 
-JWT_ACCESS_TOKEN_SECRET="dAwvW_fzdrmqA_hsdi_pequ"
-JWT_ACCESS_TOKEN_EXPIRATION="24h"
-JWT_REFRESH_TOKEN_SECRET="dAwvW_fzdrmqA_hsdi_pequ"
-JWT_REFRESH_TOKEN_EXPIRATION="168h"
+JWT_ACCESS_TOKEN_SECRET = "dAxA_hsdi_peqv_fzdrmqqu";
+JWT_ACCESS_TOKEN_EXPIRATION_HOURS = 24;
+JWT_REFRESH_TOKEN_SECRET = "dAbzdrmqA_hwW_fsdi_pEqu";
+JWT_REFRESH_TOKEN_EXPIRATION_HOURS = 240;
+
+STORAGE_PATH = "./projects";
 ```
 
 `frontend`
 
 ```js
-VITE_BACKEND_URL="http://localhost:8000/api/v1"
+VITE_BACKEND_URL = "http://localhost:8000/api/v1";
 ```
 
 ## Запуск проекта
@@ -148,11 +149,11 @@ http://localhost:8000/docs
 
 ## Скрыть лишние папки в `vscode`
 
-1) Откройте настройки (`File` > `Preferences` > `Settings` ИЛИ `F1` > `>Preferences: Open Settings (UI)`);
-2) Поищите `exclude` в строке поиска по настройкам ИЛИ `Files` > `Exclude`;
-3) Нажмите кнопку `Add Pattern` и добавьте `**/__pycache__` паттерн;
-4) По желанию добавьте `**/node_modules` паттерн для `frontend`'a;
-5) По желанию добавьте `.venv` паттерн для виртуальной среды `python`'a;
+1. Откройте настройки (`File` > `Preferences` > `Settings` ИЛИ `F1` > `>Preferences: Open Settings (UI)`);
+2. Поищите `exclude` в строке поиска по настройкам ИЛИ `Files` > `Exclude`;
+3. Нажмите кнопку `Add Pattern` и добавьте `**/__pycache__` паттерн;
+4. По желанию добавьте `**/node_modules` паттерн для `frontend`'a;
+5. По желанию добавьте `.venv` паттерн для виртуальной среды `python`'a;
 
 ## Включение подсветки синтаксиса в `vscode` / `cursor`
 
@@ -166,9 +167,9 @@ http://localhost:8000/docs
 
 ### `backend` / `ml`
 
-1) Установите `Python` (советую 3.13)
+1. Установите `Python` (советую 3.13)
 
-2) Загрузите библиотеки из `requirements.txt`
+2. Загрузите библиотеки из `requirements.txt`
 
 ```bash
 pip install --no-cache-dir -r requirements.txt
@@ -179,9 +180,9 @@ pip install --no-cache-dir -r requirements.txt
 
 ### `frontend`
 
-1) Установите `node.js`
+1. Установите `node.js`
 
-2) Активируйте переменные среды (если на `Windows`)
+2. Активируйте переменные среды (если на `Windows`)
 
 Вводить в `PowerShell`
 
@@ -190,7 +191,7 @@ Set-ExecutionPolicy RemoteSigned
 
 ```
 
-3) Загрузите библиотеки из `package.json`
+3. Загрузите библиотеки из `package.json`
 
 ```bash
 npm install
@@ -201,37 +202,36 @@ npm install
 
 > Перед перезагрузкой контейнеров после установки зависимостей ВСЕГДА УДАЛЯЙТЕ СТАРЫЙ `volumes` в `docker`'е
 
-
 ### Установка новых библиотек:
 
-1) Установить нужные библиотеки:
+1. Установить нужные библиотеки:
 
 ```bash
 npm install НАЗВАНИЕ
 ```
 
-2) Обновить зависимости:
+2. Обновить зависимости:
 
 ```bash
 npm audit fix
 
 ```
 
-3) Остановить все контенеры: 
+3. Остановить все контенеры:
 
 ```bash
 docker-compose down
 
 ```
 
-4) Удалить volumes:
+4. Удалить volumes:
 
 ```bash
 docker volume prune -a
 
 ```
 
-5) Перезапустить контейнеры:
+5. Перезапустить контейнеры:
 
 ```bash
 docker-compose up --build

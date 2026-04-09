@@ -20,8 +20,8 @@ def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -
 
 
 def get_file_path(project_id: int, file_id: int) -> Path:
-    base_dir = Path(settings.FILE_STORAGE_PATH).resolve()
-    return base_dir / str(project_id) / f"{file_id}.tsv"
+    base_dir = Path(settings.STORAGE_PATH).resolve()
+    return base_dir / str(project_id) / "files" / f"{file_id}.tsv"
 
 
 def save_file_to_disk(project_id: int, file_id: int, content: str) -> None:
@@ -164,7 +164,7 @@ def update_file_by_id(
     return file
 
 
-def delete_file_by_id(db: Session, project_id: int, user_id: int, file_id: int):
+def delete_file_by_id(db: Session, project_id: int, user_id: int, file_id: int) -> None:
     is_owner_of_file(db, project_id, user_id, file_id)
 
     file = db.query(File).filter(File.id == file_id).first()

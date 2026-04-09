@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
@@ -10,7 +10,6 @@ from app.services.project import (
     delete_project_by_id,
     fetch_project_by_id,
     fetch_projects_by_user_id,
-    fetch_public_projects_by_user_id,
     update_project_by_id,
 )
 
@@ -45,8 +44,6 @@ async def post_create_project(
     project = create_project(
         db, user_id=user_id, name=data.name, description=data.description
     )
-    if project is None:
-        raise HTTPException(status_code=400, detail="Ошибка при создании проекта")
     return project
 
 
@@ -59,14 +56,20 @@ class GetResponse(BaseModel):
 
 @router.get("/", response_model=GetResponse)
 async def get_projects(
-    public: bool = False,
+    is_public: bool = Query(
+        False, description="Получать только публичные проекты или приватные"
+    ),
+    search: str | None = Query(None, description="Поиск по имени файла"),
+    sort: str | None = Query(
+        None,
+        description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
+    ),
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    if public:
-        projects = fetch_public_projects_by_user_id(db, user_id=user_id)
-    else:
-        projects = fetch_projects_by_user_id(db, user_id=user_id)
+    projects = fetch_projects_by_user_id(
+        db, user_id=user_id, is_public=is_public, search=search, sort=sort
+    )
     return GetResponse(data=projects)
 
 
@@ -77,8 +80,6 @@ async def get_project(
     db: Session = Depends(get_db),
 ):
     project = fetch_project_by_id(db, user_id=user_id, project_id=project_id)
-    if project is None:
-        raise HTTPException(status_code=404, detail="Ошибка при получении проекта")
     return project
 
 
@@ -108,8 +109,6 @@ async def patch_project(
         new_is_public=data.is_public,
         new_description=data.description,
     )
-    if updated_project is None:
-        raise HTTPException(status_code=400, detail="Ошибка при обновлении проекта")
     return updated_project
 
 
@@ -124,9 +123,7 @@ async def delete_project(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    success = delete_project_by_id(db, project_id=project_id, user_id=user_id)
-    if not success:
-        raise HTTPException(status_code=400, detail="Ошибка при удалении проекта")
+    delete_project_by_id(db, project_id=project_id, user_id=user_id)
     return DeleteResponse(detail="Проект успешно удалён", success=True)
 
 
@@ -137,4 +134,6 @@ from app.api.v1.routers import experiment
 
 router.include_router(file.router, prefix="/{project_id}/files", tags=["Files"])
 router.include_router(model.router, prefix="/{project_id}/models", tags=["Models"])
-router.include_router(experiment.router, prefix="/{project_id}/experiments", tags=["Experiments"])
+router.include_router(
+    experiment.router, prefix="/{project_id}/experiments", tags=["Experiments"]
+)

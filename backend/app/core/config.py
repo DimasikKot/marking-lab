@@ -26,7 +26,7 @@ class __Settings__(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int
 
     # Хранилище файлов
-    FILE_STORAGE_PATH: str
+    STORAGE_PATH: str
 
     @property
     def DATABASE_URL(self) -> str:
