@@ -50,8 +50,6 @@ export function Login() {
     }
   };
 
-  const handleLogin = async () => {};
-
   const handleBack = () => {
     if (step === 2) setStep(1);
   };
@@ -79,7 +77,7 @@ export function Login() {
       title: "Введите пароль",
       subtitle: `Для аккаунта: ${login}`,
       buttonText: isLoading ? "Вход..." : "Войти",
-      onClick: handleLogin,
+      onClick: handleNext,
       children: (
         <TextField
           value={password}
