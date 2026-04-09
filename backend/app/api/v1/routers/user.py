@@ -18,7 +18,6 @@ from app.core.database import get_auth_db
 
 # Модель пользователя хранящаяся в БД
 from app.models.db_auth import User
-from app.core.config import settings
 
 
 router = APIRouter()
@@ -55,7 +54,7 @@ async def register_user(data: PostRequest, db: Session = Depends(get_auth_db)):
     # Если пользователь существует, то возвращаем ошибку
     if existing_email:
         # Всегда делаем обработки ошибок
-        raise HTTPException(status_code=400, detail="Пользователь уже зарегестрирован")
+        raise HTTPException(status_code=400, detail="Email уже зарегестрирован")
 
     # Иначе создаём и возвращаем созданного пользователя
     user: User = create_user(db, data.username, data.email, data.password)
@@ -76,12 +75,7 @@ class PostLoginRequest(BaseModel):
 @router.post("/login", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД для проверки
 async def login_user(data: PostLoginRequest, db: Session = Depends(get_auth_db)):
-    user: User | None = authenticate_user(db, data.login, data.password)
-    if not user:
-        # Ни в коем случае не пишем в чем именно проблема, возвращаем ошибку, что данные неправильно введены
-        raise HTTPException(
-            status_code=401, detail="Пользователь не найден или неверный пароль"
-        )
+    user: User = authenticate_user(db, data.login, data.password)
 
     # Создаём токен авторизации ("sub" - это стандартный параметр для задания id пользователя)
     access_token: str = encode_access_token({"sub": str(user.id)})

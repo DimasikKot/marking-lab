@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.models.db import Experiment, Model, File
 from app.services.project import is_owner_of_project
 from app.services.file import read_file_from_disk
-from backend.app.services.model import is_owner_of_model
+from app.services.model import is_owner_of_model
 
 
 def is_owner_of_experiment(

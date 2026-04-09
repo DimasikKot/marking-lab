@@ -16,45 +16,45 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-class ExperimentResponse(BaseModel):
-    id: int
-    name: str
-    model_id: int | None
-    is_draft: bool
-    results: dict | None = None
-    graphs: dict | None = None
-    created_at: datetime
+# class ExperimentResponse(BaseModel):
+#     id: int
+#     name: str
+#     model_id: int | None
+#     is_draft: bool
+#     results: dict | None = None
+#     graphs: dict | None = None
+#     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
-
-@router.post("/", response_model=ExperimentResponse)
-async def post_create_experiment(
-    project_id: int = Path(...),
-    name: str = Form(...),
-    model_id: int = Form(...),
-    test_file_ids: List[int] | None = None,
-    user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db),
-):
-    exp = create_experiment(db, project_id, user_id, name, model_id, test_file_ids)
-    if not exp:
-        raise HTTPException(status_code=400, detail="Ошибка создания эксперимента")
-    return exp
+#     class Config:
+#         from_attributes = True
 
 
-@router.post("/{experiment_id}/run", response_model=ExperimentResponse)
-async def post_run_experiment(
-    project_id: int = Path(...),
-    experiment_id: int = Path(...),
-    user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db),
-):
-    exp = await run_experiment(db, project_id, user_id, experiment_id)
-    if not exp:
-        raise HTTPException(status_code=400, detail="Не удалось запустить тестирование")
-    return exp
+# @router.post("/", response_model=ExperimentResponse)
+# async def post_create_experiment(
+#     project_id: int = Path(...),
+#     name: str = Form(...),
+#     model_id: int = Form(...),
+#     test_file_ids: List[int] | None = None,
+#     user_id: int = Depends(get_current_user_id),
+#     db: Session = Depends(get_db),
+# ):
+#     exp = create_experiment(db, project_id, user_id, name, model_id, test_file_ids)
+#     if not exp:
+#         raise HTTPException(status_code=400, detail="Ошибка создания эксперимента")
+#     return exp
+
+
+# @router.post("/{experiment_id}/run", response_model=ExperimentResponse)
+# async def post_run_experiment(
+#     project_id: int = Path(...),
+#     experiment_id: int = Path(...),
+#     user_id: int = Depends(get_current_user_id),
+#     db: Session = Depends(get_db),
+# ):
+#     exp = await run_experiment(db, project_id, user_id, experiment_id)
+#     if not exp:
+#         raise HTTPException(status_code=400, detail="Не удалось запустить тестирование")
+#     return exp
 
 
 class DeleteResponse(BaseModel):
