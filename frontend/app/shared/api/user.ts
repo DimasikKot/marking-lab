@@ -15,6 +15,18 @@ interface PostResponse {
   token_type: string;
 }
 
+interface ValidateUsernameRequest {
+  username: string;
+}
+
+interface ValidateEmailRequest {
+  email: string;
+}
+
+interface ValidateResponse {
+  status: boolean;
+}
+
 export const registerUser = async (
   data: PostRequest,
 ): Promise<PostResponse | undefined> => {
@@ -64,6 +76,44 @@ export const logoutUser = async () => {
     if (axios.isAxiosError(error)) {
       const error_text =
         error.response?.data?.detail || "Ошибка при выходе: " + error.message;
+      toast.error(error_text);
+    }
+  }
+};
+
+export const validateUsername = async (
+  data: ValidateUsernameRequest,
+): Promise<ValidateResponse | undefined> => {
+  try {
+    const response = await api.post<ValidateResponse>(
+      "/users/validate-username",
+      data,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при проверке имени пользователя: " + error.message;
+      toast.error(error_text);
+    }
+  }
+};
+
+export const validateEmail = async (
+  data: ValidateEmailRequest,
+): Promise<ValidateResponse | undefined> => {
+  try {
+    const response = await api.post<ValidateResponse>(
+      "/users/validate-email",
+      data,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при проверке электронной почты: " + error.message;
       toast.error(error_text);
     }
   }

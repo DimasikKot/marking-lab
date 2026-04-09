@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException
 
 # Создаём сессию для работы с БД
@@ -40,23 +41,6 @@ class PostResponse(BaseModel):
 @router.post("/", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
 async def register_user(data: PostRequest, db: Session = Depends(get_auth_db)):
-    existing_username: User | None = (
-        db.query(User).filter(User.username == data.username).first()
-    )
-    if existing_username:
-        raise HTTPException(status_code=400, detail="Имя пользователя уже занято")
-
-    # Ищем пользователя по email, тк это уникальный атрибут
-    existing_email: User | None = (
-        db.query(User).filter(User.email == data.email).first()
-    )
-
-    # Если пользователь существует, то возвращаем ошибку
-    if existing_email:
-        # Всегда делаем обработки ошибок
-        raise HTTPException(status_code=400, detail="Email уже зарегестрирован")
-
-    # Иначе создаём и возвращаем созданного пользователя
     user: User = create_user(db, data.username, data.email, data.password)
 
     access_token: str = encode_access_token({"sub": str(user.id)})
@@ -83,3 +67,58 @@ async def login_user(data: PostLoginRequest, db: Session = Depends(get_auth_db))
     return PostResponse(
         username=user.username, access_token=access_token, token_type="bearer"
     )
+
+
+class ValidateUsernameRequest(BaseModel):
+    username: str
+
+
+class ValidateEmailRequest(BaseModel):
+    email: str
+
+
+class ValidateResponse(BaseModel):
+    status: bool
+
+
+username_patt = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
+email_patt = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.(ru|com)$"
+
+
+@router.post("/validate-username", response_model=ValidateResponse)
+async def validate_username(
+    data: ValidateUsernameRequest, db: Session = Depends(get_auth_db)
+):
+    if not re.match(username_patt, data.username):
+        raise HTTPException(
+            status_code=400,
+            detail="Имя пользователя должно начинаться с буквы, "
+            "содержать только буквы, цифры и подчёркивания и быть "
+            "длиной от 5 до 32 символов",
+        )
+
+    existing_username: User | None = (
+        db.query(User).filter(User.username == data.username).first()
+    )
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Имя пользователя уже занято")
+
+    return ValidateResponse(status=True)
+
+
+@router.post("/validate-email", response_model=ValidateResponse)
+async def validate_email(
+    data: ValidateEmailRequest, db: Session = Depends(get_auth_db)
+):
+    if not re.match(email_patt, data.email):
+        raise HTTPException(status_code=400, detail="Неверный формат электронной почты")
+
+    existing_email: User | None = (
+        db.query(User).filter(User.email == data.email).first()
+    )
+    if existing_email:
+        raise HTTPException(
+            status_code=400, detail="Электронная почта уже зарегестрирована"
+        )
+
+    return ValidateResponse(status=True)
