@@ -1,79 +1,74 @@
 import csv
-from io import StringIO
 from fastapi import HTTPException
+from io import StringIO
+from typing import TextIO
 
 
-def normalize_labels(text: str, labels: str | None) -> str:
-    tokens = text.split()
-    label_tokens = labels.split() if labels else []
+ALLOWED_TAG_PREFIXES = ("B-", "I-")
 
-    if len(label_tokens) > len(tokens):
+
+def validate_bio_tag(tag: str) -> None:
+    if tag == "O":
+        return
+    if not tag.startswith(ALLOWED_TAG_PREFIXES):
         raise HTTPException(
             status_code=400,
-            detail="Количество BIO-меток больше количества токенов"
+            detail=f"Недопустимый BIO-тег: {tag}",
         )
 
-    # Дополняем O
-    label_tokens.extend(["O"] * (len(tokens) - len(label_tokens)))
 
-    # Проверка BIO-тегов
-    for tag in label_tokens:
-        if tag != "O" and not (tag.startswith("B-") or tag.startswith("I-")):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Недопустимый BIO-тег: {tag}"
-            )
+def validate_and_normalize_bio(file: TextIO) -> str:
+    reader = csv.DictReader(file, delimiter="\t")
 
-    return " ".join(label_tokens)
+    required_fields = {"sentence_id", "token", "label"}
+    if not reader.fieldnames or set(reader.fieldnames) != required_fields:
+        raise HTTPException(
+            status_code=400,
+            detail="TSV должен содержать колонки: sentence_id, token, label",
+        )
 
-
-def validate_and_normalize_bio(content: str) -> str:
-    content = content.strip().replace("\ufeff", "")
-    if not content:
-        raise HTTPException(status_code=400, detail="Файл пустой")
-
-    rows = []
-
-    # --- Попытка CSV ---
-    try:
-        f = StringIO(content)
-        reader = csv.DictReader(f)
-
-        if reader.fieldnames == ["text", "labels"]:
-            for row in reader:
-                text = row["text"].strip()
-                labels = row["labels"].strip() if row["labels"] else None
-                normalized = normalize_labels(text, labels)
-                rows.append({"text": text, "labels": normalized})
-        else:
-            raise ValueError
-
-    except Exception:
-        # --- TXT ---
-        for line in content.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-
-            if "\t" in line:
-                text, labels = line.split("\t", 1)
-            else:
-                parts = line.rsplit(" ", 1)
-                if len(parts) == 2 and parts[1].startswith(("O", "B-", "I-")):
-                    text, labels = parts
-                else:
-                    text, labels = line, None
-
-            text = text.strip()
-            labels = labels.strip() if labels else None
-
-            normalized = normalize_labels(text, labels)
-            rows.append({"text": text, "labels": normalized})
-
-    # --- Финальный CSV ---
     output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=["text", "labels"])
+    writer = csv.DictWriter(
+        output,
+        fieldnames=["sentence_id", "token", "label"],
+        delimiter="\t",
+        lineterminator="\n",
+    )
     writer.writeheader()
-    writer.writerows(rows)
+
+    prev_sentence = None
+    prev_label = "O"
+
+    for row in reader:
+        sentence_id = row["sentence_id"]
+        token = row["token"].strip()
+        label = row["label"].strip()
+
+        if not token:
+            raise HTTPException(status_code=400, detail="Пустой токен")
+
+        validate_bio_tag(label)
+
+        # BIO-инвариант: I-* не может начинать сущность
+        if label.startswith("I-"):
+            if prev_label == "O" or prev_label[2:] != label[2:]:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Некорректная BIO-последовательность: {label}",
+                )
+
+        if sentence_id != prev_sentence:
+            prev_label = "O"
+            prev_sentence = sentence_id
+
+        writer.writerow(
+            {
+                "sentence_id": sentence_id,
+                "token": token,
+                "label": label,
+            }
+        )
+
+        prev_label = label
 
     return output.getvalue()

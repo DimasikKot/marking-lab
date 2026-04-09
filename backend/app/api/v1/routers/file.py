@@ -1,8 +1,18 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Path, Query, UploadFile
 from pydantic import BaseModel
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Path,
+    Query,
+    UploadFile,
+)
 
 from app.services.get_current_user_id import get_current_user_id
+from app.core.database import get_db
 from app.services.file import (
     create_file_by_project_id,
     delete_file_by_id,
@@ -11,7 +21,6 @@ from app.services.file import (
     read_file_from_disk,
     update_file_by_id,
 )
-from app.core.database import get_db
 
 
 router = APIRouter()
@@ -35,21 +44,13 @@ async def post_create_file(
     user_id: int = Depends(get_current_user_id),
     db=Depends(get_db),
 ):
-    contents = await file.read()
-    try:
-        content = contents.decode("utf-8")
-    except UnicodeDecodeError:
-        content = contents.decode("latin-1")
-
     file_obj = create_file_by_project_id(
         db=db,
         project_id=project_id,
         name=name,
-        content=content,
+        file=file.file,
         user_id=user_id,
     )
-    if file_obj is None:
-        raise HTTPException(status_code=400, detail="Ошибка при создании файла")
     return file_obj
 
 
@@ -75,8 +76,6 @@ async def get_files(
         search=search,
         sort=sort,
     )
-    if files is None:
-        raise HTTPException(status_code=403, detail="Нет доступа к проекту")
     return GetResponse(data=files)
 
 
@@ -164,9 +163,5 @@ async def delete_file(
     user_id: int = Depends(get_current_user_id),
     db=Depends(get_db),
 ):
-    success = delete_file_by_id(
-        db=db, project_id=project_id, user_id=user_id, file_id=file_id
-    )
-    if not success:
-        raise HTTPException(status_code=400, detail="Ошибка при удалении файла")
+    delete_file_by_id(db=db, project_id=project_id, user_id=user_id, file_id=file_id)
     return DeleteResponse(detail="Файл успешно удалён", success=True)
