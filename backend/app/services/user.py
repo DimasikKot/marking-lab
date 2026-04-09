@@ -42,9 +42,7 @@ def authenticate_user(db: Session, login: str, password: str) -> User:
         # тк в нашем случае можно использовать и email и имя пользователя для авторизации
         user: User = db.query(User).filter(User.username == login).first()
         if not user or not verify_password(password, user.hashed_password):
-            raise HTTPException(
-                status_code=401, detail="Пользователь не найден или неверный пароль"
-            )
+            raise HTTPException(status_code=401, detail="Неверный пароль")
 
     return user
 

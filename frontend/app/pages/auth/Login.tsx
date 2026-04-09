@@ -2,56 +2,57 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { loginUser } from "@/shared/api/user";
+import { validateLogin, loginUser } from "@/shared/api/user";
 import { LoginRegisterCard } from "@/shared/components/LoginRegisterCard";
 import { TextField } from "@/shared/components/TextField";
 
 export function Login() {
   const navigate = useNavigate();
 
-  const [step, setStep] = useState<1 | 2>(1);
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
+  const [step, setStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleNext = () => {
-    setError(null);
+  const handleNext = async () => {
     if (step === 1) {
       if (!login.trim()) {
         toast.error("Введите имя пользователя или email");
         return;
       }
-      setStep(2);
-    }
-  };
 
-  const handleLogin = async () => {
-    setError(null);
-    setIsLoading(true);
-
-    if (!password) {
-      toast.error("Введите пароль");
+      setIsLoading(true);
+      const response = await validateLogin({ login });
       setIsLoading(false);
-      return;
+
+      if (response === undefined) {
+        return;
+      }
+
+      setStep(2);
+    } else if (step === 2) {
+      if (!password) {
+        toast.error("Введите пароль");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      const response = await loginUser({ login, password });
+      setIsLoading(false);
+
+      if (response === undefined) {
+        return;
+      }
+
+      toast.success("Вы успешно вошли в аккаунт");
+      navigate("/");
     }
-
-    const response = await loginUser({ login, password });
-
-    setIsLoading(false);
-
-    if (response === undefined) {
-      setError("Неверное имя пользователя или пароль");
-      toast.error("Ошибка входа");
-      return;
-    }
-
-    toast.success("Вы успешно вошли в аккаунт");
-    navigate("/");
   };
+
+  const handleLogin = async () => {};
 
   const handleBack = () => {
-    setError(null);
     if (step === 2) setStep(1);
   };
 
@@ -95,7 +96,8 @@ export function Login() {
     };
   };
 
-  const { title, subtitle, buttonText, onClick, children, backButton } = getStepContent();
+  const { title, subtitle, buttonText, onClick, children, backButton } =
+    getStepContent();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8">
@@ -105,7 +107,6 @@ export function Login() {
         buttonText={buttonText}
         onButtonClick={onClick}
         isLoading={isLoading}
-        error={error}
         hasAccountLink={{
           text: "Нет аккаунта?",
           onClick: () => navigate("/register"),

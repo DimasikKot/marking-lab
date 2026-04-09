@@ -73,22 +73,15 @@ class ValidateUsernameRequest(BaseModel):
     username: str
 
 
-class ValidateEmailRequest(BaseModel):
-    email: str
-
-
 class ValidateResponse(BaseModel):
     status: bool
-
-
-username_patt = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
-email_patt = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.(ru|com)$"
 
 
 @router.post("/validate-username", response_model=ValidateResponse)
 async def validate_username(
     data: ValidateUsernameRequest, db: Session = Depends(get_auth_db)
 ):
+    username_patt = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
     if not re.match(username_patt, data.username):
         raise HTTPException(
             status_code=400,
@@ -106,10 +99,15 @@ async def validate_username(
     return ValidateResponse(status=True)
 
 
+class ValidateEmailRequest(BaseModel):
+    email: str
+
+
 @router.post("/validate-email", response_model=ValidateResponse)
 async def validate_email(
     data: ValidateEmailRequest, db: Session = Depends(get_auth_db)
 ):
+    email_patt = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.(ru|com)$"
     if not re.match(email_patt, data.email):
         raise HTTPException(status_code=400, detail="Неверный формат электронной почты")
 
@@ -120,5 +118,24 @@ async def validate_email(
         raise HTTPException(
             status_code=400, detail="Электронная почта уже зарегестрирована"
         )
+
+    return ValidateResponse(status=True)
+
+
+class ValidateLoginRequest(BaseModel):
+    login: str
+
+
+@router.post("/validate-login", response_model=ValidateResponse)
+async def validate_login(
+    data: ValidateLoginRequest, db: Session = Depends(get_auth_db)
+):
+    user: User = db.query(User).filter(User.email == data.login).first()
+    if not user:
+        # Также проверяем по имени пользователя, если пользователь не найден по email,
+        # тк в нашем случае можно использовать и email и имя пользователя для авторизации
+        user: User = db.query(User).filter(User.username == data.login).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Пользователь не найден")
 
     return ValidateResponse(status=True)

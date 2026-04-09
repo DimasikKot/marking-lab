@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import {
-  registerUser,
   validateUsername,
   validateEmail,
+  registerUser,
 } from "@/shared/api/user";
 import { LoginRegisterCard } from "@/shared/components/LoginRegisterCard";
 import { TextField } from "@/shared/components/TextField";
