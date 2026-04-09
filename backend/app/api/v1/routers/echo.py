@@ -13,8 +13,9 @@ class GetBackendResponse(BaseModel):
     detail: str
     status: bool
 
+
 @router.get("/backend", response_model=GetBackendResponse)
-def test_backend():
+async def test_backend():
     return GetBackendResponse(detail="Backend контейнер исправно работает", status=True)
 
 
@@ -30,22 +31,25 @@ async def test_ml():
 class PostMlRequest(BaseModel):
     text: str
 
+
 class PostMlResponse(BaseModel):
     words: list[str]
+
 
 @router.get("/ml_post", response_model=PostMlResponse)
 async def test_ml_post():
     async with AsyncClient() as client:
         response_dict = await client.post(
             settings.ML_URL + "/echos/ml",
-
             # Преобразуем модель в словарь и отправляем в POST методе
-            json=PostMlRequest(text="ML контейнер разделяет слова в методе POST").model_dump()
+            json=PostMlRequest(
+                text="ML контейнер разделяет слова в методе POST"
+            ).model_dump(),
         )
 
         # Преобразуем словарь в json
         response_json = response_dict.json()
-    
+
     # Преобразуем json в модель (чтобы взаимодействовать напрямую как с объектом)
     return PostMlResponse.model_validate(response_json)
 
@@ -53,7 +57,7 @@ async def test_ml_post():
 class GetUserResponse(BaseModel):
     user_id: int
 
+
 @router.get("/user", response_model=GetUserResponse)
 async def get_user_id(user_id: int = Depends(get_current_user_id)):
     return GetUserResponse(user_id=user_id)
-

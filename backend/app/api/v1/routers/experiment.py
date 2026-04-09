@@ -1,12 +1,17 @@
-from fastapi import APIRouter, Depends, Form, Form, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, Form, Form, HTTPException, Path
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
 from app.services.get_current_user_id import get_current_user_id
-from app.services.experiment import create_experiment, run_experiment
+from app.services.experiment import (
+    create_experiment,
+    delete_experiment_by_id,
+    run_experiment,
+)
 from app.core.database import get_db
 from sqlalchemy.orm import Session
+
 
 router = APIRouter()
 
@@ -50,3 +55,22 @@ async def post_run_experiment(
     if not exp:
         raise HTTPException(status_code=400, detail="Не удалось запустить тестирование")
     return exp
+
+
+class DeleteResponse(BaseModel):
+    detail: str
+    success: bool
+
+
+# Нужно переделать
+@router.delete("/{experiment_id}", response_model=DeleteResponse)
+async def delete_experiment(
+    experiment_id: int = Path(...),
+    project_id: int = Path(...),
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    delete_experiment_by_id(
+        db, experiment_id=experiment_id, project_id=project_id, user_id=user_id
+    )
+    return DeleteResponse(detail="Эксперимент успешно удален", success=True)

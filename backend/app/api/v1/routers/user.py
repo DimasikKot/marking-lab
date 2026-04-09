@@ -3,9 +3,6 @@ from fastapi import APIRouter, Depends, HTTPException
 # Создаём сессию для работы с БД
 from sqlalchemy.orm import Session
 
-# Время для задания срока действия токена и тип данных времени
-from datetime import timedelta
-
 # Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
 from pydantic import BaseModel
 
@@ -43,9 +40,7 @@ class PostResponse(BaseModel):
 # Пишем метод, путь и какие данные будем возвращать
 @router.post("/", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
-def register_user(
-    data: PostRequest, db: Session = Depends(get_auth_db)
-) -> PostResponse:
+async def register_user(data: PostRequest, db: Session = Depends(get_auth_db)):
     existing_username: User | None = (
         db.query(User).filter(User.username == data.username).first()
     )
@@ -80,9 +75,7 @@ class PostLoginRequest(BaseModel):
 # Совершение авторизации
 @router.post("/login", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД для проверки
-def login_user(
-    data: PostLoginRequest, db: Session = Depends(get_auth_db)
-) -> PostResponse:
+async def login_user(data: PostLoginRequest, db: Session = Depends(get_auth_db)):
     user: User | None = authenticate_user(db, data.login, data.password)
     if not user:
         # Ни в коем случае не пишем в чем именно проблема, возвращаем ошибку, что данные неправильно введены

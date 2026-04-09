@@ -2,16 +2,17 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Path, Query
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List
+from sqlalchemy.orm import Session
 
 from app.services.get_current_user_id import get_current_user_id
 from app.services.model import (
     create_model,
+    delete_model_by_id,
     fetch_models_by_project_id,
-    fetch_model_by_id,
     train_model,
 )
 from app.core.database import get_db
-from sqlalchemy.orm import Session
+
 
 router = APIRouter()
 
@@ -38,8 +39,6 @@ async def post_create_model(
     db: Session = Depends(get_db),
 ):
     model = create_model(db, project_id, user_id, name, training_file_ids)
-    if not model:
-        raise HTTPException(status_code=400, detail="Ошибка создания модели")
     return model
 
 
@@ -52,8 +51,6 @@ async def get_models(
     db: Session = Depends(get_db),
 ):
     models = fetch_models_by_project_id(db, project_id, user_id, search, sort)
-    if models is None:
-        raise HTTPException(status_code=403, detail="Нет доступа")
     return models
 
 
@@ -61,10 +58,25 @@ async def get_models(
 async def post_train_model(
     project_id: int = Path(...),
     file_id: int = Form(...),
-    user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db),
 ):
-    model = await train_model(db, project_id, file_id)
+    model = await train_model(project_id, file_id)
     if not model:
         raise HTTPException(status_code=400, detail="Не удалось запустить обучение")
     return model
+
+
+class DeleteResponse(BaseModel):
+    detail: str
+    success: bool
+
+
+# Нужно переделать
+@router.delete("/{model_id}", response_model=DeleteResponse)
+async def delete_model(
+    model_id: int = Path(...),
+    project_id: int = Path(...),
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    delete_model_by_id(db, model_id=model_id, project_id=project_id, user_id=user_id)
+    return DeleteResponse(detail="Модель успешно удалена", success=True)
