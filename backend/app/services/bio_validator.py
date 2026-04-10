@@ -1,11 +1,15 @@
 import csv
 from io import StringIO
-from typing import List, Tuple, Optional, TextIO
+from typing import List, Optional, TextIO
 
+
+# ---------- Tokenization ----------
 
 def tokenize(text: str) -> List[str]:
     return text.strip().split()
 
+
+# ---------- BIO normalization ----------
 
 def normalize_label(label: str) -> str:
     label = label.strip()
@@ -26,9 +30,7 @@ def normalize_label(label: str) -> str:
 
 
 def normalize_labels(tokens: List[str], labels: Optional[List[str]]) -> List[str]:
-    if not labels:
-        labels = []
-
+    labels = labels or []
     labels = [normalize_label(l) for l in labels]
 
     # выравнивание длины
@@ -37,7 +39,7 @@ def normalize_labels(tokens: List[str], labels: Optional[List[str]]) -> List[str
     elif len(labels) > len(tokens):
         labels = labels[: len(tokens)]
 
-    # BIO-инварианты (мягкая нормализация)
+    # BIO auto-fix
     prev = "O"
     for i, label in enumerate(labels):
         if label.startswith("I-"):
@@ -48,53 +50,57 @@ def normalize_labels(tokens: List[str], labels: Optional[List[str]]) -> List[str
     return labels
 
 
-def parse_plain_text(text: str) -> List[Tuple[List[str], List[str]]]:
-    sentences = []
-    for line in text.splitlines():
-        if not line.strip():
-            continue
-        tokens = tokenize(line)
-        sentences.append((tokens, []))
-    return sentences
+# ---------- CSV parser ----------
 
-
-def parse_csv_text_labels(text: str) -> List[Tuple[List[str], List[str]]]:
-    sentences = []
+def parse_csv_tokens_labels(text: str):
     reader = csv.DictReader(StringIO(text))
 
-    if not reader.fieldnames or not {"text", "labels"} <= set(reader.fieldnames):
-        raise ValueError("CSV не содержит колонок text и labels")
+    if not reader.fieldnames:
+        raise ValueError("Пустой CSV или отсутствует заголовок")
+
+    fieldnames = set(reader.fieldnames)
+
+    # определяем, из какого поля брать текст
+    if "tokens" in fieldnames:
+        text_field = "tokens"
+    elif "text" in fieldnames:
+        text_field = "text"
+    else:
+        raise ValueError("CSV должен содержать колонку tokens или text")
+
+    if "labels" not in fieldnames:
+        raise ValueError("CSV должен содержать колонку labels")
 
     for row in reader:
-        text_part = row["text"].strip()
-        labels_part = row.get("labels", "").strip()
+        text_value = row.get(text_field, "").strip()
+        labels_value = row.get("labels", "").strip()
 
-        tokens = tokenize(text_part)
-        labels = labels_part.split() if labels_part else []
+        if not text_value:
+            continue
 
-        sentences.append((tokens, labels))
+        tokens = tokenize(text_value)
+        labels = labels_value.split() if labels_value else []
 
-    return sentences
+        yield tokens, labels
 
+
+# ---------- Main normalization ----------
 
 def normalize_to_bio_tsv(file: TextIO) -> str:
     content = file.read()
-
-    # пробуем CSV с text,labels
-    try:
-        sentences = parse_csv_text_labels(content)
-    except Exception:
-        sentences = parse_plain_text(content)
+    sentences = list(parse_csv_tokens_labels(content))
 
     output = StringIO()
     writer = csv.writer(output, delimiter="\t", lineterminator="\n")
-    writer.writerow(["sentence_id", "token", "label"])
+    writer.writerow(["token", "label"])
 
-    sentence_id = 1
     for tokens, raw_labels in sentences:
         labels = normalize_labels(tokens, raw_labels)
+
         for token, label in zip(tokens, labels):
-            writer.writerow([sentence_id, token, label])
-        sentence_id += 1
+            writer.writerow([token, label])
+
+        # пустая строка = граница предложения
+        writer.writerow([])
 
     return output.getvalue()
