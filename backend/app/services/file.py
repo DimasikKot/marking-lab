@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 from fastapi import HTTPException
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -7,7 +8,7 @@ import shutil
 from app.core.config import settings
 from app.models.db import File
 from app.services.project import is_owner_of_project
-from app.services.bio_validator import validate_and_normalize_bio
+from app.services.bio_validator import normalize_to_bio_tsv
 
 
 def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -> None:
@@ -80,7 +81,13 @@ def create_file_by_project_id(
     file: TextIO,
 ) -> File:
     is_owner_of_project(db, project_id, user_id)
-    validated_stream = validate_and_normalize_bio(file)
+
+    text_stream = TextIOWrapper(
+        file,
+        encoding="utf-8",
+        newline="",
+    )
+    validated_stream = normalize_to_bio_tsv(text_stream)
 
     file_obj = File(name=name, project_id=project_id)
     db.add(file_obj)
@@ -157,7 +164,7 @@ def update_file_by_id(
     if new_name:
         file.name = new_name
     if new_content:
-        validated_content = validate_and_normalize_bio(new_content)
+        validated_content = normalize_to_bio_tsv(new_content)
         save_file_to_disk(project_id, file_id, validated_content)
     db.commit()
     db.refresh(file)
