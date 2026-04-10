@@ -119,25 +119,33 @@ class Line(BaseModel):
 
 def parse_tsv_to_lines(content: str) -> list[Line]:
     lines: list[Line] = []
+    current_words: list[Word] = []
 
     for raw_line in content.splitlines():
         raw_line = raw_line.strip()
+
+        # граница предложения
         if not raw_line:
+            if current_words:
+                lines.append(Line(words=current_words))
+                current_words = []
             continue
 
-        words = raw_line.split("\t")
+        parts = raw_line.split("\t")
 
-        # ожидаем: token + label
-        parsed_words = []
-
-        # TSV обычно: token \t label
-        if len(words) >= 2:
-            token, label = words[0], words[1]
-            parsed_words.append(Word(token=token, label=label))
-        else:
+        # пропускаем заголовок
+        if parts[0].lower() == "token" and len(parts) > 1 and parts[1].lower() == "label":
             continue
 
-        lines.append(Line(words=parsed_words))
+        if len(parts) < 2:
+            continue
+
+        token, label = parts[0], parts[1]
+        current_words.append(Word(token=token, label=label))
+
+    # добавить последнее предложение, если файл не заканчивается пустой строкой
+    if current_words:
+        lines.append(Line(words=current_words))
 
     return lines
 

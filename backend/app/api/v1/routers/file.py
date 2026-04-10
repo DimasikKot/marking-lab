@@ -85,9 +85,9 @@ async def get_files(
 class GetFileResponse(BaseModel):
     id: int
     name: str
-    lines: list[Line]
     created_at: datetime
     updated_at: datetime
+    lines: list[Line]
 
     class Config:
         from_attributes = True
@@ -115,9 +115,9 @@ async def get_file(
     return GetFileResponse(
         id=file_db.id,
         name=file_db.name,
-        lines=lines,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
+        lines=lines[:50],
     )
 
 
