@@ -57,6 +57,8 @@ def normalize_labels(tokens: List[str], labels: Optional[List[str]]) -> List[str
 
 def parse_csv_tokens_labels(text: str):
     reader = csv.DictReader(StringIO(text))
+    # Если нужно поддерживать TSV, раскомментируйте эту строку и закомментируйте предыдущую
+    # reader = csv.DictReader(StringIO(text), delimiter="\t")
 
     if not reader.fieldnames:
         return None
@@ -64,21 +66,25 @@ def parse_csv_tokens_labels(text: str):
     fieldnames = set(reader.fieldnames)
 
     # определяем, из какого поля брать текст
-    if "tokens" in fieldnames:
-        text_field = "tokens"
+    if "token" in fieldnames:
+        text_field = "token"
     elif "text" in fieldnames:
         text_field = "text"
     else:
         return None
 
-    if "labels" not in fieldnames:
+    if "labels" in fieldnames:
+        label_field = "labels"
+    elif "label" in fieldnames:
+        label_field = "label"
+    else:
         return None
 
     sentences = []
 
     for row in reader:
         text_value = (row.get(text_field) or "").strip()
-        labels_value = (row.get("labels") or "").strip()
+        labels_value = (row.get(label_field) or "").strip()
 
         if not text_value:
             continue
