@@ -5,11 +5,13 @@ from typing import List, Optional, TextIO
 
 # ---------- Tokenization ----------
 
+
 def tokenize(text: str) -> List[str]:
     return text.strip().split()
 
 
 # ---------- BIO normalization ----------
+
 
 def normalize_label(label: str) -> str:
     label = label.strip()
@@ -50,13 +52,14 @@ def normalize_labels(tokens: List[str], labels: Optional[List[str]]) -> List[str
     return labels
 
 
-# ---------- CSV parser ----------
+# ---------- Parsers ----------
+
 
 def parse_csv_tokens_labels(text: str):
     reader = csv.DictReader(StringIO(text))
 
     if not reader.fieldnames:
-        raise ValueError("Пустой CSV или отсутствует заголовок")
+        return None
 
     fieldnames = set(reader.fieldnames)
 
@@ -66,14 +69,16 @@ def parse_csv_tokens_labels(text: str):
     elif "text" in fieldnames:
         text_field = "text"
     else:
-        raise ValueError("CSV должен содержать колонку tokens или text")
+        return None
 
     if "labels" not in fieldnames:
-        raise ValueError("CSV должен содержать колонку labels")
+        return None
+
+    sentences = []
 
     for row in reader:
-        text_value = row.get(text_field, "").strip()
-        labels_value = row.get("labels", "").strip()
+        text_value = (row.get(text_field) or "").strip()
+        labels_value = (row.get("labels") or "").strip()
 
         if not text_value:
             continue
@@ -81,14 +86,31 @@ def parse_csv_tokens_labels(text: str):
         tokens = tokenize(text_value)
         labels = labels_value.split() if labels_value else []
 
-        yield tokens, labels
+        sentences.append((tokens, labels))
+
+    return sentences if sentences else None
+
+
+def parse_plain_text(text: str):
+    sentences = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        tokens = tokenize(line)
+        sentences.append((tokens, []))
+    return sentences
 
 
 # ---------- Main normalization ----------
 
+
 def normalize_to_bio_tsv(file: TextIO) -> str:
     content = file.read()
-    sentences = list(parse_csv_tokens_labels(content))
+
+    sentences = parse_csv_tokens_labels(content)
+
+    if sentences is None:
+        sentences = parse_plain_text(content)
 
     output = StringIO()
     writer = csv.writer(output, delimiter="\t", lineterminator="\n")
