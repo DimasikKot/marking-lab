@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+import json
 from fastapi import HTTPException
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -13,6 +14,7 @@ from app.services.bio_validator import normalize_to_bio_tsv
 
 def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -> None:
     is_owner_of_project(db, project_id, user_id)
+
     if (
         db.query(File).filter(File.id == file_id, File.project_id == project_id).first()
         is None
@@ -26,7 +28,7 @@ def get_file_path(project_id: int, file_id: int) -> Path:
 
 
 def save_file_to_disk(project_id: int, file_id: int, content: str) -> None:
-    file_path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path(project_id, file_id)
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     file_path.write_text(
@@ -41,7 +43,7 @@ def save_file_stream_to_disk(
     file_id: int,
     stream: TextIO,
 ) -> None:
-    file_path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path(project_id, file_id)
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(file_path, "w", encoding="utf-8", newline="\n") as f:
@@ -49,7 +51,7 @@ def save_file_stream_to_disk(
 
 
 def read_file_from_disk(project_id: int, file_id: int) -> str:
-    file_path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path(project_id, file_id)
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден")
@@ -58,7 +60,7 @@ def read_file_from_disk(project_id: int, file_id: int) -> str:
 
 
 def open_file_stream(project_id: int, file_id: int) -> TextIO:
-    file_path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path(project_id, file_id)
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден")
@@ -66,8 +68,39 @@ def open_file_stream(project_id: int, file_id: int) -> TextIO:
     return open(file_path, "r", encoding="utf-8")
 
 
+def stream_file_as_json(project_id: int, file_id: int):
+    file_obj = open_file_stream(project_id, file_id)
+
+    yield '{"lines": ['
+
+    first_line = True
+
+    for raw_line in file_obj:
+        raw_line = raw_line.strip()
+        if not raw_line:
+            continue
+
+        parts = raw_line.split("\t")
+        if len(parts) < 2:
+            continue
+
+        token, label = parts[0], parts[1]
+
+        line_obj = {"words": [{"token": token, "label": label}]}
+
+        if not first_line:
+            yield ","
+
+        yield json.dumps(line_obj, ensure_ascii=False)
+        first_line = False
+
+    yield "]}"
+
+    file_obj.close()
+
+
 def delete_file_from_disk(project_id: int, file_id: int) -> None:
-    file_path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path(project_id, file_id)
 
     if file_path.exists():
         file_path.unlink()

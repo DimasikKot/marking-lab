@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
 from fastapi import (
     APIRouter,
     Depends,
@@ -11,6 +12,7 @@ from fastapi import (
     UploadFile,
 )
 
+from app.services.bio_validator import Line, parse_tsv_to_lines
 from app.services.get_current_user_id import get_current_user_id
 from app.core.database import get_db
 from app.services.file import (
@@ -19,6 +21,7 @@ from app.services.file import (
     fetch_file_by_id,
     fetch_files_by_project_id,
     read_file_from_disk,
+    stream_file_as_json,
     update_file_by_id,
 )
 
@@ -82,7 +85,7 @@ async def get_files(
 class GetFileResponse(BaseModel):
     id: int
     name: str
-    content: str
+    lines: list[Line]
     created_at: datetime
     updated_at: datetime
 
@@ -107,12 +110,37 @@ async def get_file(
     if content is None:
         raise HTTPException(status_code=404, detail="Файл не найден на диске")
 
+    lines = parse_tsv_to_lines(content)
+
     return GetFileResponse(
         id=file_db.id,
         name=file_db.name,
-        content=content,
+        lines=lines,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
+    )
+
+
+@router.get("/{file_id}/stream")
+def get_file_stream(
+    file_id: int,
+    project_id: int,
+    user_id: int = Depends(get_current_user_id),
+    db=Depends(get_db),
+):
+    file_db = fetch_file_by_id(
+        db=db,
+        project_id=project_id,
+        user_id=user_id,
+        file_id=file_id,
+    )
+
+    if not file_db:
+        raise HTTPException(status_code=404, detail="Файл не найден")
+
+    return StreamingResponse(
+        stream_file_as_json(project_id, file_id),
+        media_type="application/json",
     )
 
 

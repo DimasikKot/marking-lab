@@ -1,6 +1,7 @@
 import csv
 from io import StringIO
 from typing import List, Optional, TextIO
+from pydantic import BaseModel
 
 
 # ---------- Tokenization ----------
@@ -105,6 +106,40 @@ def parse_plain_text(text: str):
         tokens = tokenize(line)
         sentences.append((tokens, []))
     return sentences
+
+
+class Word(BaseModel):
+    token: str
+    label: str
+
+
+class Line(BaseModel):
+    words: list[Word]
+
+
+def parse_tsv_to_lines(content: str) -> list[Line]:
+    lines: list[Line] = []
+
+    for raw_line in content.splitlines():
+        raw_line = raw_line.strip()
+        if not raw_line:
+            continue
+
+        words = raw_line.split("\t")
+
+        # ожидаем: token + label
+        parsed_words = []
+
+        # TSV обычно: token \t label
+        if len(words) >= 2:
+            token, label = words[0], words[1]
+            parsed_words.append(Word(token=token, label=label))
+        else:
+            continue
+
+        lines.append(Line(words=parsed_words))
+
+    return lines
 
 
 # ---------- Main normalization ----------
