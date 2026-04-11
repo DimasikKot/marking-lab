@@ -1,4 +1,5 @@
 from datetime import datetime
+from numpy import ceil
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi import (
@@ -87,16 +88,18 @@ class GetFileResponse(BaseModel):
     name: str
     created_at: datetime
     updated_at: datetime
-    lines: list[Line]
-
-    class Config:
-        from_attributes = True
+    page: int
+    total_pages: int
+    total_rows: int
+    rows: list[Line]
 
 
 @router.get("/{file_id}", response_model=GetFileResponse)
 async def get_file(
     file_id: int,
     project_id: int,
+    page: int = 1,
+    rows: int = 40,
     user_id: int = Depends(get_current_user_id),
     db=Depends(get_db),
 ):
@@ -110,73 +113,84 @@ async def get_file(
     if content is None:
         raise HTTPException(status_code=404, detail="Файл не найден на диске")
 
-    lines = parse_tsv_to_lines(content)
+    all_rows = parse_tsv_to_lines(content)
+
+    total_rows = len(all_rows)
+    total_pages = ceil(total_rows / rows) if total_rows > 0 else 1
+
+    start = (page - 1) * rows
+    end = round(start + rows)
+
+    page_rows = all_rows[start:end] if start < total_rows else []
 
     return GetFileResponse(
         id=file_db.id,
         name=file_db.name,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
-        lines=lines[:50],
+        page=page,
+        total_pages=total_pages,
+        total_rows=len(all_rows),
+        rows=page_rows,
     )
 
 
-@router.get("/{file_id}/stream")
-def get_file_stream(
-    file_id: int,
-    project_id: int,
-    user_id: int = Depends(get_current_user_id),
-    db=Depends(get_db),
-):
-    file_db = fetch_file_by_id(
-        db=db,
-        project_id=project_id,
-        user_id=user_id,
-        file_id=file_id,
-    )
+# @router.get("/{file_id}/stream")
+# def get_file_stream(
+#     file_id: int,
+#     project_id: int,
+#     user_id: int = Depends(get_current_user_id),
+#     db=Depends(get_db),
+# ):
+#     file_db = fetch_file_by_id(
+#         db=db,
+#         project_id=project_id,
+#         user_id=user_id,
+#         file_id=file_id,
+#     )
 
-    if not file_db:
-        raise HTTPException(status_code=404, detail="Файл не найден")
+#     if not file_db:
+#         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    return StreamingResponse(
-        stream_file_as_json(project_id, file_id),
-        media_type="application/json",
-    )
+#     return StreamingResponse(
+#         stream_file_as_json(project_id, file_id),
+#         media_type="application/json",
+#     )
 
 
-@router.patch("/{file_id}", response_model=GetFileResponse)
-async def patch_file(
-    file_id: int = Path(...),
-    project_id: int = Path(...),
-    file: UploadFile = File(...),
-    name: str = Form(...),
-    user_id: int = Depends(get_current_user_id),
-    db=Depends(get_db),
-):
-    contents = await file.read()
-    try:
-        content = contents.decode("utf-8")
-    except UnicodeDecodeError:
-        content = contents.decode("latin-1")
+# @router.patch("/{file_id}", response_model=GetFileResponse)
+# async def patch_file(
+#     file_id: int = Path(...),
+#     project_id: int = Path(...),
+#     file: UploadFile = File(...),
+#     name: str = Form(...),
+#     user_id: int = Depends(get_current_user_id),
+#     db=Depends(get_db),
+# ):
+#     contents = await file.read()
+#     try:
+#         content = contents.decode("utf-8")
+#     except UnicodeDecodeError:
+#         content = contents.decode("latin-1")
 
-    file_db = update_file_by_id(
-        db=db,
-        project_id=project_id,
-        user_id=user_id,
-        file_id=file_id,
-        new_name=name,
-        new_content=content,
-    )
-    if not file_db:
-        raise HTTPException(status_code=400, detail="Ошибка при обновлении файла")
+#     file_db = update_file_by_id(
+#         db=db,
+#         project_id=project_id,
+#         user_id=user_id,
+#         file_id=file_id,
+#         new_name=name,
+#         new_content=content,
+#     )
+#     if not file_db:
+#         raise HTTPException(status_code=400, detail="Ошибка при обновлении файла")
 
-    return GetFileResponse(
-        id=file_db.id,
-        name=file_db.name,
-        content=content,
-        created_at=file_db.created_at,
-        updated_at=file_db.updated_at,
-    )
+#     return GetFileResponse(
+#         id=file_db.id,
+#         name=file_db.name,
+#         content=content,
+#         created_at=file_db.created_at,
+#         updated_at=file_db.updated_at,
+#     )
 
 
 class DeleteResponse(BaseModel):

@@ -56,8 +56,8 @@ class GetResponse(BaseModel):
 
 @router.get("/", response_model=GetResponse)
 async def get_projects(
-    is_public: bool = Query(
-        False, description="Получать только публичные проекты или приватные"
+    is_public: bool | None = Query(
+        None, description="Получать только публичные проекты или приватные"
     ),
     search: str | None = Query(None, description="Поиск по имени файла"),
     sort: str | None = Query(
