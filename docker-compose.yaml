@@ -92,4 +92,4 @@ services:
 
 networks:
   ml-back:
-#     external: true # Указываем что не локальная в docker-compose, а общая для всего докера
+    # external: true # Указываем что не локальная в docker-compose, а общая для всего докера

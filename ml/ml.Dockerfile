@@ -1,11 +1,15 @@
 FROM python:3.13-slim
-WORKDIR /app
+
+WORKDIR /ml/app
+
+# Показываем порт (необязательно)
+EXPOSE 8001
 
 # Установка системных зависимостей для тяжелых либ
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ && rm -rf /var/lib/apt/lists/*
 
 # Отключение буферизации команды print()
-ENV PYTHONUNBUFFERED=1
+# ENV PYTHONUNBUFFERED=1
 
 COPY requirements.txt .
 
