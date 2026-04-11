@@ -52,13 +52,12 @@ export function Register() {
     } else if (step === 3) {
       if (!password) {
         toast.error("Введите пароль");
-        setIsLoading(false);
         return;
       }
 
       setIsLoading(true);
       const response = await registerUser({ username, email, password });
-      setTimeout(() => setIsLoading(false), 1000);
+      setIsLoading(false);
 
       if (response === undefined) {
         return;
@@ -86,8 +85,12 @@ export function Register() {
               alternate_email
             </span>
             <TextField
+              key={isLoading ? step + 10 : step}
               value={username}
               setValue={setUsername}
+              onEnter={handleNext}
+              onEscape={handleBack}
+              autoFocus
               placeholder="username"
               disabled={isLoading}
             />
@@ -104,9 +107,13 @@ export function Register() {
         onClick: handleNext,
         children: (
           <TextField
+            key={isLoading ? step + 10 : step}
             type="email"
             value={email}
             setValue={setEmail}
+            onEnter={handleNext}
+            onEscape={handleBack}
+            autoFocus
             placeholder="Введите вашу электронную почту"
             disabled={isLoading}
           />
@@ -122,9 +129,13 @@ export function Register() {
       onClick: handleNext,
       children: (
         <TextField
+          key={isLoading ? step + 10 : step}
           type="password"
           value={password}
           setValue={setPassword}
+          onEnter={handleNext}
+          onEscape={handleBack}
+          autoFocus
           placeholder="Пароль"
           disabled={isLoading}
         />

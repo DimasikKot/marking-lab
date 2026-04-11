@@ -2,6 +2,9 @@ export const TextField = ({
   value,
   setValue,
   onChange,
+  onEnter,
+  onEscape,
+  autoFocus = false,
   placeholder = "",
   disabled = false,
   name = "",
@@ -15,6 +18,9 @@ export const TextField = ({
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement, Element>,
   ) => void;
+  onEnter?: () => void;
+  onEscape?: () => void;
+  autoFocus?: boolean;
   placeholder?: string;
   disabled?: boolean;
   name?: string;
@@ -27,9 +33,16 @@ export const TextField = ({
     <textarea
       name={name}
       value={value}
-      onChange={
-        onChange || ((event) => setValue && setValue(event.target.value))
-      }
+      onChange={onChange || ((event) => setValue?.(event.target.value))}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          onEnter?.();
+        }
+        if (event.key === "Escape") {
+          onEscape?.();
+        }
+      }}
+      autoFocus={autoFocus}
       rows={rows}
       placeholder={placeholder}
       disabled={disabled}
@@ -46,9 +59,16 @@ export const TextField = ({
     <input
       name={name}
       value={value}
-      onChange={
-        onChange || ((event) => setValue && setValue(event.target.value))
-      }
+      onChange={onChange || ((event) => setValue?.(event.target.value))}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          onEnter?.();
+        }
+        if (event.key === "Escape") {
+          onEscape?.();
+        }
+      }}
+      autoFocus={autoFocus}
       placeholder={placeholder}
       disabled={disabled}
       type={type}

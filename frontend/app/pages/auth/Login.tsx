@@ -33,7 +33,6 @@ export function Login() {
     } else if (step === 2) {
       if (!password) {
         toast.error("Введите пароль");
-        setIsLoading(false);
         return;
       }
 
@@ -63,8 +62,12 @@ export function Login() {
         onClick: handleNext,
         children: (
           <TextField
+            key={isLoading ? step + 10 : step}
             value={login}
             setValue={setLogin}
+            onEnter={handleNext}
+            onEscape={handleBack}
+            autoFocus
             placeholder="Имя пользователя или email"
             disabled={isLoading}
             type="text"
@@ -80,8 +83,12 @@ export function Login() {
       onClick: handleNext,
       children: (
         <TextField
+          key={isLoading ? step + 10 : step}
           value={password}
           setValue={setPassword}
+          onEnter={handleNext}
+          onEscape={handleBack}
+          autoFocus
           placeholder="Пароль"
           disabled={isLoading}
           type="password"
