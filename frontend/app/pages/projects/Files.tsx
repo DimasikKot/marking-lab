@@ -1,131 +1,155 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
-import { uploadFile, type PostUploadResponse } from "@/shared/api/file";
+import { 
+  fetchFiles, 
+  uploadFile, 
+  type FileInList 
+} from "@/shared/api/file";
+
 import { Button } from "@/shared/components/Button";
-import { Header } from "@/shared/components/Header";
 import { Text } from "@/shared/components/Text";
-import { useParams } from "react-router-dom";
+import { Header } from "@/shared/components/Header";
+import { FileCard } from "@/shared/components/FileCard";
+import { TextField } from "@/shared/components/TextField";
 
 export function Files() {
-  const { projectId } = useParams();
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [responseData, setResponseData] = useState<PostUploadResponse | null>(
-    null,
-  );
+  const [files, setFiles] = useState<FileInList[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0]);
-      setError(null);
-      setResponseData(null);
-    }
-  };
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const handleUpload = async () => {
-    if (!file) {
-      setError("Пожалуйста, выберите файл");
+  // Загрузка списка файлов
+  const loadFiles = useCallback(async () => {
+    if (!projectId) {
+      setError("ID проекта не найден");
+      setLoading(false);
       return;
     }
 
-    setUploading(true);
+    setLoading(true);
     setError(null);
 
-    if (!projectId) {
-      setError("ID проекта не найден в URL");
-      setUploading(false);
-      return;
+    try {
+      const response = await fetchFiles(projectId);
+      if (response?.data) {
+        setFiles(response.data);
+      } else {
+        setError("Не удалось загрузить список файлов");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError("Произошла ошибка при загрузке файлов");
+    } finally {
+      setLoading(false);
     }
+  }, [projectId]);
 
-    const data = await uploadFile(file, undefined, projectId);
+  useEffect(() => {
+    loadFiles();
+  }, [loadFiles]);
 
-    if (data) {
-      setResponseData(data);
-    } else {
-      setError("Не удалось загрузить файл. Проверьте консоль для деталей.");
+  // Загрузка файла на сервер
+  const handleUpload = async () => {
+    if (!selectedFile || !projectId) return;
+
+    setUploading(true);
+
+    const result = await uploadFile(selectedFile, selectedFile.name, projectId);
+
+    if (result) {
+      setSelectedFile(null);
+      loadFiles();                    
     }
 
     setUploading(false);
   };
 
-  // Функция для отображения содержимого в зависимости от типа файла
-  const renderContent = () => {
-    if (!responseData) return null;
-
-    // Предполагаем, что сервер возвращает объект с полем 'content'
-    const content = responseData.content || responseData;
-
-    if (file?.type === "application/json" || file?.name.endsWith(".json")) {
-      return (
-        <pre className="bg-gray-100 p-4 rounded overflow-auto">
-          {JSON.stringify(content, null, 2)}
-        </pre>
-      );
-    } else if (file?.type === "text/csv" || file?.name.endsWith(".csv")) {
-      return (
-        <div className="bg-gray-100 p-4 rounded overflow-auto whitespace-pre-wrap font-mono">
-          {typeof content === "string" ? content : JSON.stringify(content)}
-        </div>
-      );
-    } else if (file?.name.endsWith(".md")) {
-      // Для Markdown можно добавить библиотеку react-markdown, но пока просто текст
-      return (
-        <div className="bg-gray-100 p-4 rounded prose max-w-none">
-          {typeof content === "string" ? content : JSON.stringify(content)}
-        </div>
-      );
-    } else {
-      // TXT и другие текстовые форматы
-      return (
-        <pre className="bg-gray-100 p-4 rounded overflow-auto whitespace-pre-wrap">
-          {typeof content === "string"
-            ? content
-            : JSON.stringify(content, null, 2)}
-        </pre>
-      );
-    }
-  };
+  const filteredFiles = files.filter((file) =>
+    file.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div>
-      <Header>Файлы</Header>
+      <Header>Файлы проекта</Header>
 
-      <div className="flex max-w-4xl mx-auto flex-col gap-4">
-        <Text variant="title">Страница разметки и загрузки файлов</Text>
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="mb-8">
+          <Text variant="title" className="mb-6">Загрузка файла</Text>
 
-        <div className="flex flex-col gap-2">
-          <Text variant="label">Выберите файл (JSON, TXT, CSV, MD)</Text>
+          <div className="flex flex-col gap-4">
+            <Text variant="label">Выберите файл (TXT, CSV, JSON, MD)</Text>
 
-          <input
-            type="file"
-            accept=".json,.txt,.csv,.md,application/json,text/plain,text/csv,text/markdown"
-            onChange={handleFileChange}
-            className="block w-auto text-sm text-gray-500 
-          file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 
-          file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
+            <input
+              type="file"
+              accept=".txt,.csv,.json,.md"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setSelectedFile(e.target.files[0]);
+                }
+              }}
+              className="block w-full text-sm text-gray-500 
+                file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 
+                file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 
+                hover:file:bg-blue-100 transition-colors"
+            />
 
-          {file && (
-            <Text variant="desc">
-              Выбран файл: {file.name} ({(file.size / 1024).toFixed(2)} KB)
-            </Text>
-          )}
+            {selectedFile && (
+              <Text variant="desc">
+                Выбран файл: <strong>{selectedFile.name}</strong> 
+                ({(selectedFile.size / 1024).toFixed(1)} KB)
+              </Text>
+            )}
+
+            <Button 
+              onClick={handleUpload} 
+              disabled={!selectedFile || uploading}
+              className="mt-2"
+            >
+              {uploading ? "Загружаем файл..." : "Загрузить на сервер"}
+            </Button>
+          </div>
         </div>
 
-        <Button onClick={handleUpload} disabled={!file || uploading}>
-          {uploading ? "Загрузка..." : "Загрузить на сервер"}
-        </Button>
+        {/* Список файлов */}
+        <div className="mb-6 flex justify-between items-center">
+          <Text variant="header">Файлы проекта</Text>
 
-        {error && <Text variant="error">{error}</Text>}
+          <div className="max-w-xs w-full">
+            <TextField
+              value={search}
+              setValue={setSearch}
+              placeholder="Поиск по имени файла..."
+            />
+          </div>
+        </div>
 
-        {responseData && (
-          <div>
-            <Text variant="title">Содержимое файла:</Text>
-            {renderContent()}
+        {loading && <Text variant="desc" className="mb-4">Загрузка файлов...</Text>}
+        {error && <Text variant="error" className="mb-4">{error}</Text>}
+
+        {!loading && filteredFiles.length === 0 && !error && (
+          <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+            <Text variant="desc">
+              {search ? "Файлы по запросу не найдены" : "В проекте пока нет файлов"}
+            </Text>
           </div>
         )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredFiles.map((file) => (
+            <FileCard
+              key={file.id}
+              file={file}
+              onClick={() => navigate(`/projects/${projectId}/files/${file.id}`)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
