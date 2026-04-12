@@ -44,11 +44,9 @@ export function File() {
       setLoading(false);
     }
   }, [projectId, fileId]);
-
-  // ← Вот здесь главное изменение
   useEffect(() => {
     loadPage(1);
-  }, [loadPage]);   // зависимость от loadPage — это правильно
+  }, [loadPage]);
 
   const TokenElement = ({ token }: { token: Word }) => {
     const isO = token.label === "O";

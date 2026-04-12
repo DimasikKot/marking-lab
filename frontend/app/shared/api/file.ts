@@ -52,7 +52,9 @@ export const uploadFile = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error(error.response?.data?.detail || "Ошибка при загрузке файла");
+      const error_text =
+        error.response?.data?.detail || "Ошибка при загрузке файла";
+      toast.error(error_text);
     }
   }
 };
@@ -66,7 +68,9 @@ export const fetchFiles = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error(error.response?.data?.detail || "Ошибка при получении списка файлов");
+      const error_text =
+        error.response?.data?.detail || "Ошибка при получении списка файлов";
+      toast.error(error_text);
     }
     return undefined;
   }
@@ -77,7 +81,7 @@ export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
   page: number = 1,
-  rows: number = 100
+  rows: number = 40
 ): Promise<FileDetail | undefined> => {
   try {
     const response = await api.get<FileDetail>(
@@ -86,7 +90,9 @@ export const fetchFileById = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      toast.error(error.response?.data?.detail || "Ошибка при загрузке файла");
+      const error_text =
+        error.response?.data?.detail || "Ошибка при загрузке файла";
+      toast.error(error_text);
     }
     return undefined;
   }
