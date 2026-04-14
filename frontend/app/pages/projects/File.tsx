@@ -125,9 +125,9 @@ export function File() {
 
   return (
     <div>
-      <Header>Просмотр файла</Header>
+      <Header>Файлы проекта</Header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-start mb-10">
           <div>
             <Text variant="header" className="text-4xl">

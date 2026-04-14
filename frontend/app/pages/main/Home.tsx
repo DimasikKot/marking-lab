@@ -9,39 +9,41 @@ export function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full flex flex-col overflow-auto">
+    <div className="min-h-screen flex flex-col">
       <Header>Главная</Header>
 
-      {/* левая карточка + центр + правая карточка */}
-      <div className="flex-1 flex items-center justify-center gap-8 py-8">
-        {/* Левая карточка — Наши плюсы */}
-        <InfoCard
-          icon="rocket_launch"
-          iconClassName="bg-emerald-100 text-emerald-600"
-          title="Наши плюсы"
-          description="Современные инструменты разметки, высокая точность и удобный интерфейс для каждого пользователя."
-        />
+      {/* Центральная область */}
+      <div className="flex-1 flex justify-center">
+        <div className="max-w-6xl w-full flex gap-8 px-4 items-center">
+          {/* Левая карточка */}
+          <InfoCard
+            icon="rocket_launch"
+            iconClassName="bg-emerald-100 text-emerald-600"
+            title="Наши плюсы"
+            description="Современные инструменты разметки, высокая точность и удобный интерфейс для каждого пользователя."
+          />
 
-        {/* Центральная */}
-        <BigInfoCard
-          icon="auto_awesome"
-          title="Создать новый проект"
-          description="Начните работать с данными уже сегодня!"
-          ctaText="Перейти к проектам"
-          onClick={() => navigate("/projects")}
-        />
+          {/* Центральная */}
+          <BigInfoCard
+            icon="auto_awesome"
+            title="Создать новый проект"
+            description="Начните работать с данными уже сегодня!"
+            ctaText="Перейти к проектам"
+            onClick={() => navigate("/projects")}
+          />
 
-        {/* Правая карточка */}
-        <InfoCard
-          icon="bolt"
-          iconClassName="bg-blue-100 text-blue-600"
-          title="Мы предлагаем"
-          description="Удобную платформу для разметки и работы с данными."
-        />
+          {/* Правая карточка */}
+          <InfoCard
+            icon="bolt"
+            iconClassName="bg-blue-100 text-blue-600"
+            title="Мы предлагаем"
+            description="Удобную платформу для разметки и работы с данными."
+          />
+        </div>
       </div>
 
-      {/* Нижняя надпись */}
-      <div className="text-center my-12">
+      {/* Футер */}
+      <div className="text-center py-6">
         <Text variant="desc">Лаборатория разметки © 2026</Text>
       </div>
     </div>

@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { 
-  fetchFiles, 
-  uploadFile, 
-  type FileInList 
-} from "@/shared/api/file";
+import { fetchFiles, uploadFile, type FileInList } from "@/shared/api/file";
 
 import { Button } from "@/shared/components/Button";
 import { Text } from "@/shared/components/Text";
@@ -14,46 +10,35 @@ import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 
 export function Files() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectId = 0 } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
 
   const [files, setFiles] = useState<FileInList[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Загрузка списка файлов
-  const loadFiles = useCallback(async () => {
-    if (!projectId) {
-      setError("ID проекта не найден");
-      setLoading(false);
-      return;
-    }
-
+  const loadFiles = async () => {
     setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetchFiles(projectId);
-      if (response?.data) {
-        setFiles(response.data);
-      } else {
-        setError("Не удалось загрузить список файлов");
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError("Произошла ошибка при загрузке файлов");
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
+    const response = await fetchFiles(projectId);
+    setLoading(false);
+    if (response === undefined) return;
+    setFiles(response.data);
+  };
 
   useEffect(() => {
+    const loadFiles = async () => {
+      setLoading(true);
+      const response = await fetchFiles(projectId);
+      setLoading(false);
+      if (response === undefined) return;
+      setFiles(response.data);
+    };
+
     loadFiles();
-  }, [loadFiles]);
+  }, [projectId]);
 
   // Загрузка файла на сервер
   const handleUpload = async () => {
@@ -65,23 +50,25 @@ export function Files() {
 
     if (result) {
       setSelectedFile(null);
-      loadFiles();                    
+      loadFiles();
     }
 
     setUploading(false);
   };
 
   const filteredFiles = files.filter((file) =>
-    file.name.toLowerCase().includes(search.toLowerCase())
+    file.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div>
       <Header>Файлы проекта</Header>
 
-      <div className="max-w-5xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <Text variant="title" className="mb-6">Загрузка файла</Text>
+          <Text variant="title" className="mb-6">
+            Загрузка файла
+          </Text>
 
           <div className="flex flex-col gap-4">
             <Text variant="label">Выберите файл (TXT, CSV, JSON, MD)</Text>
@@ -102,13 +89,13 @@ export function Files() {
 
             {selectedFile && (
               <Text variant="desc">
-                Выбран файл: <strong>{selectedFile.name}</strong> 
-                ({(selectedFile.size / 1024).toFixed(1)} KB)
+                Выбран файл: <strong>{selectedFile.name}</strong>(
+                {(selectedFile.size / 1024).toFixed(1)} KB)
               </Text>
             )}
 
-            <Button 
-              onClick={handleUpload} 
+            <Button
+              onClick={handleUpload}
               disabled={!selectedFile || uploading}
               className="mt-2"
             >
@@ -130,13 +117,18 @@ export function Files() {
           </div>
         </div>
 
-        {loading && <Text variant="desc" className="mb-4">Загрузка файлов...</Text>}
-        {error && <Text variant="error" className="mb-4">{error}</Text>}
+        {loading && (
+          <Text variant="desc" className="mb-4">
+            Загрузка файлов...
+          </Text>
+        )}
 
-        {!loading && filteredFiles.length === 0 && !error && (
+        {!loading && filteredFiles.length === 0 && (
           <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
             <Text variant="desc">
-              {search ? "Файлы по запросу не найдены" : "В проекте пока нет файлов"}
+              {search
+                ? "Файлы по запросу не найдены"
+                : "В проекте пока нет файлов"}
             </Text>
           </div>
         )}
@@ -146,7 +138,9 @@ export function Files() {
             <FileCard
               key={file.id}
               file={file}
-              onClick={() => navigate(`/projects/${projectId}/files/${file.id}`)}
+              onClick={() =>
+                navigate(`/projects/${projectId}/files/${file.id}`)
+              }
             />
           ))}
         </div>
