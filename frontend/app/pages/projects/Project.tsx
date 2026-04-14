@@ -4,7 +4,7 @@ import { Button } from "@/shared/components/Button";
 
 export function Project() {
   const navigate = useNavigate();
-  const { projectId } = useParams();
+  const { projectId = "0" } = useParams();
 
   return (
     <div>

@@ -34,10 +34,9 @@ export interface GetFilesResponse {
   data: FileInList[];
 }
 
-// ====================== Загрузка файла ======================
 export const uploadFile = async (
   file: File,
-  name: string | undefined = "Мой файл",
+  name: string,
   projectId: string | number,
 ) => {
   const formData = new FormData();
@@ -53,45 +52,47 @@ export const uploadFile = async (
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const error_text =
-        error.response?.data?.detail || "Ошибка при загрузке файла";
+        error.response?.data?.detail ||
+        "Ошибка при загрузке файла: " + error.message;
       toast.error(error_text);
     }
   }
 };
 
-// ====================== Список файлов ======================
 export const fetchFiles = async (
-  projectId: string | number
+  projectId: string | number,
 ): Promise<GetFilesResponse | undefined> => {
   try {
-    const response = await api.get<GetFilesResponse>(`/projects/${projectId}/files`);
+    const response = await api.get<GetFilesResponse>(
+      `/projects/${projectId}/files`,
+    );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const error_text =
-        error.response?.data?.detail || "Ошибка при получении списка файлов";
+        error.response?.data?.detail ||
+        "Ошибка при получении списка файлов: " + error.message;
       toast.error(error_text);
     }
     return undefined;
   }
 };
 
-// ====================== Просмотр одного файла ======================
 export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
-  page: number = 1,
-  rows: number = 40
+  page: string | number = 1,
 ): Promise<FileDetail | undefined> => {
   try {
     const response = await api.get<FileDetail>(
-      `/projects/${projectId}/files/${fileId}?page=${page}&rows=${rows}`
+      `/projects/${projectId}/files/${fileId}?page=${page}`,
     );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const error_text =
-        error.response?.data?.detail || "Ошибка при загрузке файла";
+        error.response?.data?.detail ||
+        "Ошибка при выгрузке файла: " + error.message;
       toast.error(error_text);
     }
     return undefined;
