@@ -21,14 +21,12 @@ const PageNavigate = ({
   currentPage: page,
   totalPages: total_pages,
   navigate,
-  loading,
 }: {
   projectId: string;
   fileId: string;
   currentPage: string;
   totalPages: number;
   navigate: NavigateFunction;
-  loading: boolean;
 }) => (
   <div>
     {total_pages > 1 && (
@@ -39,7 +37,7 @@ const PageNavigate = ({
               `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
             )
           }
-          disabled={parseInt(page) === 1 || loading}
+          disabled={parseInt(page) === 1}
           variant="secondary"
         >
           ← Предыдущая
@@ -51,7 +49,7 @@ const PageNavigate = ({
               `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
             )
           }
-          disabled={parseInt(page) === total_pages || loading}
+          disabled={parseInt(page) === total_pages}
           variant="secondary"
         >
           Следующая →
@@ -152,7 +150,6 @@ export function File() {
           currentPage={page}
           totalPages={total_pages}
           navigate={navigate}
-          loading={loading}
         />
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
@@ -176,7 +173,6 @@ export function File() {
           currentPage={page}
           totalPages={total_pages}
           navigate={navigate}
-          loading={loading}
         />
       </div>
     </div>
