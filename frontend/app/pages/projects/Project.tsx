@@ -4,19 +4,24 @@ import { Text } from "@/shared/components/Text";
 import { Files } from "./Files";
 import { Experiments } from "./Experiments";
 import { Models } from "./Models";
+import { Header } from "@/shared/components/Header";
 
 export function Project() {
   return (
     <Tabs>
+      <Header>Проект</Header>
+
       <TabList>
         <Tab>
-          <Text variant="normal">Перейти в файлы</Text>
+          <Text variant="normal">Файлы</Text>
         </Tab>
+
         <Tab>
-          <Text variant="normal">Перейти в эксперименты</Text>
+          <Text variant="normal">Модели</Text>
         </Tab>
+
         <Tab>
-          <Text variant="normal">Перейти в модели</Text>
+          <Text variant="normal">Эксперименты</Text>
         </Tab>
       </TabList>
 
@@ -25,11 +30,11 @@ export function Project() {
       </TabPanel>
 
       <TabPanel>
-        <Experiments />
+        <Models />
       </TabPanel>
 
       <TabPanel>
-        <Models />
+        <Experiments />
       </TabPanel>
     </Tabs>
   );

@@ -18,26 +18,28 @@ import {
 const PageNavigate = ({
   projectId,
   fileId,
-  currentPage: page,
-  totalPages: total_pages,
+  className,
+  currentPage,
+  totalPages,
   navigate,
 }: {
   projectId: string;
   fileId: string;
+  className?: string;
   currentPage: string;
   totalPages: number;
   navigate: NavigateFunction;
 }) => (
   <div>
-    {total_pages > 1 && (
-      <div className="flex gap-3 mb-6">
+    {totalPages > 1 && (
+      <div className={`flex justify-center gap-3 mb-6 ${className}`}>
         <Button
           onClick={() =>
             navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+              `/projects/${projectId}/files/${fileId}/${parseInt(currentPage) - 1}`,
             )
           }
-          disabled={parseInt(page) === 1}
+          disabled={parseInt(currentPage) === 1}
           variant="secondary"
         >
           ← Предыдущая
@@ -46,10 +48,10 @@ const PageNavigate = ({
         <Button
           onClick={() =>
             navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+              `/projects/${projectId}/files/${fileId}/${parseInt(currentPage) + 1}`,
             )
           }
-          disabled={parseInt(page) === total_pages}
+          disabled={parseInt(currentPage) === totalPages}
           variant="secondary"
         >
           Следующая →
@@ -123,14 +125,11 @@ export function File() {
 
   return (
     <div>
-      <Header>Файлы проекта</Header>
+      <Header>Файл "{name}"</Header>
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-start mb-10">
           <div>
-            <Text variant="header" className="text-4xl">
-              {name}
-            </Text>
             <Text variant="desc" className="mt-2">
               Всего строк: {total_rows} • Страница {page} из {total_pages}
             </Text>
@@ -170,6 +169,7 @@ export function File() {
         <PageNavigate
           projectId={projectId}
           fileId={fileId}
+          className="mt-6"
           currentPage={page}
           totalPages={total_pages}
           navigate={navigate}

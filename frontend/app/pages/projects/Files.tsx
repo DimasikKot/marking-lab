@@ -5,7 +5,7 @@ import { fetchFiles, uploadFile, type FileInList } from "@/shared/api/file";
 
 import { Button } from "@/shared/components/Button";
 import { Text } from "@/shared/components/Text";
-import { Header } from "@/shared/components/Header";
+// import { Header } from "@/shared/components/Header";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 
@@ -62,7 +62,7 @@ export function Files() {
 
   return (
     <div>
-      <Header>Файлы проекта</Header>
+      {/* <Header>Файлы проекта</Header> */}
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">

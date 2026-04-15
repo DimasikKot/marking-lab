@@ -31,13 +31,13 @@ export const ProjectCard = ({
         ${className}
       `}
     >
-      <div>
-        <Text variant="title" isSpan>
+      <div className="flex flex-col">
+        <Text variant="title" className="overflow-auto" isSpan>
           {project.name}
         </Text>
 
         {project.description && (
-          <Text variant="desc" isSpan>
+          <Text variant="desc" className="overflow-auto" isSpan>
             {project.description}
           </Text>
         )}
