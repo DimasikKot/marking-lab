@@ -25,10 +25,10 @@ export function Components() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col pb-8 overflow-auto bg-white text-black items-center">
+    <div>
       <Header>Страница компонентов</Header>
 
-      <div className="w-6xl flex flex-col gap-4 mt-4">
+      <div className="max-w-6xl flex flex-col gap-4 mx-auto p-2">
         <div className="flex flex-col items-center gap-2">
           <Text variant="title">Компонент Text</Text>
 

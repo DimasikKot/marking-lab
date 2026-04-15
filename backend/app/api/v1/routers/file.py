@@ -98,8 +98,8 @@ class GetFileResponse(BaseModel):
 async def get_file(
     file_id: int,
     project_id: int,
-    page: int = 1,
-    rows: int = 40,
+    page: int | None = 1,
+    rows: int | None = 40,
     user_id: int = Depends(get_current_user_id),
     db=Depends(get_db),
 ):

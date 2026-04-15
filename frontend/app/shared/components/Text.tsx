@@ -1,19 +1,21 @@
 export const Text = ({
   variant = "normal",
   className = "",
+  maxLines = 3,
   isSelectable = false,
   isSpan = false,
   children,
 }: {
   variant?: "desc" | "label" | "error" | "normal" | "title" | "logo" | "header";
   className?: string;
+  maxLines?: number;
   isSelectable?: boolean;
   isSpan?: boolean;
   children: React.ReactNode;
 }) =>
   isSpan ? (
     <span
-      className={`line-clamp-3 leading-relaxed
+      className={`line-clamp-${maxLines} leading-relaxed
         ${isSelectable ? "select-text" : "select-none"}
         ${
           {
@@ -32,7 +34,7 @@ export const Text = ({
     </span>
   ) : (
     <p
-      className={`line-clamp-3 leading-relaxed
+      className={`line-clamp-${maxLines} leading-relaxed
         ${isSelectable ? "select-text" : "select-none"}
         ${
           {

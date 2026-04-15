@@ -14,11 +14,12 @@ export const Button = ({
   className?: string;
   disabled?: boolean;
   children: React.ReactNode;
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`h-min w-max hover:scale-105 active:scale-95 transition duration-200 select-none
+}) =>
+  !disabled && (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`h-min w-max hover:scale-105 active:scale-95 transition duration-200 select-none
       ${
         {
           primary: `bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded-full shadow-lg font-medium`,
@@ -26,7 +27,7 @@ export const Button = ({
           link: "text-blue-600 text-sm font-medium",
         }[variant]
       } ${className}`}
-  >
-    {children}
-  </button>
-);
+    >
+      {children}
+    </button>
+  );
