@@ -11,6 +11,7 @@ import {
   type Line,
   type Word,
 } from "@/shared/api/file";
+import { ButtonBack } from "@/shared/components/ButtonBack";
 
 export function File() {
   const { projectId = "0", fileId = "0", page = "1" } = useParams();
@@ -79,20 +80,13 @@ export function File() {
       <Header>Файл "{name}"</Header>
 
       <div className="max-w-6xl mx-auto m-6">
-        <div className="border border-gray-200 rounded-4xl p-6">
-          <div className="flex justify-between items-start mb-10">
-            <div>
-              <TextUI variant="desc" className="mt-2">
-                Всего строк: {total_rows} • Страница {page} из {total_pages}
-              </TextUI>
-            </div>
+        <ButtonBack onClick={() => navigate(`/projects/${projectId}/files`)} />
 
-            <ButtonUI
-              onClick={() => navigate(`/projects/${projectId}/files`)}
-              variant="secondary"
-            >
-              Назад к файлам
-            </ButtonUI>
+        <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
+          <div className="flex justify-between items-start">
+            <TextUI variant="desc" className="mt-2">
+              Всего строк: {total_rows} • Страница {page} из {total_pages}
+            </TextUI>
           </div>
 
           <PageNavigate

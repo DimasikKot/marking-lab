@@ -7,6 +7,7 @@ import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
+import { ButtonBack } from "@/shared/components/ButtonBack";
 
 export function Files() {
   const { projectId = 0 } = useParams<{ projectId: string }>();
@@ -58,6 +59,8 @@ export function Files() {
 
   return (
     <div className="max-w-6xl mx-auto m-6">
+      <ButtonBack onClick={() => navigate("/projects")} />
+
       <div className="mb-8 border border-gray-200 rounded-4xl p-6">
         <TextUI variant="title">Загрузка файла</TextUI>
 
@@ -74,8 +77,8 @@ export function Files() {
             }}
             className="block w-full text-sm text-gray-500 
                 file:mr-4 file:py-2 file:px-4 file:rounded-2xl file:border-0 
-                file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 
-                hover:file:bg-blue-100 transition-colors"
+                file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 
+                hover:file:bg-blue-200 transition-colors"
           />
 
           <ButtonUI

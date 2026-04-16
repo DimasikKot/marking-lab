@@ -14,6 +14,7 @@ import { ProjectCard } from "@/shared/components/ProjectCard";
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
 import { TextField } from "@/shared/components/TextField";
+import { ButtonBack } from "@/shared/components/ButtonBack";
 
 export function Projects() {
   const navigate = useNavigate();
@@ -109,6 +110,8 @@ export function Projects() {
       <Header>Страница проектов</Header>
 
       <div className="max-w-6xl mx-auto m-6">
+        <ButtonBack onClick={() => navigate("/")} />
+
         <div className="border border-gray-200 rounded-4xl p-6">
           <div className="flex justify-between items-center mb-6">
             <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
@@ -139,7 +142,7 @@ export function Projects() {
                 className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
               />
 
-              <div className="flex flex-col gap-4 bg-white rounded-lg shadow-xl w-xl p-6 z-10">
+              <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
                 <TextUI variant="title">
                   {editingProject ? "Редактировать проект" : "Создать проект"}
                 </TextUI>
@@ -167,7 +170,7 @@ export function Projects() {
                     />
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center pl-4">
                     <ButtonUI
                       onClick={() => setIsFormOpen(false)}
                       variant="secondary"
