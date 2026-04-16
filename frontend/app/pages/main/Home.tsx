@@ -13,8 +13,8 @@ export function Home() {
       <Header>Главная</Header>
 
       {/* Центральная область */}
-      <div className="flex-1 flex justify-center">
-        <div className="max-w-6xl w-full flex gap-8 px-4 items-center">
+      <div className="flex-1 flex m-6 justify-center">
+        <div className="max-w-6xl w-full flex gap-8 items-center">
           {/* Левая карточка */}
           <InfoCard
             icon="rocket_launch"

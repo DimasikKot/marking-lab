@@ -60,7 +60,7 @@ export function Files() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto m-6">
       <div className="mb-8">
         <TextUI variant="title" className="mb-6">
           Загрузка файла

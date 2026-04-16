@@ -78,7 +78,7 @@ export function File() {
     <div>
       <Header>Файл "{name}"</Header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto m-6">
         <div className="flex justify-between items-start mb-10">
           <div>
             <TextUI variant="desc" className="mt-2">

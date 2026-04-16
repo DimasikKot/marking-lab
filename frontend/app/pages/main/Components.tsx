@@ -28,7 +28,7 @@ export function Components() {
     <div>
       <Header>Страница компонентов</Header>
 
-      <div className="max-w-6xl flex flex-col gap-4 mx-auto p-2">
+      <div className="max-w-6xl flex flex-col gap-4 mx-auto m-2">
         <div className="flex flex-col items-center gap-2">
           <TextUI variant="title">Компонент Text</TextUI>
 

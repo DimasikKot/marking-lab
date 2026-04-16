@@ -108,7 +108,7 @@ export function Projects() {
     <div>
       <Header>Страница проектов</Header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto m-6">
         <div className="flex justify-between items-center mb-6">
           <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
         </div>

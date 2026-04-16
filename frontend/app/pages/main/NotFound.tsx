@@ -5,7 +5,7 @@ export function NotFound() {
     <div>
       <Header>Страница не найдена</Header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto m-6">
         <p>Страница не найдена</p>
       </div>
     </div>

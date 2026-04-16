@@ -27,7 +27,7 @@ export function Project() {
       <Tabs>
         <Header>
           <TabList className="h-full">
-            <div className="flex max-w-6xl mx-auto h-full items-end px-6">
+            <div className="flex max-w-6xl mx-auto h-full items-end gap-12">
               {/* Файлы */}
               <Tab
                 onClick={() => navigate(`/projects/${projectId}/files`)}

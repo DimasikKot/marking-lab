@@ -5,7 +5,7 @@ export function Model() {
     <div>
       <Header>Страница модели</Header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto m-6">
         <p>Страница модели</p>
       </div>
     </div>

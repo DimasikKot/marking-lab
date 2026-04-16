@@ -5,7 +5,7 @@ export function Experiments() {
     <div>
       <Header>Эксперименты проекта</Header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto m-6">
         <p>Страница экспериментов</p>
       </div>
     </div>
