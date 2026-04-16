@@ -23,11 +23,12 @@ export const ProjectCard = ({
 
   return (
     <div
+      onClick={handleNavigateClick}
       className={`
         flex flex-col justify-between
         bg-white border border-gray-300 rounded-2xl p-4
         hover:border-gray-400 hover:shadow-md
-        transition-all duration-200
+        transition-all duration-200 cursor-pointer
         ${className}
       `}
     >
@@ -58,14 +59,6 @@ export const ProjectCard = ({
         </div>
 
         <div className="flex flex-row justify-between mt-4">
-          <ButtonUI
-            onClick={handleNavigateClick}
-            variant="secondary"
-            className="text-green-600 hover:text-green-800"
-          >
-            Перейти в проект
-          </ButtonUI>
-
           <ButtonUI
             onClick={handleEditClick}
             variant="secondary"

@@ -19,7 +19,10 @@ export const ButtonUI = ({
 }) =>
   !hidden && (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation(); // Останавливаем всплытие
+        onClick();
+      }}
       disabled={disabled}
       className={`h-min w-max transition duration-200 select-none
       ${
