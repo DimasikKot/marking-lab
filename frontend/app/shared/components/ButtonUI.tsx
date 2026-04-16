@@ -7,26 +7,28 @@ export const ButtonUI = ({
   variant = "primary",
   className = "",
   disabled = false,
+  hidden = false,
   children,
 }: {
   onClick?: () => void;
   variant?: "primary" | "secondary" | "link";
   className?: string;
   disabled?: boolean;
+  hidden?: boolean;
   children: React.ReactNode;
 }) =>
-  !disabled && (
+  !hidden && (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`h-min w-max hover:scale-105 active:scale-95 transition duration-200 select-none
+      className={`h-min w-max transition duration-200 select-none
       ${
         {
-          primary: `bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded-full shadow-lg font-medium`,
-          secondary: `text-blue-600 hover:text-blue-800 font-medium`,
-          link: "text-blue-600 text-sm font-medium",
+          primary: `${!disabled ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600"} text-white py-2 px-4 rounded-full shadow-lg font-medium`,
+          secondary: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600"} font-medium`,
+          link: `${!disabled ? "text-blue-600" : "text-gray-600"} text-sm font-medium`,
         }[variant]
-      } ${className}`}
+      } ${!disabled ? "cursor-pointer hover:scale-105 active:scale-95" : ""} ${className}`}
     >
       {children}
     </button>

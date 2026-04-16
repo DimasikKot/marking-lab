@@ -5,7 +5,6 @@ import { fetchFiles, uploadFile, type FileInList } from "@/shared/api/file";
 
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
-// import { Header } from "@/shared/components/Header";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 
@@ -61,89 +60,83 @@ export function Files() {
   );
 
   return (
-    <div>
-      {/* <Header>Файлы проекта</Header> */}
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="mb-8">
+        <TextUI variant="title" className="mb-6">
+          Загрузка файла
+        </TextUI>
 
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8">
-          <TextUI variant="title" className="mb-6">
-            Загрузка файла
-          </TextUI>
+        <div className="flex flex-col gap-4">
+          <TextUI variant="label">Выберите файл (TXT, CSV, JSON, MD)</TextUI>
 
-          <div className="flex flex-col gap-4">
-            <TextUI variant="label">Выберите файл (TXT, CSV, JSON, MD)</TextUI>
-
-            <input
-              type="file"
-              accept=".txt,.csv,.json,.md"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  setSelectedFile(e.target.files[0]);
-                }
-              }}
-              className="block w-full text-sm text-gray-500 
+          <input
+            type="file"
+            accept=".txt,.csv,.json,.md"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setSelectedFile(e.target.files[0]);
+              }
+            }}
+            className="block w-full text-sm text-gray-500 
                 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 
                 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 
                 hover:file:bg-blue-100 transition-colors"
-            />
+          />
 
-            {selectedFile && (
-              <TextUI variant="desc">
-                Выбран файл: <strong>{selectedFile.name}</strong>(
-                {(selectedFile.size / 1024).toFixed(1)} KB)
-              </TextUI>
-            )}
-
-            <ButtonUI
-              onClick={handleUpload}
-              disabled={!selectedFile || uploading}
-              className="mt-2"
-            >
-              {uploading ? "Загружаем файл..." : "Загрузить на сервер"}
-            </ButtonUI>
-          </div>
-        </div>
-
-        {/* Список файлов */}
-        <div className="mb-6 flex justify-between items-center">
-          <TextUI variant="header">Файлы проекта</TextUI>
-
-          <div className="max-w-xs w-full">
-            <TextField
-              value={search}
-              setValue={setSearch}
-              placeholder="Поиск по имени файла..."
-            />
-          </div>
-        </div>
-
-        {loading && (
-          <TextUI variant="desc" className="mb-4">
-            Загрузка файлов...
-          </TextUI>
-        )}
-
-        {!loading && filteredFiles.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+          {selectedFile && (
             <TextUI variant="desc">
-              {search
-                ? "Файлы по запросу не найдены"
-                : "В проекте пока нет файлов"}
+              Выбран файл: <strong>{selectedFile.name}</strong>(
+              {(selectedFile.size / 1024).toFixed(1)} KB)
             </TextUI>
-          </div>
-        )}
+          )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredFiles.map((file) => (
-            <FileCard
-              key={file.id}
-              file={file}
-              onClick={() =>
-                navigate(`/projects/${projectId}/files/${file.id}`)
-              }
-            />
-          ))}
+          <ButtonUI
+            onClick={handleUpload}
+            disabled={!selectedFile || uploading}
+            className="mt-2"
+          >
+            {uploading ? "Загружаем файл..." : "Загрузить на сервер"}
+          </ButtonUI>
         </div>
+      </div>
+
+      {/* Список файлов */}
+      <div className="mb-6 flex justify-between items-center">
+        <TextUI variant="header">Файлы проекта</TextUI>
+
+        <div className="max-w-xs w-full">
+          <TextField
+            value={search}
+            setValue={setSearch}
+            placeholder="Поиск по имени файла..."
+          />
+        </div>
+      </div>
+
+      {loading && (
+        <TextUI variant="desc" className="mb-4">
+          Загрузка файлов...
+        </TextUI>
+      )}
+
+      {!loading && filteredFiles.length === 0 && (
+        <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+          <TextUI variant="desc">
+            {search
+              ? "Файлы по запросу не найдены"
+              : "В проекте пока нет файлов"}
+          </TextUI>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {filteredFiles.map((file) => (
+          <FileCard
+            key={file.id}
+            file={file}
+            onClick={() => navigate(`/projects/${projectId}/files/${file.id}`)}
+          />
+        ))}
       </div>
     </div>
   );

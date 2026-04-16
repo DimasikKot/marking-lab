@@ -1,65 +1,16 @@
 import { useState, useEffect } from "react";
-import {
-  useParams,
-  useNavigate,
-  type NavigateFunction,
-} from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
+import { PageNavigate } from "@/shared/components/PageNavigate";
 import {
   fetchFileById,
   type FileDetail,
   type Line,
   type Word,
 } from "@/shared/api/file";
-
-const PageNavigate = ({
-  projectId,
-  fileId,
-  className,
-  currentPage,
-  totalPages,
-  navigate,
-}: {
-  projectId: string;
-  fileId: string;
-  className?: string;
-  currentPage: string;
-  totalPages: number;
-  navigate: NavigateFunction;
-}) => (
-  <div>
-    {totalPages > 1 && (
-      <div className={`flex justify-center gap-3 mb-6 ${className}`}>
-        <ButtonUI
-          onClick={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(currentPage) - 1}`,
-            )
-          }
-          disabled={parseInt(currentPage) === 1}
-          variant="secondary"
-        >
-          ← Предыдущая
-        </ButtonUI>
-
-        <ButtonUI
-          onClick={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(currentPage) + 1}`,
-            )
-          }
-          disabled={parseInt(currentPage) === totalPages}
-          variant="secondary"
-        >
-          Следующая →
-        </ButtonUI>
-      </div>
-    )}
-  </div>
-);
 
 export function File() {
   const { projectId = "0", fileId = "0", page = "1" } = useParams();
@@ -144,11 +95,18 @@ export function File() {
         </div>
 
         <PageNavigate
-          projectId={projectId}
-          fileId={fileId}
           currentPage={page}
           totalPages={total_pages}
-          navigate={navigate}
+          onBack={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+            )
+          }
+          onNext={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+            )
+          }
         />
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
@@ -167,12 +125,19 @@ export function File() {
         </div>
 
         <PageNavigate
-          projectId={projectId}
-          fileId={fileId}
           className="mt-6"
           currentPage={page}
           totalPages={total_pages}
-          navigate={navigate}
+          onBack={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+            )
+          }
+          onNext={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+            )
+          }
         />
       </div>
     </div>

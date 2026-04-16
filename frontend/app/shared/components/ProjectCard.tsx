@@ -27,7 +27,7 @@ export const ProjectCard = ({
         flex flex-col justify-between
         bg-white border border-gray-300 rounded-2xl p-4
         hover:border-gray-400 hover:shadow-md
-        transition-all duration-200 cursor-pointer
+        transition-all duration-200
         ${className}
       `}
     >
