@@ -30,12 +30,7 @@ export function InfoCard({
         </TextUI>
 
         {/* Описание */}
-        <TextUI
-          variant="label"
-          isSpan
-          className="text-center mt-2"
-          maxLines={4}
-        >
+        <TextUI variant="label" isSpan className="flex text-center mt-2">
           {description}
         </TextUI>
       </div>
