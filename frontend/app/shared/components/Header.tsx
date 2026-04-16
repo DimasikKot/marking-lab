@@ -11,7 +11,7 @@ import { TextUI } from "@/shared/components/TextUI";
 const Logo = ({ onClick }: { onClick?: () => void }) => (
   <div
     onClick={onClick}
-    className="h-14 hover:bg-gray-400/30 transition duration-200 flex items-center gap-2 cursor-pointer p-1 rounded-xl"
+    className="w-2xl h-14 hover:bg-gray-400/30 transition duration-200 flex items-center gap-2 cursor-pointer p-1 rounded-xl"
   >
     <img src={logo} alt="React logo" className="select-none" />
     <TextUI variant="logo" className="mb-1">
@@ -76,11 +76,11 @@ export function Header({
     >
       <Logo onClick={() => navigate("/")} />
 
-      <TextUI variant="header" className={`${username ? "mr-1" : "ml-6"}`}>
+      <TextUI variant="header" className={`w-2xl text-center`}>
         {children}
       </TextUI>
 
-      <div className="flex gap-4 items-center rounded-3xl">
+      <div className="flex gap-4 items-center rounded-3xl w-2xl justify-end">
         {/* Индикаторы состояния контейнеров */}
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
