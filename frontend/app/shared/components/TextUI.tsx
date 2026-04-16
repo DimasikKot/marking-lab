@@ -25,7 +25,7 @@ export const TextUI = ({
             normal: "text-black text-base font-medium",
             title: "text-black text-xl font-bold",
             logo: "text-black text-2xl font-bold",
-            header: "text-black text-3xl font-bold",
+            header: "text-black text-[26px] font-bold",
           }[variant]
         }
         ${className}`}

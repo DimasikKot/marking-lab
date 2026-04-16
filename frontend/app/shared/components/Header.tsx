@@ -11,7 +11,7 @@ import { TextUI } from "@/shared/components/TextUI";
 const Logo = ({ onClick }: { onClick?: () => void }) => (
   <div
     onClick={onClick}
-    className="h-12 hover:scale-102 active:scale-95 transition duration-200 flex items-center gap-2 cursor-pointer"
+    className="h-14 hover:bg-gray-400/30 transition duration-200 flex items-center gap-2 cursor-pointer p-1 rounded-xl"
   >
     <img src={logo} alt="React logo" className="select-none" />
     <TextUI variant="logo" className="mb-1">
@@ -37,7 +37,13 @@ const UserIcon = ({
   </button>
 );
 
-export function Header({ children }: { children?: React.ReactNode }) {
+export function Header({
+  className = "",
+  children,
+}: {
+  className?: string;
+  children?: React.ReactNode;
+}) {
   const navigate = useNavigate();
 
   const [backendStatus, setBackendStatus] = useState(false);
@@ -65,10 +71,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
   }, []); // <- пустой массив = выполнится только один раз при монтировани
 
   return (
-    <div className="h-auto w-full flex items-center justify-between p-3">
+    <div
+      className={`h-16 w-full flex items-center justify-between p-1 ${className}`}
+    >
       <Logo onClick={() => navigate("/")} />
 
-      <TextUI variant="header" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
+      <TextUI variant="header" className={`${username ? "mr-1" : "ml-6"}`}>
         {children}
       </TextUI>
 

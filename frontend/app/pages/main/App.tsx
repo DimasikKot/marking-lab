@@ -8,11 +8,8 @@ import {
   Project,
   Projects,
   File,
-  Files,
   Model,
-  Models,
   Experiment,
-  Experiments,
 } from "@/pages/projects/index.ts";
 import { ToasterUI } from "@/shared/components/ToasterUI";
 
@@ -34,7 +31,7 @@ export function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:projectId" element={<Project />} />
 
-            <Route path="/projects/:projectId/files" element={<Files />} />
+            <Route path="/projects/:projectId/files" element={<Project />} />
             <Route
               path="/projects/:projectId/files/:fileId"
               element={<File />}
@@ -44,7 +41,7 @@ export function App() {
               element={<File />}
             />
 
-            <Route path="/projects/:projectId/models" element={<Models />} />
+            <Route path="/projects/:projectId/models" element={<Project />} />
             <Route
               path="/projects/:projectId/models/:modelId"
               element={<Model />}
@@ -52,7 +49,7 @@ export function App() {
 
             <Route
               path="/projects/:projectId/experiments"
-              element={<Experiments />}
+              element={<Project />}
             />
             <Route
               path="/projects/:projectId/experiments/:experimentId"
