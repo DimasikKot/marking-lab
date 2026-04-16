@@ -1,6 +1,6 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { Header } from "@/shared/components/Header";
@@ -11,26 +11,38 @@ import { Models } from "./Models";
 export function Project() {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
-  // const location = useLocation();
+  const location = useLocation();
 
   // Определяем активную вкладку по текущему pathname
-  // const pathname = location.pathname;
+  const pathname = location.pathname;
 
-  // const isFilesActive = pathname.startsWith(`/projects/${projectId}/files`);
-  // const isModelsActive = pathname.startsWith(`/projects/${projectId}/models`);
-  // const isExperimentsActive = pathname.startsWith(
-  //   `/projects/${projectId}/experiments`,
-  // );
+  // Определяем индекс активной вкладки по пути
+  let selectedIndex = 0; // по умолчанию — Файлы
+
+  if (pathname.startsWith(`/projects/${projectId}/models`)) {
+    selectedIndex = 1;
+  } else if (pathname.startsWith(`/projects/${projectId}/experiments`)) {
+    selectedIndex = 2;
+  }
+
+  // Обработчик смены вкладки — меняем URL
+  const handleSelect = (index: number) => {
+    let newPath = `/projects/${projectId}/files`;
+
+    if (index === 1) newPath = `/projects/${projectId}/models`;
+    else if (index === 2) newPath = `/projects/${projectId}/experiments`;
+
+    navigate(newPath);
+  };
 
   return (
     <div>
-      <Tabs>
+      <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
         <Header>
           <TabList className="h-full">
             <div className="flex max-w-6xl mx-auto h-full items-end gap-12">
               {/* Файлы */}
               <Tab
-                onClick={() => navigate(`/projects/${projectId}/files`)}
                 selectedClassName="active"
                 className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
               >
@@ -42,7 +54,6 @@ export function Project() {
 
               {/* Модели */}
               <Tab
-                onClick={() => navigate(`/projects/${projectId}/models`)}
                 selectedClassName="active"
                 className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
               >
@@ -54,7 +65,6 @@ export function Project() {
 
               {/* Эксперименты */}
               <Tab
-                onClick={() => navigate(`/projects/${projectId}/experiments`)}
                 selectedClassName="active"
                 className="group relative px-8 pb-2 text-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
               >
