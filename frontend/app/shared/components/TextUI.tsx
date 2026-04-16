@@ -1,4 +1,4 @@
-export const Text = ({
+export const TextUI = ({
   variant = "normal",
   className = "",
   maxLines = 3,

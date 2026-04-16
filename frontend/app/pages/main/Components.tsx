@@ -2,10 +2,10 @@ import type { FileInList } from "@/shared/api/file";
 import type { Project } from "@/shared/api/projects";
 import { FileCard } from "@/shared/components/FileCard";
 import { Header } from "@/shared/components/Header";
-import { Button } from "@/shared/components/Button";
+import { ButtonUI } from "@/shared/components/ButtonUI";
 import { ProjectCard } from "@/shared/components/ProjectCard";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 
 export function Components() {
   const project: Project = {
@@ -30,28 +30,28 @@ export function Components() {
 
       <div className="max-w-6xl flex flex-col gap-4 mx-auto p-2">
         <div className="flex flex-col items-center gap-2">
-          <Text variant="title">Компонент Text</Text>
+          <TextUI variant="title">Компонент Text</TextUI>
 
           <div className="flex flex-col items-center justify-center gap-1">
-            <Text variant="desc">description</Text>
-            <Text variant="normal">normal</Text>
-            <Text variant="title">title</Text>
-            <Text variant="header">header</Text>
+            <TextUI variant="desc">description</TextUI>
+            <TextUI variant="normal">normal</TextUI>
+            <TextUI variant="title">title</TextUI>
+            <TextUI variant="header">header</TextUI>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <Text variant="title">Компонент Button</Text>
+          <TextUI variant="title">Компонент Button</TextUI>
 
           <div className="flex flex-col items-center justify-center gap-1">
-            <Button variant="primary">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="link">Link</Button>
+            <ButtonUI variant="primary">Primary</ButtonUI>
+            <ButtonUI variant="secondary">Secondary</ButtonUI>
+            <ButtonUI variant="link">Link</ButtonUI>
           </div>
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <Text variant="title">Компонент StatusIndicator</Text>
+          <TextUI variant="title">Компонент StatusIndicator</TextUI>
 
           <div className="flex flex-row items-center justify-center gap-1">
             <StatusIndicator status={true} />
@@ -60,7 +60,7 @@ export function Components() {
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <Text variant="title">Компонент ProjectCard</Text>
+          <TextUI variant="title">Компонент ProjectCard</TextUI>
 
           <div className="flex flex-row gap-2">
             <ProjectCard project={project} />
@@ -69,7 +69,7 @@ export function Components() {
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <Text variant="title">Компонент FileCard</Text>
+          <TextUI variant="title">Компонент FileCard</TextUI>
 
           <div className="flex flex-row gap-2">
             <FileCard file={fileInList} />

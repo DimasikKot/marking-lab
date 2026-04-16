@@ -14,12 +14,12 @@ import {
   Experiment,
   Experiments,
 } from "@/pages/projects/index.ts";
-import { CustomToaster } from "@/shared/components/CustomToaster";
+import { ToasterUI } from "@/shared/components/ToasterUI";
 
 export function App() {
   return (
     <Router>
-      <CustomToaster />
+      <ToasterUI />
       <div className="bg-white">
         <Routes>
           <Route path="/" element={<Home />} />

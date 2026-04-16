@@ -6,8 +6,8 @@ import {
 } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
-import { Text } from "@/shared/components/Text";
-import { Button } from "@/shared/components/Button";
+import { TextUI } from "@/shared/components/TextUI";
+import { ButtonUI } from "@/shared/components/ButtonUI";
 import {
   fetchFileById,
   type FileDetail,
@@ -33,7 +33,7 @@ const PageNavigate = ({
   <div>
     {totalPages > 1 && (
       <div className={`flex justify-center gap-3 mb-6 ${className}`}>
-        <Button
+        <ButtonUI
           onClick={() =>
             navigate(
               `/projects/${projectId}/files/${fileId}/${parseInt(currentPage) - 1}`,
@@ -43,9 +43,9 @@ const PageNavigate = ({
           variant="secondary"
         >
           ← Предыдущая
-        </Button>
+        </ButtonUI>
 
-        <Button
+        <ButtonUI
           onClick={() =>
             navigate(
               `/projects/${projectId}/files/${fileId}/${parseInt(currentPage) + 1}`,
@@ -55,7 +55,7 @@ const PageNavigate = ({
           variant="secondary"
         >
           Следующая →
-        </Button>
+        </ButtonUI>
       </div>
     )}
   </div>
@@ -106,7 +106,7 @@ export function File() {
   if (loading && !fileData) {
     return (
       <div className="flex justify-center py-32">
-        <Text variant="desc">Загрузка файла...</Text>
+        <TextUI variant="desc">Загрузка файла...</TextUI>
       </div>
     );
   }
@@ -114,9 +114,9 @@ export function File() {
   if (!fileData) {
     return (
       <div className="max-w-md mx-auto mt-20 text-center">
-        <Button onClick={() => navigate(`/projects/${projectId}/files`)}>
+        <ButtonUI onClick={() => navigate(`/projects/${projectId}/files`)}>
           Назад к списку файлов
-        </Button>
+        </ButtonUI>
       </div>
     );
   }
@@ -130,17 +130,17 @@ export function File() {
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-start mb-10">
           <div>
-            <Text variant="desc" className="mt-2">
+            <TextUI variant="desc" className="mt-2">
               Всего строк: {total_rows} • Страница {page} из {total_pages}
-            </Text>
+            </TextUI>
           </div>
 
-          <Button
+          <ButtonUI
             onClick={() => navigate(`/projects/${projectId}/files`)}
             variant="secondary"
           >
             Назад к файлам
-          </Button>
+          </ButtonUI>
         </div>
 
         <PageNavigate

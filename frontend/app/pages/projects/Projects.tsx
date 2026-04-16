@@ -9,10 +9,10 @@ import {
   type Project,
   type PostProjectRequest,
 } from "@/shared/api/projects";
-import { Button } from "@/shared/components/Button";
+import { ButtonUI } from "@/shared/components/ButtonUI";
 import { ProjectCard } from "@/shared/components/ProjectCard";
 import { Header } from "@/shared/components/Header";
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 import { TextField } from "@/shared/components/TextField";
 
 export function Projects() {
@@ -110,10 +110,10 @@ export function Projects() {
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <Button onClick={handleCreateClick}>+ Новый проект</Button>
+          <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
         </div>
 
-        {loading && <Text variant="desc">Загрузка...</Text>}
+        {loading && <TextUI variant="desc">Загрузка...</TextUI>}
 
         {!loading && projects.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,13 +137,13 @@ export function Projects() {
             />
 
             <div className="flex flex-col gap-4 bg-white rounded-lg shadow-xl w-xl p-6 z-10">
-              <Text variant="title">
+              <TextUI variant="title">
                 {editingProject ? "Редактировать проект" : "Создать проект"}
-              </Text>
+              </TextUI>
 
               <div className="flex flex-col gap-4">
                 <div>
-                  <Text variant="label">Название</Text>
+                  <TextUI variant="label">Название</TextUI>
 
                   <TextField
                     value={formData.name}
@@ -153,7 +153,7 @@ export function Projects() {
                 </div>
 
                 <div>
-                  <Text variant="label">Описание</Text>
+                  <TextUI variant="label">Описание</TextUI>
 
                   <TextField
                     name="description"
@@ -165,16 +165,16 @@ export function Projects() {
                 </div>
 
                 <div className="flex justify-between">
-                  <Button
+                  <ButtonUI
                     onClick={() => setIsFormOpen(false)}
                     variant="secondary"
                   >
                     Отмена
-                  </Button>
+                  </ButtonUI>
 
-                  <Button onClick={handleSubmitClick}>
+                  <ButtonUI onClick={handleSubmitClick}>
                     {editingProject ? "Сохранить" : "Создать"}
-                  </Button>
+                  </ButtonUI>
                 </div>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 
 import type { FileInList as File } from "@/shared/api/file";
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 
 export const FileCard = ({
   file,
@@ -26,14 +26,14 @@ export const FileCard = ({
         ${className}
       `}
     >
-      <Text variant="normal">{file.name}</Text>
+      <TextUI variant="normal">{file.name}</TextUI>
 
-      <Text variant="desc" className="mt-4">
+      <TextUI variant="desc" className="mt-4">
         {new Date(date).toLocaleDateString("ru-RU", {
           month: "short",
           day: "numeric",
         })}
-      </Text>
+      </TextUI>
     </div>
   );
 };

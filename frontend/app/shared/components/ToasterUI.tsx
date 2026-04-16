@@ -1,6 +1,6 @@
 import { Toaster } from "react-hot-toast";
 
-export const CustomToaster = () => (
+export const ToasterUI = () => (
   <Toaster
     position="top-center"
     gutter={8}

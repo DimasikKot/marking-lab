@@ -1,4 +1,4 @@
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 
 export function BigInfoCard({
   icon,
@@ -33,13 +33,13 @@ export function BigInfoCard({
 
         {/* Текстовая часть */}
         <div className="text-center">
-          <Text variant="header" className="text-white">
+          <TextUI variant="header" className="text-white">
             {title}
-          </Text>
+          </TextUI>
 
-          <Text variant="desc" className="text-zinc-300 mt-2">
+          <TextUI variant="desc" className="text-zinc-300 mt-2">
             {description}
-          </Text>
+          </TextUI>
         </div>
 
         {/* Внутренняя кнопка-CTA */}

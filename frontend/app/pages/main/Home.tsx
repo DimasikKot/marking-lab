@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/shared/components/Header";
 import { InfoCard } from "@/shared/components/InfoCard";
 import { BigInfoCard } from "@/shared/components/BigInfoCard";
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 
 export function Home() {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export function Home() {
 
       {/* Футер */}
       <div className="text-center py-6">
-        <Text variant="desc">Лаборатория разметки © 2026</Text>
+        <TextUI variant="desc">Лаборатория разметки © 2026</TextUI>
       </div>
     </div>
   );

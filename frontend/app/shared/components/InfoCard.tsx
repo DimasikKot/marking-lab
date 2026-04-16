@@ -1,4 +1,4 @@
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 
 export function InfoCard({
   icon = "info",
@@ -25,14 +25,19 @@ export function InfoCard({
         </div>
 
         {/* Заголовок */}
-        <Text variant="logo" className="text-center">
+        <TextUI variant="logo" className="text-center">
           {title}
-        </Text>
+        </TextUI>
 
         {/* Описание */}
-        <Text variant="label" isSpan className="text-center mt-2" maxLines={4}>
+        <TextUI
+          variant="label"
+          isSpan
+          className="text-center mt-2"
+          maxLines={4}
+        >
           {description}
-        </Text>
+        </TextUI>
       </div>
     </div>
   );

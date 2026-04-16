@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { fetchFiles, uploadFile, type FileInList } from "@/shared/api/file";
 
-import { Button } from "@/shared/components/Button";
-import { Text } from "@/shared/components/Text";
+import { ButtonUI } from "@/shared/components/ButtonUI";
+import { TextUI } from "@/shared/components/TextUI";
 // import { Header } from "@/shared/components/Header";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
@@ -66,12 +66,12 @@ export function Files() {
 
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <Text variant="title" className="mb-6">
+          <TextUI variant="title" className="mb-6">
             Загрузка файла
-          </Text>
+          </TextUI>
 
           <div className="flex flex-col gap-4">
-            <Text variant="label">Выберите файл (TXT, CSV, JSON, MD)</Text>
+            <TextUI variant="label">Выберите файл (TXT, CSV, JSON, MD)</TextUI>
 
             <input
               type="file"
@@ -88,25 +88,25 @@ export function Files() {
             />
 
             {selectedFile && (
-              <Text variant="desc">
+              <TextUI variant="desc">
                 Выбран файл: <strong>{selectedFile.name}</strong>(
                 {(selectedFile.size / 1024).toFixed(1)} KB)
-              </Text>
+              </TextUI>
             )}
 
-            <Button
+            <ButtonUI
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
               className="mt-2"
             >
               {uploading ? "Загружаем файл..." : "Загрузить на сервер"}
-            </Button>
+            </ButtonUI>
           </div>
         </div>
 
         {/* Список файлов */}
         <div className="mb-6 flex justify-between items-center">
-          <Text variant="header">Файлы проекта</Text>
+          <TextUI variant="header">Файлы проекта</TextUI>
 
           <div className="max-w-xs w-full">
             <TextField
@@ -118,18 +118,18 @@ export function Files() {
         </div>
 
         {loading && (
-          <Text variant="desc" className="mb-4">
+          <TextUI variant="desc" className="mb-4">
             Загрузка файлов...
-          </Text>
+          </TextUI>
         )}
 
         {!loading && filteredFiles.length === 0 && (
           <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
-            <Text variant="desc">
+            <TextUI variant="desc">
               {search
                 ? "Файлы по запросу не найдены"
                 : "В проекте пока нет файлов"}
-            </Text>
+            </TextUI>
           </div>
         )}
 

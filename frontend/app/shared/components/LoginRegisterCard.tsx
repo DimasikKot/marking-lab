@@ -1,8 +1,8 @@
 import React from "react";
 import logo from "@/assets/logo/logo.svg";
 
-import { Text } from "@/shared/components/Text";
-import { Button } from "@/shared/components/Button";
+import { TextUI } from "@/shared/components/TextUI";
+import { ButtonUI } from "@/shared/components/ButtonUI";
 
 export function LoginRegisterCard({
   title,
@@ -41,14 +41,14 @@ export function LoginRegisterCard({
 
         <div className="flex gap-12">
           <div className="flex-1">
-            <Text variant="title" className="text-left mb-2">
+            <TextUI variant="title" className="text-left mb-2">
               {title}
-            </Text>
+            </TextUI>
 
             {subtitle && (
-              <Text variant="desc" className="text-left">
+              <TextUI variant="desc" className="text-left">
                 {subtitle}
-              </Text>
+              </TextUI>
             )}
           </div>
 
@@ -56,9 +56,9 @@ export function LoginRegisterCard({
             <div>{children}</div>
             {hasAccountLink && (
               <div className="flex justify-start mt-4">
-                <Button onClick={hasAccountLink.onClick} variant="link">
+                <ButtonUI onClick={hasAccountLink.onClick} variant="link">
                   {hasAccountLink.text}
-                </Button>
+                </ButtonUI>
               </div>
             )}
           </div>
@@ -66,23 +66,23 @@ export function LoginRegisterCard({
 
         <div className="mt-8 flex items-center justify-between">
           {backButton && (
-            <Button
+            <ButtonUI
               onClick={backButton.onClick}
               variant="secondary"
               className="px-6 py-3"
             >
               {backButton.text || "Назад"}
-            </Button>
+            </ButtonUI>
           )}
 
           <div className={isFirstStep ? "ml-auto" : ""}>
-            <Button
+            <ButtonUI
               onClick={onButtonClick}
               disabled={isLoading}
               className="px-8 py-3"
             >
               {isLoading ? "Загрузка..." : buttonText}
-            </Button>
+            </ButtonUI>
           </div>
         </div>
       </div>

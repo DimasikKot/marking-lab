@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo/logo.svg";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
-import { Button } from "@/shared/components/Button";
+import { ButtonUI } from "@/shared/components/ButtonUI";
 import { logoutUser } from "@/shared/api/user";
 import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
-import { Text } from "@/shared/components/Text";
+import { TextUI } from "@/shared/components/TextUI";
 
 const Logo = ({ onClick }: { onClick?: () => void }) => (
   <div
@@ -14,9 +14,9 @@ const Logo = ({ onClick }: { onClick?: () => void }) => (
     className="h-12 hover:scale-102 active:scale-95 transition duration-200 flex items-center gap-2"
   >
     <img src={logo} alt="React logo" className="select-none" />
-    <Text variant="logo" className="mb-1">
+    <TextUI variant="logo" className="mb-1">
       Лаборатория разметки
-    </Text>
+    </TextUI>
   </div>
 );
 
@@ -68,31 +68,33 @@ export function Header({ children }: { children?: React.ReactNode }) {
     <div className="h-auto w-full flex items-center justify-between p-3">
       <Logo onClick={() => navigate("/")} />
 
-      <Text variant="header" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
+      <TextUI variant="header" className={`mt-1 ${username ? "mr-1" : "ml-6"}`}>
         {children}
-      </Text>
+      </TextUI>
 
       <div className="flex gap-4 items-center rounded-3xl">
         {/* Индикаторы состояния контейнеров */}
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
             <StatusIndicator status={backendStatus} />
-            <Text variant="desc" isSpan>
+            <TextUI variant="desc" isSpan>
               Backend
-            </Text>
+            </TextUI>
           </div>
 
           <div className="flex items-center gap-2">
             <StatusIndicator status={mlStatus} />
-            <Text variant="desc" isSpan>
+            <TextUI variant="desc" isSpan>
               ML
-            </Text>
+            </TextUI>
           </div>
         </div>
 
         {/* Кнопки входа и регистрации */}
         <div className="flex items-center gap-2">
-          <Button onClick={() => navigate("/components")}>Компоненты</Button>
+          <ButtonUI onClick={() => navigate("/components")}>
+            Компоненты
+          </ButtonUI>
 
           {username ? (
             <div className="relative">
@@ -103,22 +105,22 @@ export function Header({ children }: { children?: React.ReactNode }) {
 
               {showMenu && (
                 <div className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start gap-2 bg-white rounded-2xl shadow-xl border border-gray-300 z-20 overflow-hidden">
-                  <Text>{username}</Text>
+                  <TextUI>{username}</TextUI>
 
                   <div className="w-full border-b border-gray-300" />
 
-                  <Button
+                  <ButtonUI
                     onClick={() => handleLogout()}
                     variant="secondary"
                     className="text-red-600"
                   >
                     Выйти
-                  </Button>
+                  </ButtonUI>
                 </div>
               )}
             </div>
           ) : (
-            <Button onClick={() => navigate("/login")}>Войти</Button>
+            <ButtonUI onClick={() => navigate("/login")}>Войти</ButtonUI>
           )}
         </div>
       </div>

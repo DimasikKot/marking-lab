@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 
-export const Button = ({
+export const ButtonUI = ({
   onClick = () => {
     toast.success("Кнопка без действия");
   },

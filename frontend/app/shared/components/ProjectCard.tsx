@@ -1,8 +1,8 @@
 import toast from "react-hot-toast";
 
 import type { Project } from "@/shared/api/projects";
-import { Button } from "@/shared/components/Button";
-import { Text } from "@/shared/components/Text";
+import { ButtonUI } from "@/shared/components/ButtonUI";
+import { TextUI } from "@/shared/components/TextUI";
 
 export const ProjectCard = ({
   project,
@@ -32,55 +32,55 @@ export const ProjectCard = ({
       `}
     >
       <div className="flex flex-col">
-        <Text variant="title" className="overflow-auto" isSpan>
+        <TextUI variant="title" className="overflow-auto" isSpan>
           {project.name}
-        </Text>
+        </TextUI>
 
         {project.description && (
-          <Text variant="desc" className="overflow-auto" isSpan>
+          <TextUI variant="desc" className="overflow-auto" isSpan>
             {project.description}
-          </Text>
+          </TextUI>
         )}
       </div>
 
       <div className="mt-8">
         <div className="flex items-center justify-between">
-          <Text variant="desc" isSpan>
+          <TextUI variant="desc" isSpan>
             {project.is_public ? "Публичный" : "Приватный"}
-          </Text>
+          </TextUI>
 
-          <Text variant="desc" isSpan>
+          <TextUI variant="desc" isSpan>
             {new Date(date).toLocaleDateString("ru-RU", {
               month: "short",
               day: "numeric",
             })}
-          </Text>
+          </TextUI>
         </div>
 
         <div className="flex flex-row justify-between mt-4">
-          <Button
+          <ButtonUI
             onClick={handleNavigateClick}
             variant="secondary"
             className="text-green-600 hover:text-green-800"
           >
             Перейти в проект
-          </Button>
+          </ButtonUI>
 
-          <Button
+          <ButtonUI
             onClick={handleEditClick}
             variant="secondary"
             className="text-blue-600 hover:text-blue-800"
           >
             Редактировать
-          </Button>
+          </ButtonUI>
 
-          <Button
+          <ButtonUI
             onClick={handleDeleteClick}
             variant="secondary"
             className="text-red-600 hover:text-red-800"
           >
             Удалить
-          </Button>
+          </ButtonUI>
         </div>
       </div>
     </div>
