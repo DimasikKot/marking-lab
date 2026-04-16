@@ -1,11 +1,7 @@
-import { Header } from "@/shared/components/Header";
-
 export function Models() {
   return (
-    <div>
-      <Header>Модели проекта</Header>
-
-      <div className="max-w-6xl mx-auto m-6">
+    <div className="max-w-6xl mx-auto m-6">
+      <div className="border border-gray-200 rounded-4xl p-6">
         <p>Страница моделей</p>
       </div>
     </div>

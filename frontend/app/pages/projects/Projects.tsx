@@ -109,77 +109,81 @@ export function Projects() {
       <Header>Страница проектов</Header>
 
       <div className="max-w-6xl mx-auto m-6">
-        <div className="flex justify-between items-center mb-6">
-          <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
-        </div>
-
-        {loading && <TextUI variant="desc">Загрузка...</TextUI>}
-
-        {!loading && projects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projects.map((project) => (
-              <ProjectCard
-                project={project}
-                handleDeleteClick={() => handleDeleteClick(project.id)}
-                handleEditClick={() => handleEditClick(project)}
-                handleNavigateClick={() => navigate(`/projects/${project.id}`)}
-              />
-            ))}
+        <div className="border border-gray-200 rounded-4xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
           </div>
-        )}
 
-        {/* Модальное окно формы */}
-        {isFormOpen && (
-          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
-            <div
-              onClick={() => setIsFormOpen(false)}
-              className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
-            />
+          {loading && <TextUI variant="desc">Загрузка...</TextUI>}
 
-            <div className="flex flex-col gap-4 bg-white rounded-lg shadow-xl w-xl p-6 z-10">
-              <TextUI variant="title">
-                {editingProject ? "Редактировать проект" : "Создать проект"}
-              </TextUI>
+          {!loading && projects.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {projects.map((project) => (
+                <ProjectCard
+                  project={project}
+                  handleDeleteClick={() => handleDeleteClick(project.id)}
+                  handleEditClick={() => handleEditClick(project)}
+                  handleNavigateClick={() =>
+                    navigate(`/projects/${project.id}`)
+                  }
+                />
+              ))}
+            </div>
+          )}
 
-              <div className="flex flex-col gap-4">
-                <div>
-                  <TextUI variant="label">Название</TextUI>
+          {/* Модальное окно формы */}
+          {isFormOpen && (
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+              <div
+                onClick={() => setIsFormOpen(false)}
+                className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
+              />
 
-                  <TextField
-                    value={formData.name}
-                    onChange={handleFormChange}
-                    name="name"
-                  />
-                </div>
+              <div className="flex flex-col gap-4 bg-white rounded-lg shadow-xl w-xl p-6 z-10">
+                <TextUI variant="title">
+                  {editingProject ? "Редактировать проект" : "Создать проект"}
+                </TextUI>
 
-                <div>
-                  <TextUI variant="label">Описание</TextUI>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <TextUI variant="label">Название</TextUI>
 
-                  <TextField
-                    name="description"
-                    value={formData.description}
-                    onChange={handleFormChange}
-                    isArea={true}
-                    rows={4}
-                  />
-                </div>
+                    <TextField
+                      value={formData.name}
+                      onChange={handleFormChange}
+                      name="name"
+                    />
+                  </div>
 
-                <div className="flex justify-between">
-                  <ButtonUI
-                    onClick={() => setIsFormOpen(false)}
-                    variant="secondary"
-                  >
-                    Отмена
-                  </ButtonUI>
+                  <div>
+                    <TextUI variant="label">Описание</TextUI>
 
-                  <ButtonUI onClick={handleSubmitClick}>
-                    {editingProject ? "Сохранить" : "Создать"}
-                  </ButtonUI>
+                    <TextField
+                      name="description"
+                      value={formData.description}
+                      onChange={handleFormChange}
+                      isArea={true}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="flex justify-between">
+                    <ButtonUI
+                      onClick={() => setIsFormOpen(false)}
+                      variant="secondary"
+                    >
+                      Отмена
+                    </ButtonUI>
+
+                    <ButtonUI onClick={handleSubmitClick}>
+                      {editingProject ? "Сохранить" : "Создать"}
+                    </ButtonUI>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

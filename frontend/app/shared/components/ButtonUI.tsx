@@ -29,9 +29,9 @@ export const ButtonUI = ({
         {
           primary: `${!disabled ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600"} text-white py-2 px-4 rounded-full shadow-lg font-medium`,
           secondary: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600"} font-medium`,
-          link: `${!disabled ? "text-blue-600" : "text-gray-600"} text-sm font-medium`,
+          link: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600"} text-sm font-medium`,
         }[variant]
-      } ${!disabled ? "cursor-pointer hover:scale-105 active:scale-95" : ""} ${className}`}
+      } ${!disabled ? "cursor-pointer" : ""} ${className}`}
     >
       {children}
     </button>

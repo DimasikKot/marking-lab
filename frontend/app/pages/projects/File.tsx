@@ -79,66 +79,68 @@ export function File() {
       <Header>Файл "{name}"</Header>
 
       <div className="max-w-6xl mx-auto m-6">
-        <div className="flex justify-between items-start mb-10">
-          <div>
-            <TextUI variant="desc" className="mt-2">
-              Всего строк: {total_rows} • Страница {page} из {total_pages}
-            </TextUI>
+        <div className="border border-gray-200 rounded-4xl p-6">
+          <div className="flex justify-between items-start mb-10">
+            <div>
+              <TextUI variant="desc" className="mt-2">
+                Всего строк: {total_rows} • Страница {page} из {total_pages}
+              </TextUI>
+            </div>
+
+            <ButtonUI
+              onClick={() => navigate(`/projects/${projectId}/files`)}
+              variant="secondary"
+            >
+              Назад к файлам
+            </ButtonUI>
           </div>
 
-          <ButtonUI
-            onClick={() => navigate(`/projects/${projectId}/files`)}
-            variant="secondary"
-          >
-            Назад к файлам
-          </ButtonUI>
-        </div>
+          <PageNavigate
+            currentPage={page}
+            totalPages={total_pages}
+            onBack={() =>
+              navigate(
+                `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+              )
+            }
+            onNext={() =>
+              navigate(
+                `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+              )
+            }
+          />
 
-        <PageNavigate
-          currentPage={page}
-          totalPages={total_pages}
-          onBack={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
-            )
-          }
-          onNext={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
-            )
-          }
-        />
-
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
-          <div className="space-y-10 text-[17px] leading-relaxed">
-            {rows.map((line: Line, lineIndex: number) => (
-              <div
-                key={lineIndex}
-                className="pb-8 border-b border-gray-100 last:border-none"
-              >
-                {line.words.map((word, wordIndex) => (
-                  <WordElement key={wordIndex} word={word} />
-                ))}
-              </div>
-            ))}
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
+            <div className="space-y-10 text-[17px] leading-relaxed">
+              {rows.map((line: Line, lineIndex: number) => (
+                <div
+                  key={lineIndex}
+                  className="pb-8 border-b border-gray-100 last:border-none"
+                >
+                  {line.words.map((word, wordIndex) => (
+                    <WordElement key={wordIndex} word={word} />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <PageNavigate
-          className="mt-6"
-          currentPage={page}
-          totalPages={total_pages}
-          onBack={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
-            )
-          }
-          onNext={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
-            )
-          }
-        />
+          <PageNavigate
+            className="mt-6"
+            currentPage={page}
+            totalPages={total_pages}
+            onBack={() =>
+              navigate(
+                `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+              )
+            }
+            onNext={() =>
+              navigate(
+                `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+              )
+            }
+          />
+        </div>
       </div>
     </div>
   );
