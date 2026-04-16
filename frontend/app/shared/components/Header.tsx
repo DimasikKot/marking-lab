@@ -11,7 +11,7 @@ import { TextUI } from "@/shared/components/TextUI";
 const Logo = ({ onClick }: { onClick?: () => void }) => (
   <div
     onClick={onClick}
-    className="h-12 hover:scale-102 active:scale-95 transition duration-200 flex items-center gap-2"
+    className="h-12 hover:scale-102 active:scale-95 transition duration-200 flex items-center gap-2 cursor-pointer"
   >
     <img src={logo} alt="React logo" className="select-none" />
     <TextUI variant="logo" className="mb-1">
@@ -31,7 +31,7 @@ const UserIcon = ({
     onClick={onClick}
     className="w-12 h-12 rounded-full bg-linear-to-br select-none
     from-blue-500 to-indigo-600 text-white font-semibold flex items-center justify-center
-    shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+    shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
   >
     {username[0].toUpperCase()}
   </button>

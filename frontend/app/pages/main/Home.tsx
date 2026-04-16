@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { InfoCard } from "@/shared/components/InfoCard";
-import { BigInfoCard } from "@/shared/components/BigInfoCard";
+import { InfoCardBig } from "@/shared/components/InfoCardBig";
 import { TextUI } from "@/shared/components/TextUI";
 
 export function Home() {
@@ -24,7 +24,7 @@ export function Home() {
           />
 
           {/* Центральная */}
-          <BigInfoCard
+          <InfoCardBig
             icon="auto_awesome"
             title="Создать новый проект"
             description="Начните работать с данными уже сегодня!"

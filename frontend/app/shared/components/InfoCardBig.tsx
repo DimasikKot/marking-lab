@@ -1,6 +1,6 @@
 import { TextUI } from "@/shared/components/TextUI";
 
-export function BigInfoCard({
+export function InfoCardBig({
   icon,
   title,
   description,
@@ -21,7 +21,7 @@ export function BigInfoCard({
         items-center justify-center gap-6 px-8 py-14 
         bg-neutral-600 hover:bg-neutral-700 text-white rounded-3xl 
         border border-zinc-700 shadow-2xl hover:shadow-3xl 
-        transition-all duration-300 hover:-translate-y-1 active:scale-95"
+        transition-all duration-300 hover:-translate-y-1 active:scale-95 cursor-pointer"
       >
         {/* Градиентный оверлей при наведении */}
         <div className="absolute inset-0 bg-linear-to-br from-blue-500/10 to-indigo-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
