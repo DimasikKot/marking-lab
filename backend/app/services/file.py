@@ -9,7 +9,7 @@ import shutil
 from app.core.config import settings
 from app.models.db import File
 from app.services.project import is_owner_of_project
-from app.services.bio_validator import normalize_to_bio_tsv
+from app.services.bio_validator import normalize_to_sentence_csv
 
 
 def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -> None:
@@ -24,7 +24,7 @@ def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -
 
 def get_file_path(project_id: int, file_id: int) -> Path:
     base_dir = Path(settings.STORAGE_PATH).resolve()
-    return base_dir / str(project_id) / "files" / f"{file_id}.tsv"
+    return base_dir / str(project_id) / "files" / f"{file_id}.csv"
 
 
 def save_file_to_disk(project_id: int, file_id: int, content: str) -> None:
@@ -120,7 +120,7 @@ def create_file_by_project_id(
         encoding="utf-8",
         newline="",
     )
-    validated_stream = normalize_to_bio_tsv(text_stream)
+    validated_stream = normalize_to_sentence_csv(text_stream)
 
     file_obj = File(name=name, project_id=project_id)
     db.add(file_obj)
@@ -197,7 +197,7 @@ def update_file_by_id(
     if new_name:
         file.name = new_name
     if new_content:
-        validated_content = normalize_to_bio_tsv(new_content)
+        validated_content = normalize_to_sentence_csv(new_content)
         save_file_to_disk(project_id, file_id, validated_content)
     db.commit()
     db.refresh(file)

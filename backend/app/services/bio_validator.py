@@ -1,135 +1,95 @@
 import csv
 from io import StringIO
-from typing import List, Optional, TextIO
-from pydantic import BaseModel
-
-
-# ---------- Tokenization ----------
-
-
-def tokenize(text: str) -> List[str]:
-    return text.strip().split()
-
-
-# ---------- BIO normalization ----------
+from typing import TextIO
 
 
 def normalize_label(label: str) -> str:
-    label = label.strip()
-    if label == "O":
+    label = label.strip().upper()
+    if label == "O" or "-" not in label:
         return "O"
-
-    if "-" not in label:
-        return "O"
-
     bio, ent = label.split("-", 1)
-    bio = bio.upper()
-    ent = ent.lower()
-
     if bio not in ("B", "I"):
         return "O"
-
-    return f"{bio}-{ent}"
-
-
-def normalize_labels(tokens: List[str], labels: Optional[List[str]]) -> List[str]:
-    labels = labels or []
-    labels = [normalize_label(l) for l in labels]
-
-    # выравнивание длины
-    if len(labels) < len(tokens):
-        labels.extend(["O"] * (len(tokens) - len(labels)))
-    elif len(labels) > len(tokens):
-        labels = labels[: len(tokens)]
-
-    # BIO auto-fix
-    prev = "O"
-    for i, label in enumerate(labels):
-        if label.startswith("I-"):
-            if prev == "O" or prev[2:] != label[2:]:
-                labels[i] = "B-" + label[2:]
-        prev = labels[i]
-
-    return labels
+    return f"{bio}-{ent.lower()}"
 
 
-# ---------- Parsers ----------
-
-
-def parse_csv_tokens_labels(text: str):
-    reader = csv.DictReader(StringIO(text))
-    # Если нужно поддерживать TSV, раскомментируйте эту строку и закомментируйте предыдущую
-    # reader = csv.DictReader(StringIO(text), delimiter="\t")
-
-    if not reader.fieldnames:
-        return None
-
-    fieldnames = set(reader.fieldnames)
-
-    # определяем, из какого поля брать текст
-    if "token" in fieldnames:
-        text_field = "token"
-    elif "text" in fieldnames:
-        text_field = "text"
-    else:
-        return None
-
-    if "labels" in fieldnames:
-        label_field = "labels"
-    elif "label" in fieldnames:
-        label_field = "label"
-    else:
-        return None
-
-    sentences = []
-
-    for row in reader:
-        text_value = (row.get(text_field) or "").strip()
-        labels_value = (row.get(label_field) or "").strip()
-
-        if not text_value:
-            continue
-
-        tokens = tokenize(text_value)
-        labels = labels_value.split() if labels_value else []
-
-        sentences.append((tokens, labels))
-
-    return sentences if sentences else None
-
-
-def parse_plain_text(text: str):
-    sentences = []
-    for line in text.splitlines():
-        if not line.strip():
-            continue
-        tokens = tokenize(line)
-        sentences.append((tokens, []))
-    return sentences
-
-
-# ---------- Main normalization ----------
-
-
-def normalize_to_bio_tsv(file: TextIO) -> str:
+def normalize_to_sentence_csv(file: TextIO) -> str:
     content = file.read()
 
-    sentences = parse_csv_tokens_labels(content)
+    sentences = []
 
-    if sentences is None:
-        sentences = parse_plain_text(content)
+    # 1. Пробуем прочитать как правильный CSV (text,labels)
+    try:
+        reader = csv.DictReader(StringIO(content))
+        for row in reader:
+            text = (row.get("text") or row.get("token") or "").strip()
+            labels_str = (row.get("labels") or row.get("label") or "").strip()
 
+            if not text:
+                continue
+
+            tokens = text.split()
+            raw_labels = labels_str.split() if labels_str else []
+
+            labels = [normalize_label(l) for l in raw_labels]
+            if len(labels) < len(tokens):
+                labels += ["O"] * (len(tokens) - len(labels))
+            labels = labels[: len(tokens)]
+
+            # BIO auto-fix
+            prev = "O"
+            for i, lab in enumerate(labels):
+                if lab.startswith("I-") and (prev == "O" or prev[2:] != lab[2:]):
+                    labels[i] = "B" + lab[1:]
+                prev = labels[i]
+
+            sentences.append((" ".join(tokens), " ".join(labels)))
+
+    except Exception:
+        # 2. Если CSV не прочитался — пробуем старый TSV-формат (token\tlabel)
+        current_tokens = []
+        current_labels = []
+
+        for line in content.splitlines():
+            line = line.strip()
+            if not line:
+                if current_tokens:
+                    text = " ".join(current_tokens)
+                    labels_str = " ".join(current_labels)
+                    sentences.append((text, labels_str))
+                    current_tokens.clear()
+                    current_labels.clear()
+                continue
+
+            if line.lower().startswith(("token", "text")):
+                continue
+
+            parts = line.split("\t", 1)
+            if len(parts) == 2:
+                token, label = parts
+                current_tokens.append(token)
+                current_labels.append(normalize_label(label))
+
+        if current_tokens:
+            sentences.append((" ".join(current_tokens), " ".join(current_labels)))
+
+    # 3. Если ничего не нашлось — plain text fallback
+    if not sentences:
+        for line in content.splitlines():
+            line = line.strip()
+            if line:
+                tokens = line.split()
+                labels = ["O"] * len(tokens)
+                sentences.append((" ".join(tokens), " ".join(labels)))
+
+    # Записываем правильно в CSV
     output = StringIO()
-    writer = csv.writer(output, delimiter="\t", lineterminator="\n")
-    writer.writerow(["token", "label"])
+    writer = csv.writer(
+        output, delimiter=",", quoting=csv.QUOTE_MINIMAL, lineterminator="\n"
+    )
+    writer.writerow(["text", "labels"])
 
-    for tokens, raw_labels in sentences:
-        labels = normalize_labels(tokens, raw_labels)
-
-        for token, label in zip(tokens, labels):
-            writer.writerow([token, label])
-
-        # пустая строка = граница предложения
-        writer.writerow([])
+    for text, labels_str in sentences:
+        writer.writerow([text, labels_str])
 
     return output.getvalue()

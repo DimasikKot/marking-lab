@@ -1,4 +1,6 @@
+import csv
 from datetime import datetime
+from itertools import islice
 from numpy import ceil
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
@@ -100,61 +102,40 @@ class GetFileResponse(BaseModel):
     rows: list[Line]
 
 
-def iter_tsv_lines(file_path: Path):
-    current_words: list[Word] = []
+def iter_sentences_new_format(file_path: Path):
+    with file_path.open(encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            text = (row.get("text") or "").strip()
+            labels_str = (row.get("labels") or "").strip()
 
-    with file_path.open("r", encoding="utf-8") as f:
-        for raw_line in f:
-            raw_line = raw_line.strip()
-
-            # граница предложения
-            if not raw_line:
-                if current_words:
-                    yield Line(words=current_words)
-                    current_words = []
+            if not text:
                 continue
 
-            parts = raw_line.split("\t")
+            tokens = text.split()  # простое разбиение по пробелам
+            labels = labels_str.split() if labels_str else ["O"] * len(tokens)
 
-            # пропуск заголовка
-            if (
-                parts[0].lower() == "token"
-                and len(parts) > 1
-                and parts[1].lower() == "label"
-            ):
-                continue
+            # выравниваем длину
+            if len(labels) < len(tokens):
+                labels += ["O"] * (len(tokens) - len(labels))
+            labels = labels[: len(tokens)]
 
-            if len(parts) < 2:
-                continue
-
-            token, label = parts[0], parts[1]
-            current_words.append(Word(token=token, label=label))
-
-        # последний блок
-        if current_words:
-            yield Line(words=current_words)
+            words = [Word(token=t, label=l) for t, l in zip(tokens, labels)]
+            yield Line(words=words)
 
 
-def read_page_from_file(
-    file_path: Path,
-    page: int,
-    rows_per_page: int,
-):
+def read_page_from_file(file_path: Path, page: int = 1, rows_per_page: int = 40):
     start = (page - 1) * rows_per_page
-    end = start + rows_per_page
+    sentences = list(
+        islice(iter_sentences_new_format(file_path), start, start + rows_per_page)
+    )
 
-    result: list[Line] = []
-    total_rows = 0
+    # total_rows (лучше считать один раз при загрузке и хранить в БД)
+    total_rows = (
+        sum(1 for _ in iter_sentences_new_format(file_path)) if page == 1 else 0
+    )
 
-    for idx, line in enumerate(iter_tsv_lines(file_path)):
-        if start <= idx < end:
-            result.append(line)
-        total_rows += 1
-
-        if idx >= end:
-            break
-
-    return result, total_rows
+    return sentences, total_rows
 
 
 @router.get("/{file_id}", response_model=GetFileResponse)
@@ -176,12 +157,7 @@ async def get_file(
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден на диске")
 
-    page_rows, total_rows = read_page_from_file(
-        file_path=file_path,
-        page=page,
-        rows_per_page=rows,
-    )
-
+    page_rows, total_rows = read_page_from_file(file_path, page, rows)
     total_pages = ceil(total_rows / rows) if total_rows else 1
 
     return GetFileResponse(
