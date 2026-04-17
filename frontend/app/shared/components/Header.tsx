@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 import logo from "@/assets/logo/logo.svg";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
@@ -9,32 +10,24 @@ import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import { TextUI } from "@/shared/components/TextUI";
 
 const Logo = ({ onClick }: { onClick?: () => void }) => (
-  <div
-    onClick={onClick}
-    className="w-2xl h-14 hover:bg-gray-400/30 transition duration-200 flex items-center gap-2 cursor-pointer p-1 rounded-xl"
-  >
-    <img src={logo} alt="React logo" className="select-none" />
-    <TextUI variant="logo" className="mb-1">
-      Лаборатория разметки
-    </TextUI>
+  <div onClick={onClick} className="w-2xl h-14">
+    <div className="flex items-center hover:bg-gray-400/30 transition duration-200 gap-2 w-max cursor-pointer p-1 rounded-xl">
+      <img src={logo} alt="React logo" className="select-none" />
+      <TextUI variant="logo" className="mb-1">
+        Лаборатория разметки
+      </TextUI>
+    </div>
   </div>
 );
 
-const UserIcon = ({
-  onClick,
-  username,
-}: {
-  onClick: () => void;
-  username: string;
-}) => (
-  <button
-    onClick={onClick}
+const UserIcon = ({ username }: { username: string }) => (
+  <div
     className="w-12 h-12 rounded-full bg-linear-to-br select-none
     from-blue-500 to-indigo-600 text-white font-semibold flex items-center justify-center
     shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
   >
     {username[0].toUpperCase()}
-  </button>
+  </div>
 );
 
 export function Header({
@@ -48,13 +41,7 @@ export function Header({
 
   const [backendStatus, setBackendStatus] = useState(false);
   const [mlStatus, setMlStatus] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const username = localStorage.getItem("username");
-
-  const handleLogout = () => {
-    logoutUser();
-    setShowMenu(false);
-  };
 
   useEffect(() => {
     const load = async () => {
@@ -105,28 +92,32 @@ export function Header({
           </ButtonUI>
 
           {username ? (
-            <div className="relative">
-              <UserIcon
-                onClick={() => setShowMenu(!showMenu)}
-                username={username}
-              />
+            <Menu as="div" className="relative">
+              {/* Кнопка */}
+              <MenuButton className="rounded-full">
+                <UserIcon username={username} />
+              </MenuButton>
 
-              {showMenu && (
-                <div className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start gap-2 bg-white rounded-2xl shadow-xl border border-gray-300 z-20 overflow-hidden">
-                  <TextUI>{username}</TextUI>
+              {/* Меню */}
+              <MenuItems
+                className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start
+                          gap-2 bg-white rounded-2xl shadow-xl border border-gray-300 z-20 focus:outline-none"
+              >
+                <TextUI isSelectable>{username}</TextUI>
 
-                  <div className="w-full border-b border-gray-300" />
+                <div className="w-full border-b border-gray-300" />
 
+                <MenuItem>
                   <ButtonUI
-                    onClick={() => handleLogout()}
+                    onClick={logoutUser}
                     variant="secondary"
-                    className="text-red-600"
+                    className={`text-red-600 w-full`}
                   >
                     Выйти
                   </ButtonUI>
-                </div>
-              )}
-            </div>
+                </MenuItem>
+              </MenuItems>
+            </Menu>
           ) : (
             <ButtonUI onClick={() => navigate("/login")}>Войти</ButtonUI>
           )}
