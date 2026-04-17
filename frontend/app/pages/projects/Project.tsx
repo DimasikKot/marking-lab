@@ -40,7 +40,7 @@ export function Project() {
       <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
         <Header>
           <TabList className="h-full">
-            <div className="flex max-w-6xl mx-auto h-full items-end gap-12">
+            <div className="flex h-full items-end gap-12">
               {/* Файлы */}
               <Tab
                 selectedClassName="active"

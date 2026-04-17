@@ -33,7 +33,7 @@ export function Components() {
     <div>
       <Header>Страница компонентов</Header>
 
-      <div className="max-w-6xl mx-auto m-2 flex flex-col gap-4">
+      <div className="max-w-6xl mx-auto m-2">
         <ButtonBack onClick={() => navigate("/")} />
 
         <div className="border border-gray-200 rounded-4xl p-6">

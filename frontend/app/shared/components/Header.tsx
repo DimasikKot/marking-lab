@@ -94,7 +94,7 @@ export function Header({
           {username ? (
             <Menu as="div" className="relative">
               {/* Кнопка */}
-              <MenuButton className="rounded-full">
+              <MenuButton className="outline-none">
                 <UserIcon username={username} />
               </MenuButton>
 

@@ -6,7 +6,7 @@ export function Models() {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-6xl mx-auto m-6">
+    <div className="max-w-6xl mx-auto m-2">
       <ButtonBack onClick={() => navigate("/projects")} />
 
       <div className="border border-gray-200 rounded-4xl p-6">
