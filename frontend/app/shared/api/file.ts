@@ -74,7 +74,6 @@ export const fetchFiles = async (
         "Ошибка при получении списка файлов: " + error.message;
       toast.error(error_text);
     }
-    return undefined;
   }
 };
 
@@ -95,6 +94,5 @@ export const fetchFileById = async (
         "Ошибка при выгрузке файла: " + error.message;
       toast.error(error_text);
     }
-    return undefined;
   }
 };

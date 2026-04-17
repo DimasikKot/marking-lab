@@ -13,7 +13,6 @@ from fastapi import (
     UploadFile,
 )
 
-from app.services.bio_validator import Line, parse_tsv_to_lines
 from app.services.get_current_user_id import get_current_user_id
 from app.core.database import get_db
 from app.services.file import (
@@ -21,9 +20,7 @@ from app.services.file import (
     delete_file_by_id,
     fetch_file_by_id,
     fetch_files_by_project_id,
-    read_file_from_disk,
-    stream_file_as_json,
-    update_file_by_id,
+    get_file_path,
 )
 
 
@@ -83,6 +80,15 @@ async def get_files(
     return GetResponse(data=files)
 
 
+class Word(BaseModel):
+    token: str
+    label: str
+
+
+class Line(BaseModel):
+    words: list[Word]
+
+
 class GetFileResponse(BaseModel):
     id: int
     name: str
@@ -92,6 +98,63 @@ class GetFileResponse(BaseModel):
     total_pages: int
     total_rows: int
     rows: list[Line]
+
+
+def iter_tsv_lines(file_path: Path):
+    current_words: list[Word] = []
+
+    with file_path.open("r", encoding="utf-8") as f:
+        for raw_line in f:
+            raw_line = raw_line.strip()
+
+            # граница предложения
+            if not raw_line:
+                if current_words:
+                    yield Line(words=current_words)
+                    current_words = []
+                continue
+
+            parts = raw_line.split("\t")
+
+            # пропуск заголовка
+            if (
+                parts[0].lower() == "token"
+                and len(parts) > 1
+                and parts[1].lower() == "label"
+            ):
+                continue
+
+            if len(parts) < 2:
+                continue
+
+            token, label = parts[0], parts[1]
+            current_words.append(Word(token=token, label=label))
+
+        # последний блок
+        if current_words:
+            yield Line(words=current_words)
+
+
+def read_page_from_file(
+    file_path: Path,
+    page: int,
+    rows_per_page: int,
+):
+    start = (page - 1) * rows_per_page
+    end = start + rows_per_page
+
+    result: list[Line] = []
+    total_rows = 0
+
+    for idx, line in enumerate(iter_tsv_lines(file_path)):
+        if start <= idx < end:
+            result.append(line)
+        total_rows += 1
+
+        if idx >= end:
+            break
+
+    return result, total_rows
 
 
 @router.get("/{file_id}", response_model=GetFileResponse)
@@ -109,19 +172,17 @@ async def get_file(
     if not file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    content = read_file_from_disk(project_id, file_id)
-    if content is None:
+    file_path = get_file_path(project_id, file_id)
+    if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден на диске")
 
-    all_rows = parse_tsv_to_lines(content)
+    page_rows, total_rows = read_page_from_file(
+        file_path=file_path,
+        page=page,
+        rows_per_page=rows,
+    )
 
-    total_rows = len(all_rows)
-    total_pages = ceil(total_rows / rows) if total_rows > 0 else 1
-
-    start = (page - 1) * rows
-    end = round(start + rows)
-
-    page_rows = all_rows[start:end] if start < total_rows else []
+    total_pages = ceil(total_rows / rows) if total_rows else 1
 
     return GetFileResponse(
         id=file_db.id,
@@ -130,7 +191,7 @@ async def get_file(
         updated_at=file_db.updated_at,
         page=page,
         total_pages=total_pages,
-        total_rows=len(all_rows),
+        total_rows=total_rows,
         rows=page_rows,
     )
 

@@ -108,48 +108,6 @@ def parse_plain_text(text: str):
     return sentences
 
 
-class Word(BaseModel):
-    token: str
-    label: str
-
-
-class Line(BaseModel):
-    words: list[Word]
-
-
-def parse_tsv_to_lines(content: str) -> list[Line]:
-    lines: list[Line] = []
-    current_words: list[Word] = []
-
-    for raw_line in content.splitlines():
-        raw_line = raw_line.strip()
-
-        # граница предложения
-        if not raw_line:
-            if current_words:
-                lines.append(Line(words=current_words))
-                current_words = []
-            continue
-
-        parts = raw_line.split("\t")
-
-        # пропускаем заголовок
-        if parts[0].lower() == "token" and len(parts) > 1 and parts[1].lower() == "label":
-            continue
-
-        if len(parts) < 2:
-            continue
-
-        token, label = parts[0], parts[1]
-        current_words.append(Word(token=token, label=label))
-
-    # добавить последнее предложение, если файл не заканчивается пустой строкой
-    if current_words:
-        lines.append(Line(words=current_words))
-
-    return lines
-
-
 # ---------- Main normalization ----------
 
 
