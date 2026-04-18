@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
-from backend.app.services.get_user_id import get_user_id
+from app.services.get_user_id import get_user_id
 from app.services.experiment import (
     create_experiment,
     delete_experiment_by_id,

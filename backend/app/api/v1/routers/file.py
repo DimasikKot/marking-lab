@@ -12,7 +12,7 @@ from fastapi import (
     UploadFile,
 )
 
-from backend.app.services.get_user_id import get_user_id
+from app.services.get_user_id import get_user_id
 from app.core.database import get_db
 from app.services.file import (
     create_file_by_project_id,

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from httpx import AsyncClient
 
 from app.core.config import settings
-from backend.app.services.get_user_id import get_user_id
+from app.services.get_user_id import get_user_id
 
 
 router: APIRouter = APIRouter()

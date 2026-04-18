@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.core.database import get_db
-from backend.app.services.get_user_id import get_user_id
+from app.services.get_user_id import get_user_id
 from app.services.project import (
     create_project,
     delete_project_by_id,

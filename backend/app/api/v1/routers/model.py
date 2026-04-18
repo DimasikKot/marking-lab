@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy.orm import Session
 
-from backend.app.services.get_user_id import get_user_id
+from app.services.get_user_id import get_user_id
 from app.services.model import (
     create_model,
     delete_model_by_id,
