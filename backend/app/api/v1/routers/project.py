@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.core.database import get_db
-from app.services.get_current_user_id import get_current_user_id
+from backend.app.services.get_user_id import get_user_id
 from app.services.project import (
     create_project,
     delete_project_by_id,
@@ -38,7 +38,7 @@ class PostResponse(BaseModel):
 @router.post("/", response_model=PostResponse)
 async def post_create_project(
     data: PostProjectsRequest,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     project = create_project(
@@ -64,7 +64,7 @@ async def get_projects(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     projects = fetch_projects_by_user_id(
@@ -76,7 +76,7 @@ async def get_projects(
 @router.get("/{project_id}", response_model=PostResponse)
 async def get_project(
     project_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     project = fetch_project_by_id(db, user_id=user_id, project_id=project_id)
@@ -93,7 +93,7 @@ class UpdateRequest(BaseModel):
 async def patch_project(
     project_id: int,
     data: UpdateRequest,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     if len(data.name) > 255:
@@ -120,7 +120,7 @@ class DeleteResponse(BaseModel):
 @router.delete("/{project_id}", response_model=DeleteResponse)
 async def delete_project(
     project_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     delete_project_by_id(db, project_id=project_id, user_id=user_id)

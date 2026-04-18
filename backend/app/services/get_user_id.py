@@ -8,7 +8,7 @@ from app.services.user import decode_access_token
 security = HTTPBearer(auto_error=False)
 
 
-async def get_current_user_id(
+async def get_user_id(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
 ) -> int:
     """Возвращает только user_id из токена"""

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List
 from sqlalchemy.orm import Session
 
-from app.services.get_current_user_id import get_current_user_id
+from backend.app.services.get_user_id import get_user_id
 from app.services.model import (
     create_model,
     delete_model_by_id,
@@ -75,7 +75,7 @@ class DeleteResponse(BaseModel):
 async def delete_model(
     model_id: int = Path(...),
     project_id: int = Path(...),
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     delete_model_by_id(db, model_id=model_id, project_id=project_id, user_id=user_id)

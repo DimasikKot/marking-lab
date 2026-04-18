@@ -12,7 +12,7 @@ from fastapi import (
     UploadFile,
 )
 
-from app.services.get_current_user_id import get_current_user_id
+from backend.app.services.get_user_id import get_user_id
 from app.core.database import get_db
 from app.services.file import (
     create_file_by_project_id,
@@ -42,7 +42,7 @@ async def post_create_file(
     project_id: int = Path(...),
     file: UploadFile = File(...),
     name: str = Form(...),
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
     file_obj = create_file_by_project_id(
@@ -67,7 +67,7 @@ async def get_files(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
     files = fetch_files_by_project_id(
@@ -97,7 +97,7 @@ async def get_file(
     project_id: int,
     page: int | None = 1,
     rows: int | None = 40,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
     file_db = fetch_file_by_id(
@@ -169,7 +169,7 @@ class DeleteResponse(BaseModel):
 async def delete_file(
     file_id: int,
     project_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
     delete_file_by_id(db=db, project_id=project_id, user_id=user_id, file_id=file_id)

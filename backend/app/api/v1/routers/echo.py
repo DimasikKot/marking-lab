@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from httpx import AsyncClient
 
 from app.core.config import settings
-from app.services.get_current_user_id import get_current_user_id
+from backend.app.services.get_user_id import get_user_id
 
 
 router: APIRouter = APIRouter()
@@ -59,5 +59,5 @@ class GetUserResponse(BaseModel):
 
 
 @router.get("/user", response_model=GetUserResponse)
-async def get_user_id(user_id: int = Depends(get_current_user_id)):
+async def get_user_id(user_id: int = Depends(get_user_id)):
     return GetUserResponse(user_id=user_id)

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
-from app.services.get_current_user_id import get_current_user_id
+from backend.app.services.get_user_id import get_user_id
 from app.services.experiment import (
     create_experiment,
     delete_experiment_by_id,
@@ -67,7 +67,7 @@ class DeleteResponse(BaseModel):
 async def delete_experiment(
     experiment_id: int = Path(...),
     project_id: int = Path(...),
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     delete_experiment_by_id(
