@@ -4,6 +4,15 @@ import type { FileInList as File } from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
 
+type FileCardProps = {
+  file: File;
+  onClick?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
+  dateIsCreatedAt?: boolean;
+  className?: string;
+};
+
 export const FileCard = ({
   file,
   onClick = () => toast.error("Обработка нажатия не настроена"),
@@ -11,36 +20,29 @@ export const FileCard = ({
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
-}: {
-  file: File;
-  onClick?: () => void;
-  onEditClick?: () => void;
-  onDeleteClick?: () => void;
-  dateIsCreatedAt?: boolean;
-  className?: string;
-}) => {
+}: FileCardProps) => {
   const date = dateIsCreatedAt ? file.created_at : file.updated_at;
 
   return (
     <div
       onClick={onClick}
       className={`
-        bg-white border border-gray-300 rounded-2xl p-6
-        hover:border-gray-400 hover:shadow-md
-        transition-all duration-200 cursor-pointer
+        bg-white border border-gray-300 rounded-2xl p-4
+        hover:border-gray-400 hover:shadow-md transition-all duration-200
+        cursor-pointer flex flex-col
         ${className}
       `}
     >
       <TextUI variant="title">{file.name}</TextUI>
 
-      <TextUI variant="desc" className="mt-4 flex justify-end">
+      <TextUI variant="desc" className="mt-auto pt-4 text-right">
         {new Date(date).toLocaleDateString("ru-RU", {
           month: "short",
           day: "numeric",
         })}
       </TextUI>
 
-      <div className="flex flex-row justify-between mt-4">
+      <div className="flex justify-between gap-3 mt-4">
         <ButtonUI
           onClick={onEditClick}
           variant="secondary"

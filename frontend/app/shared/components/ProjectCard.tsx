@@ -1,8 +1,17 @@
 import toast from "react-hot-toast";
 
 import type { Project } from "@/shared/api/projects";
-import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
+import { ButtonUI } from "@/shared/components/ButtonUI";
+
+type ProjectCardProps = {
+  project: Project;
+  onClick?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
+  dateIsCreatedAt?: boolean;
+  className?: string;
+};
 
 export const ProjectCard = ({
   project,
@@ -11,54 +20,44 @@ export const ProjectCard = ({
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
-}: {
-  project: Project;
-  onClick?: () => void;
-  onEditClick?: () => void;
-  onDeleteClick?: () => void;
-  dateIsCreatedAt?: boolean;
-  className?: string;
-}) => {
+}: ProjectCardProps) => {
   const date = dateIsCreatedAt ? project.created_at : project.updated_at;
 
   return (
     <div
       onClick={onClick}
       className={`
-        flex flex-col justify-between
         bg-white border border-gray-300 rounded-2xl p-4
-        hover:border-gray-400 hover:shadow-md
-        transition-all duration-200 cursor-pointer
+        hover:border-gray-400 hover:shadow-md transition-all duration-200
+        cursor-pointer flex flex-col
         ${className}
       `}
     >
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-col max-w-md">
-          <TextUI variant="title" isSpan>
-            {project.name}
+      <div className="flex-1">
+        <TextUI variant="title">{project.name}</TextUI>
+
+        {project.description && (
+          <TextUI variant="desc" className="mt-2 line-clamp-2">
+            {project.description}
           </TextUI>
-
-          {project.description && (
-            <TextUI variant="desc" isSpan>
-              {project.description}
-            </TextUI>
-          )}
-        </div>
-
-        <TextUI variant="desc" isSpan>
-          {new Date(date).toLocaleDateString("ru-RU", {
-            month: "short",
-            day: "numeric",
-          })}
-        </TextUI>
+        )}
       </div>
 
-      <div className="mt-4">
-        <TextUI variant="desc" isSpan>
-          {project.is_public ? "Публичный" : "Приватный"}
-        </TextUI>
+      <div className="mt-6 space-y-4">
+        <div className="flex justify-between items-center">
+          <TextUI variant="desc">
+            {project.is_public ? "Публичный" : "Приватный"}
+          </TextUI>
 
-        <div className="flex flex-row justify-between">
+          <TextUI variant="desc" className="text-right">
+            {new Date(date).toLocaleDateString("ru-RU", {
+              month: "short",
+              day: "numeric",
+            })}
+          </TextUI>
+        </div>
+
+        <div className="flex justify-between gap-3">
           <ButtonUI
             onClick={onEditClick}
             variant="secondary"
