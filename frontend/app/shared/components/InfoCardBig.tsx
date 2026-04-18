@@ -4,13 +4,13 @@ export function InfoCardBig({
   icon,
   title,
   description,
-  ctaText: buttonText,
+  buttonText,
   onClick,
 }: {
   icon: string;
   title: string;
   description: string;
-  ctaText: string;
+  buttonText: string;
   onClick: () => void;
 }) {
   return (

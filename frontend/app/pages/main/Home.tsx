@@ -28,7 +28,7 @@ export function Home() {
             icon="auto_awesome"
             title="Создать новый проект"
             description="Начните работать с данными уже сегодня!"
-            ctaText="Перейти к проектам"
+            buttonText="Перейти к проектам"
             onClick={() => navigate("/projects")}
           />
 
