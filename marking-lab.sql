@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS files (
     id              SERIAL          PRIMARY KEY,
     project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,  -- если проект удаляется, удаляются и файлы
     name            VARCHAR(255)    NOT NULL,
-    -- total_rows      INTEGER         NOT NULL,
+    total_rows      INTEGER         NOT NULL,
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );

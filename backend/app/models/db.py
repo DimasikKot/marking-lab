@@ -43,6 +43,7 @@ class File(Base):
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
     name = Column(String(255), nullable=False)
+    total_rows = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     # content удалено — файлы хранятся на диске ./{STORAGE_PATH}/{project_id}/files/{file_id}

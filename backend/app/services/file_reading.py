@@ -45,7 +45,6 @@ def read_page_from_file(
     file_path: Path,
     page: int = 1,
     rows_per_page: int = 40,
-    total_rows: int | None = None,
 ):
     start_idx = (page - 1) * rows_per_page
 
@@ -53,18 +52,4 @@ def read_page_from_file(
         iter_sentences_fast(file_path, start=start_idx, count=rows_per_page)
     )
 
-    if total_rows is None:
-        total_rows = 100000  # get_total_sentences_fast(file_path)
-
-    return sentences, total_rows
-
-
-def get_total_sentences(file_path: Path) -> int:
-    """Считает количество предложений (строк данных) в файле"""
-    count = 0
-    with file_path.open(encoding="utf-8") as file:
-        next(file, None)  # пропускаем заголовок
-        for line in file:
-            if line.strip():  # считаем только непустые строки
-                count += 1
-    return count
+    return sentences

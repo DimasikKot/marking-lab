@@ -110,7 +110,8 @@ async def get_file(
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден на диске")
 
-    page_rows, total_rows = read_page_from_file(file_path, page, rows)
+    page_rows = read_page_from_file(file_path, page, rows)
+    total_rows = file_db.total_rows
     total_pages = ceil(total_rows / rows) if total_rows else 1
 
     return GetFileResponse(

@@ -1,10 +1,8 @@
 from io import TextIOWrapper
-import json
 from fastapi import HTTPException
 from pathlib import Path
 from sqlalchemy.orm import Session
 from typing import Literal, TextIO
-import shutil
 
 from app.core.config import settings
 from app.models.db import File
@@ -38,18 +36,6 @@ def save_file_to_disk(project_id: int, file_id: int, content: str) -> None:
     )
 
 
-def save_file_stream_to_disk(
-    project_id: int,
-    file_id: int,
-    stream: TextIO,
-) -> None:
-    file_path: Path = get_file_path(project_id, file_id)
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(file_path, "w", encoding="utf-8", newline="\n") as f:
-        shutil.copyfileobj(stream, f)
-
-
 def read_file_from_disk(project_id: int, file_id: int) -> str:
     file_path: Path = get_file_path(project_id, file_id)
 
@@ -59,51 +45,24 @@ def read_file_from_disk(project_id: int, file_id: int) -> str:
     return file_path.read_text(encoding="utf-8")
 
 
-def open_file_stream(project_id: int, file_id: int) -> TextIO:
-    file_path: Path = get_file_path(project_id, file_id)
-
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Файл не найден")
-
-    return open(file_path, "r", encoding="utf-8")
-
-
-def stream_file_as_json(project_id: int, file_id: int):
-    file_obj = open_file_stream(project_id, file_id)
-
-    yield '{"lines": ['
-
-    first_line = True
-
-    for raw_line in file_obj:
-        raw_line = raw_line.strip()
-        if not raw_line:
-            continue
-
-        parts = raw_line.split("\t")
-        if len(parts) < 2:
-            continue
-
-        token, label = parts[0], parts[1]
-
-        line_obj = {"words": [{"token": token, "label": label}]}
-
-        if not first_line:
-            yield ","
-
-        yield json.dumps(line_obj, ensure_ascii=False)
-        first_line = False
-
-    yield "]}"
-
-    file_obj.close()
-
-
 def delete_file_from_disk(project_id: int, file_id: int) -> None:
     file_path: Path = get_file_path(project_id, file_id)
 
     if file_path.exists():
         file_path.unlink()
+
+
+def get_total_rows(file: TextIO) -> int:
+    """Считает количество строк в файле (кроме заголовка)"""
+    count = 0
+    file.seek(0)  # на всякий случай возвращаем в начало
+    next(file, None)  # пропускаем заголовок
+
+    for line in file:
+        if line.strip():  # считаем только непустые строки
+            count += 1
+
+    return count
 
 
 def create_file_by_project_id(
@@ -122,7 +81,7 @@ def create_file_by_project_id(
     )
     validated_stream = normalize_to_sentence_csv(text_stream)
 
-    file_obj = File(name=name, project_id=project_id)
+    file_obj = File(name=name, project_id=project_id, total_rows=get_total_rows(file))
     db.add(file_obj)
     db.commit()
     db.refresh(file_obj)
