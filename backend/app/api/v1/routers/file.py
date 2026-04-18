@@ -1,9 +1,6 @@
-import csv
 from datetime import datetime
-from itertools import islice
 from numpy import ceil
 from pydantic import BaseModel
-from fastapi.responses import StreamingResponse
 from fastapi import (
     APIRouter,
     Depends,
@@ -24,6 +21,7 @@ from app.services.file import (
     fetch_files_by_project_id,
     get_file_path,
 )
+from app.services.file_reading import Row, read_page_from_file
 
 
 router = APIRouter()
@@ -82,15 +80,6 @@ async def get_files(
     return GetResponse(data=files)
 
 
-class Word(BaseModel):
-    token: str
-    label: str
-
-
-class Line(BaseModel):
-    words: list[Word]
-
-
 class GetFileResponse(BaseModel):
     id: int
     name: str
@@ -99,43 +88,7 @@ class GetFileResponse(BaseModel):
     page: int
     total_pages: int
     total_rows: int
-    rows: list[Line]
-
-
-def iter_sentences_new_format(file_path: Path):
-    with file_path.open(encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            text = (row.get("text") or "").strip()
-            labels_str = (row.get("labels") or "").strip()
-
-            if not text:
-                continue
-
-            tokens = text.split()  # простое разбиение по пробелам
-            labels = labels_str.split() if labels_str else ["O"] * len(tokens)
-
-            # выравниваем длину
-            if len(labels) < len(tokens):
-                labels += ["O"] * (len(tokens) - len(labels))
-            labels = labels[: len(tokens)]
-
-            words = [Word(token=t, label=l) for t, l in zip(tokens, labels)]
-            yield Line(words=words)
-
-
-def read_page_from_file(file_path: Path, page: int = 1, rows_per_page: int = 40):
-    start = (page - 1) * rows_per_page
-    sentences = list(
-        islice(iter_sentences_new_format(file_path), start, start + rows_per_page)
-    )
-
-    # total_rows (лучше считать один раз при загрузке и хранить в БД)
-    total_rows = (
-        sum(1 for _ in iter_sentences_new_format(file_path)) if page == 1 else 0
-    )
-
-    return sentences, total_rows
+    rows: list[Row]
 
 
 @router.get("/{file_id}", response_model=GetFileResponse)
@@ -170,29 +123,6 @@ async def get_file(
         total_rows=total_rows,
         rows=page_rows,
     )
-
-
-# @router.get("/{file_id}/stream")
-# def get_file_stream(
-#     file_id: int,
-#     project_id: int,
-#     user_id: int = Depends(get_current_user_id),
-#     db=Depends(get_db),
-# ):
-#     file_db = fetch_file_by_id(
-#         db=db,
-#         project_id=project_id,
-#         user_id=user_id,
-#         file_id=file_id,
-#     )
-
-#     if not file_db:
-#         raise HTTPException(status_code=404, detail="Файл не найден")
-
-#     return StreamingResponse(
-#         stream_file_as_json(project_id, file_id),
-#         media_type="application/json",
-#     )
 
 
 # @router.patch("/{file_id}", response_model=GetFileResponse)

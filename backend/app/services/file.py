@@ -9,7 +9,7 @@ import shutil
 from app.core.config import settings
 from app.models.db import File
 from app.services.project import is_owner_of_project
-from app.services.bio_validator import normalize_to_sentence_csv
+from backend.app.services.file_normalize import normalize_to_sentence_csv
 
 
 def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -> None:
