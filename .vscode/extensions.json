@@ -8,8 +8,8 @@
     "esbenp.prettier-vscode",
     "pkief.material-icon-theme",
     "eamodio.gitlens",
-    "github.copilot-chat",
     "oderwat.indent-rainbow",
-    "ms-python.black-formatter"
+    "ms-python.black-formatter",
+    "codeium.codeium"
   ]
 }

@@ -13,7 +13,7 @@ class Row(BaseModel):
     words: list[Word]
 
 
-def iter_sentences_new_format(file_path: Path):
+def iter_sentences(file_path: Path):
     with file_path.open(encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
@@ -35,15 +35,16 @@ def iter_sentences_new_format(file_path: Path):
             yield Row(words=words)
 
 
-def read_page_from_file(file_path: Path, page: int = 1, rows_per_page: int = 40):
-    start = (page - 1) * rows_per_page
+def read_page_from_file(file_path: Path, page: int = 1, rows: int = 40):
+    start = (page - 1) * rows
     sentences = list(
-        islice(iter_sentences_new_format(file_path), start, start + rows_per_page)
+        islice(iter_sentences(file_path), start, start + rows)
     )
 
     # total_rows (лучше считать один раз при загрузке и хранить в БД)
-    total_rows = (
-        sum(1 for _ in iter_sentences_new_format(file_path)) if page == 1 else 0
-    )
+    # total_rows = (
+    #     sum(1 for _ in iter_sentences(file_path)) if page == 1 else 0
+    # )
+    total_rows = 666
 
     return sentences, total_rows
