@@ -2,15 +2,20 @@ import toast from "react-hot-toast";
 
 import type { FileInList as File } from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
+import { ButtonUI } from "./ButtonUI";
 
 export const FileCard = ({
   file,
   onClick = () => toast.error("Обработка нажатия не настроена"),
+  onEditClick = () => toast.error("Обработка редактирования не настроена"),
+  onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
 }: {
   file: File;
   onClick?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
   dateIsCreatedAt?: boolean;
   className?: string;
 }) => {
@@ -26,14 +31,32 @@ export const FileCard = ({
         ${className}
       `}
     >
-      <TextUI variant="normal">{file.name}</TextUI>
+      <TextUI variant="title">{file.name}</TextUI>
 
-      <TextUI variant="desc" className="mt-4">
+      <TextUI variant="desc" className="mt-4 flex justify-end">
         {new Date(date).toLocaleDateString("ru-RU", {
           month: "short",
           day: "numeric",
         })}
       </TextUI>
+
+      <div className="flex flex-row justify-between mt-4">
+        <ButtonUI
+          onClick={onEditClick}
+          variant="secondary"
+          className="text-blue-600 hover:text-blue-800"
+        >
+          Редактировать
+        </ButtonUI>
+
+        <ButtonUI
+          onClick={onDeleteClick}
+          variant="secondary"
+          className="text-red-600 hover:text-red-800"
+        >
+          Удалить
+        </ButtonUI>
+      </div>
     </div>
   );
 };

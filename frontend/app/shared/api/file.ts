@@ -96,3 +96,22 @@ export const fetchFileById = async (
     }
   }
 };
+
+export const deleteFileById = async (
+  projectId: string | number,
+  fileId: string | number,
+) => {
+  try {
+    const response = await api.delete<FileDetail>(
+      `/projects/${projectId}/files/${fileId}`,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при удалении файла: " + error.message;
+      toast.error(error_text);
+    }
+  }
+};

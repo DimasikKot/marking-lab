@@ -124,11 +124,9 @@ export function Projects() {
               {projects.map((project) => (
                 <ProjectCard
                   project={project}
-                  handleDeleteClick={() => handleDeleteClick(project.id)}
-                  handleEditClick={() => handleEditClick(project)}
-                  handleNavigateClick={() =>
-                    navigate(`/projects/${project.id}`)
-                  }
+                  onDeleteClick={() => handleDeleteClick(project.id)}
+                  onEditClick={() => handleEditClick(project)}
+                  onClick={() => navigate(`/projects/${project.id}`)}
                 />
               ))}
             </div>

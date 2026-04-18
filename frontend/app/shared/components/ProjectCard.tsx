@@ -6,16 +6,16 @@ import { TextUI } from "@/shared/components/TextUI";
 
 export const ProjectCard = ({
   project,
-  handleEditClick = () => toast.error("Обработка редактирования не настроена"),
-  handleDeleteClick = () => toast.error("Обработка удаления не настроена"),
-  handleNavigateClick = () => toast.error("Обработка перехода не настроена"),
+  onClick = () => toast.error("Обработка перехода не настроена"),
+  onEditClick = () => toast.error("Обработка редактирования не настроена"),
+  onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
 }: {
   project: Project;
-  handleEditClick?: () => void;
-  handleDeleteClick?: () => void;
-  handleNavigateClick?: () => void;
+  onClick?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
   dateIsCreatedAt?: boolean;
   className?: string;
 }) => {
@@ -23,7 +23,7 @@ export const ProjectCard = ({
 
   return (
     <div
-      onClick={handleNavigateClick}
+      onClick={onClick}
       className={`
         flex flex-col justify-between
         bg-white border border-gray-300 rounded-2xl p-4
@@ -32,35 +32,35 @@ export const ProjectCard = ({
         ${className}
       `}
     >
-      <div className="flex flex-col">
-        <TextUI variant="title" className="overflow-auto" isSpan>
-          {project.name}
-        </TextUI>
-
-        {project.description && (
-          <TextUI variant="desc" className="overflow-auto" isSpan>
-            {project.description}
-          </TextUI>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <TextUI variant="desc" isSpan>
-            {project.is_public ? "Публичный" : "Приватный"}
+      <div className="flex flex-row justify-between">
+        <div className="flex flex-col max-w-md">
+          <TextUI variant="title" isSpan>
+            {project.name}
           </TextUI>
 
-          <TextUI variant="desc" isSpan>
-            {new Date(date).toLocaleDateString("ru-RU", {
-              month: "short",
-              day: "numeric",
-            })}
-          </TextUI>
+          {project.description && (
+            <TextUI variant="desc" isSpan>
+              {project.description}
+            </TextUI>
+          )}
         </div>
 
-        <div className="flex flex-row justify-between mt-4">
+        <TextUI variant="desc" isSpan>
+          {new Date(date).toLocaleDateString("ru-RU", {
+            month: "short",
+            day: "numeric",
+          })}
+        </TextUI>
+      </div>
+
+      <div className="mt-4">
+        <TextUI variant="desc" isSpan>
+          {project.is_public ? "Публичный" : "Приватный"}
+        </TextUI>
+
+        <div className="flex flex-row justify-between">
           <ButtonUI
-            onClick={handleEditClick}
+            onClick={onEditClick}
             variant="secondary"
             className="text-blue-600 hover:text-blue-800"
           >
@@ -68,7 +68,7 @@ export const ProjectCard = ({
           </ButtonUI>
 
           <ButtonUI
-            onClick={handleDeleteClick}
+            onClick={onDeleteClick}
             variant="secondary"
             className="text-red-600 hover:text-red-800"
           >

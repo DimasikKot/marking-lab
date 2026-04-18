@@ -13,20 +13,26 @@ class Row(BaseModel):
     words: list[Word]
 
 
-def iter_sentences(file_path: Path):
-    with file_path.open(encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            text = (row.get("text") or "").strip()
-            labels_str = (row.get("labels") or "").strip()
+def iter_sentences_fast(file_path: Path, start: int = 0, count: int = 40):
+    """Генератор, который сразу пропускает start строк и читает только count"""
+    with file_path.open(encoding="utf-8", errors="ignore") as f:
+        # Пропускаем заголовок + нужное количество строк
+        for _ in range(start + 1):  # +1 — заголовок
+            next(f, None)
 
+        reader = csv.reader(f)
+
+        for row in islice(reader, count):
+            if len(row) < 2:
+                continue
+            text = row[0].strip()
+            labels_str = row[1].strip()
             if not text:
                 continue
 
-            tokens = text.split()  # простое разбиение по пробелам
+            tokens = text.split()
             labels = labels_str.split() if labels_str else ["O"] * len(tokens)
 
-            # выравниваем длину
             if len(labels) < len(tokens):
                 labels += ["O"] * (len(tokens) - len(labels))
             labels = labels[: len(tokens)]
@@ -35,16 +41,30 @@ def iter_sentences(file_path: Path):
             yield Row(words=words)
 
 
-def read_page_from_file(file_path: Path, page: int = 1, rows: int = 40):
-    start = (page - 1) * rows
+def read_page_from_file(
+    file_path: Path,
+    page: int = 1,
+    rows_per_page: int = 40,
+    total_rows: int | None = None,
+):
+    start_idx = (page - 1) * rows_per_page
+
     sentences = list(
-        islice(iter_sentences(file_path), start, start + rows)
+        iter_sentences_fast(file_path, start=start_idx, count=rows_per_page)
     )
 
-    # total_rows (лучше считать один раз при загрузке и хранить в БД)
-    # total_rows = (
-    #     sum(1 for _ in iter_sentences(file_path)) if page == 1 else 0
-    # )
-    total_rows = 666
+    if total_rows is None:
+        total_rows = 100000  # get_total_sentences_fast(file_path)
 
     return sentences, total_rows
+
+
+def get_total_sentences(file_path: Path) -> int:
+    """Считает количество предложений (строк данных) в файле"""
+    count = 0
+    with file_path.open(encoding="utf-8") as file:
+        next(file, None)  # пропускаем заголовок
+        for line in file:
+            if line.strip():  # считаем только непустые строки
+                count += 1
+    return count

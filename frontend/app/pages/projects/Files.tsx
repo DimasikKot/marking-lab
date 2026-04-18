@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { fetchFiles, uploadFile, type FileInList } from "@/shared/api/file";
+import {
+  deleteFileById,
+  fetchFiles,
+  uploadFile,
+  type FileInList,
+} from "@/shared/api/file";
 
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
@@ -127,6 +132,9 @@ export function Files() {
               file={file}
               onClick={() =>
                 navigate(`/projects/${projectId}/files/${file.id}`)
+              }
+              onDeleteClick={() =>
+                deleteFileById(projectId, file.id).then(() => loadFiles())
               }
             />
           ))}
