@@ -131,7 +131,7 @@ export function Files() {
               key={file.id}
               file={file}
               onClick={() =>
-                navigate(`/projects/${projectId}/files/${file.id}`)
+                navigate(`/projects/${projectId}/files/${file.id}/1`)
               }
               onDeleteClick={() =>
                 deleteFileById(projectId, file.id).then(() => loadFiles())
