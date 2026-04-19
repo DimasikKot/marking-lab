@@ -97,6 +97,31 @@ export const fetchFileById = async (
   }
 };
 
+interface PatchFileRequest {
+  name: string;
+}
+
+export const updateFileById = async (
+  projectId: string | number,
+  fileId: string | number,
+  data: PatchFileRequest,
+) => {
+  try {
+    const response = await api.patch<FileInList>(
+      `/projects/${projectId}/files/${fileId}`,
+      data,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при обновлении файла: " + error.message;
+      toast.error(error_text);
+    }
+  }
+};
+
 export const deleteFileById = async (
   projectId: string | number,
   fileId: string | number,
