@@ -14,14 +14,16 @@ from fastapi import (
 
 from app.services.get_user_id import get_user_id
 from app.core.database import get_db
+from app.services.file_frontend_reading import Row, read_page_from_file
 from app.services.file import (
     create_file_by_project_id,
     delete_file_by_id,
     fetch_file_by_id,
     fetch_files_by_project_id,
     get_file_path,
+    update_content_file_by_id,
+    update_file_by_id,
 )
-from app.services.file_reading import Row, read_page_from_file
 
 
 router = APIRouter()
@@ -126,39 +128,53 @@ async def get_file(
     )
 
 
-# @router.patch("/{file_id}", response_model=GetFileResponse)
-# async def patch_file(
-#     file_id: int = Path(...),
-#     project_id: int = Path(...),
-#     file: UploadFile = File(...),
-#     name: str = Form(...),
-#     user_id: int = Depends(get_current_user_id),
-#     db=Depends(get_db),
-# ):
-#     contents = await file.read()
-#     try:
-#         content = contents.decode("utf-8")
-#     except UnicodeDecodeError:
-#         content = contents.decode("latin-1")
+@router.patch("/{file_id}", response_model=PostResponse)
+async def patch_file(
+    project_id: int = Path(...),
+    file_id: int = Path(...),
+    name: str = Form(...),
+    user_id: int = Depends(get_user_id),
+    db=Depends(get_db),
+):
+    file_db = update_file_by_id(
+        db=db,
+        project_id=project_id,
+        file_id=file_id,
+        user_id=user_id,
+        new_name=name,
+    )
 
-#     file_db = update_file_by_id(
-#         db=db,
-#         project_id=project_id,
-#         user_id=user_id,
-#         file_id=file_id,
-#         new_name=name,
-#         new_content=content,
-#     )
-#     if not file_db:
-#         raise HTTPException(status_code=400, detail="Ошибка при обновлении файла")
+    if not file_db:
+        raise HTTPException(status_code=400, detail="Ошибка при обновлении файла")
 
-#     return GetFileResponse(
-#         id=file_db.id,
-#         name=file_db.name,
-#         content=content,
-#         created_at=file_db.created_at,
-#         updated_at=file_db.updated_at,
-#     )
+    return file_db
+
+
+@router.patch("/{file_id}/content", response_model=PostResponse)
+async def patch_file(
+    project_id: int = Path(...),
+    file_id: int = Path(...),
+    file: UploadFile = File(...),
+    page: int = Form(...),
+    rows: int = Form(...),
+    new_rows: list[Row] = Form(...),
+    user_id: int = Depends(get_user_id),
+    db=Depends(get_db),
+):
+    file_db = update_content_file_by_id(
+        db=db,
+        project_id=project_id,
+        file_id=file_id,
+        user_id=user_id,
+        page=page,
+        rows=rows,
+        new_rows=new_rows,
+    )
+
+    if not file_db:
+        raise HTTPException(status_code=400, detail="Ошибка при обновлении файла")
+
+    return file_db
 
 
 class DeleteResponse(BaseModel):

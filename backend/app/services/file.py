@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.models.db import File
 from app.services.project import is_owner_of_project
 from app.services.file_normalize import normalize_to_sentence_csv
+from app.services.file_frontend_reading import Row
 
 
 def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -> None:
@@ -81,14 +82,14 @@ def create_file_by_project_id(
     )
     validated_stream = normalize_to_sentence_csv(text_stream)
 
-    file_obj = File(name=name, project_id=project_id, total_rows=get_total_rows(file))
-    db.add(file_obj)
+    file_db = File(name=name, project_id=project_id, total_rows=get_total_rows(file))
+    db.add(file_db)
     db.commit()
-    db.refresh(file_obj)
+    db.refresh(file_db)
 
-    save_file_to_disk(project_id, file_obj.id, validated_stream)
+    save_file_to_disk(project_id, file_db.id, validated_stream)
 
-    return file_obj
+    return file_db
 
 
 SortType = Literal[
@@ -132,44 +133,67 @@ def fetch_files_by_project_id(
 def fetch_file_by_id(db: Session, project_id: int, user_id: int, file_id: int) -> File:
     is_owner_of_file(db, project_id, user_id, file_id)
 
-    file = db.query(File).filter(File.id == file_id).first()
-    if not file:
+    file_db = db.query(File).filter(File.id == file_id).first()
+    if not file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    return file
+    return file_db
 
 
 def update_file_by_id(
     db: Session,
     project_id: int,
-    user_id: int,
     file_id: int,
+    user_id: int,
     new_name: str | None,
-    new_content: str | None,
 ) -> File:
     is_owner_of_file(db, project_id, user_id, file_id)
 
-    file = db.query(File).filter(File.id == file_id).first()
-    if not file:
+    file_db = db.query(File).filter(File.id == file_id).first()
+    if not file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
     if new_name:
-        file.name = new_name
-    if new_content:
-        validated_content = normalize_to_sentence_csv(new_content)
-        save_file_to_disk(project_id, file_id, validated_content)
+        file_db.name = new_name
+
     db.commit()
-    db.refresh(file)
-    return file
+    db.refresh(file_db)
+    return file_db
+
+
+def update_content_file_by_id(
+    db: Session,
+    project_id: int,
+    file_id: int,
+    user_id: int,
+    page: int,
+    rows: int,
+    new_rows: list[Row],
+) -> File:
+    is_owner_of_file(db, project_id, user_id, file_id)
+
+    file_db = db.query(File).filter(File.id == file_id).first()
+    if not file_db:
+        raise HTTPException(status_code=404, detail="Файл не найден")
+    
+    # TODO сделать сохранение на диск в файле file_frontend_saving.py
+
+    new_total_rows = file_db.total_rows - rows + len(new_rows)
+    if new_total_rows:
+        file_db.total_rows = new_total_rows
+
+    db.commit()
+    db.refresh(file_db)
+    return file_db
 
 
 def delete_file_by_id(db: Session, project_id: int, user_id: int, file_id: int) -> None:
     is_owner_of_file(db, project_id, user_id, file_id)
 
-    file = db.query(File).filter(File.id == file_id).first()
-    if not file:
+    file_db = db.query(File).filter(File.id == file_id).first()
+    if not file_db:
         raise HTTPException(status_code=404, detail="Файл не найден или уже удалён")
 
     delete_file_from_disk(project_id, file_id)
-    db.delete(file)
+    db.delete(file_db)
     db.commit()
