@@ -134,9 +134,9 @@ class PatchRequest(BaseModel):
 
 @router.patch("/{file_id}", response_model=PostResponse)
 async def patch_file(
-    project_id: int = Path(...),
-    file_id: int = Path(...),
-    data: PatchRequest = Form(...),
+    project_id: int,
+    file_id: int,
+    data: PatchRequest,
     user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
