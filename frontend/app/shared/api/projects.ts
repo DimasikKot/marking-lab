@@ -16,7 +16,7 @@ export interface GetProjectsResponse {
   data: Project[];
 }
 
-export interface PostProjectRequest {
+export interface PatchFileRequest {
   name: string;
   description: string;
   is_public: boolean;
@@ -57,7 +57,7 @@ export const fetchProjectById = async (id: string | number) => {
   }
 };
 
-export const createProject = async (data: PostProjectRequest) => {
+export const createProject = async (data: PatchFileRequest) => {
   try {
     const response = await api.post<Project>("/projects", data);
     return response.data;
@@ -73,7 +73,7 @@ export const createProject = async (data: PostProjectRequest) => {
 
 export const patchProjectById = async (
   id: string | number,
-  data: PostProjectRequest,
+  data: PatchFileRequest,
 ) => {
   try {
     const response = await api.patch<Project>(`/projects/${id}`, data);

@@ -7,7 +7,7 @@ import {
   patchProjectById,
   deleteProjectById,
   type Project,
-  type PostProjectRequest,
+  type PatchFileRequest,
 } from "@/shared/api/projects";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { ProjectCard } from "@/shared/components/ProjectCard";
@@ -24,7 +24,7 @@ export function Projects() {
   // Состояния для модального окна формы
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [formData, setFormData] = useState<PostProjectRequest>({
+  const [formData, setFormData] = useState<PatchFileRequest>({
     name: "",
     description: "",
     is_public: false,
