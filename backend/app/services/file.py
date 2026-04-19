@@ -145,7 +145,7 @@ def update_file_by_id(
     project_id: int,
     file_id: int,
     user_id: int,
-    new_name: str | None,
+    name: str | None,
 ) -> File:
     is_owner_of_file(db, project_id, user_id, file_id)
 
@@ -153,8 +153,8 @@ def update_file_by_id(
     if not file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    if new_name:
-        file_db.name = new_name
+    if name:
+        file_db.name = name
 
     db.commit()
     db.refresh(file_db)

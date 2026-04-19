@@ -128,11 +128,15 @@ async def get_file(
     )
 
 
+class PatchRequest(BaseModel):
+    name: str | None = None
+
+
 @router.patch("/{file_id}", response_model=PostResponse)
 async def patch_file(
     project_id: int = Path(...),
     file_id: int = Path(...),
-    name: str = Form(...),
+    data: PatchRequest = Form(...),
     user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
@@ -141,7 +145,7 @@ async def patch_file(
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,
-        new_name=name,
+        name=data.name,
     )
 
     if not file_db:
