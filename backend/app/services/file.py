@@ -161,7 +161,7 @@ def update_file_by_id(
     return file_db
 
 
-def update_content_file_by_id(
+def update_file_content_by_id(
     db: Session,
     project_id: int,
     file_id: int,
@@ -175,7 +175,7 @@ def update_content_file_by_id(
     file_db = db.query(File).filter(File.id == file_id).first()
     if not file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
-    
+
     # TODO сделать сохранение на диск в файле file_frontend_saving.py
 
     new_total_rows = file_db.total_rows - rows + len(new_rows)

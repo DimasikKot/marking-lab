@@ -21,7 +21,7 @@ from app.services.file import (
     fetch_file_by_id,
     fetch_files_by_project_id,
     get_file_path,
-    update_content_file_by_id,
+    update_file_content_by_id,
     update_file_by_id,
 )
 
@@ -151,7 +151,7 @@ async def patch_file(
 
 
 @router.patch("/{file_id}/content", response_model=PostResponse)
-async def patch_file(
+async def patch_file_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
     file: UploadFile = File(...),
@@ -161,7 +161,7 @@ async def patch_file(
     user_id: int = Depends(get_user_id),
     db=Depends(get_db),
 ):
-    file_db = update_content_file_by_id(
+    file_db = update_file_content_by_id(
         db=db,
         project_id=project_id,
         file_id=file_id,
