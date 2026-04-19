@@ -4,26 +4,33 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   deleteFileById,
   fetchFiles,
+  updateFileById,
   uploadFile,
   type FileInList,
 } from "@/shared/api/file";
-
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonBack } from "@/shared/components/ButtonBack";
+import type { PatchFileRequest } from "@/shared/api/file";
 
 export function Files() {
-  const { projectId = 0 } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
+  const { projectId = "0" } = useParams<{ projectId: string }>();
 
+  const navigate = useNavigate();
   const [files, setFiles] = useState<FileInList[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
+
+  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+  const [editingFile, setEditingFile] = useState<FileInList | null>(null);
+  const [formData, setFormData] = useState<PatchFileRequest>({
+    name: "",
+  });
 
   const loadFiles = async () => {
     setLoading(true);
@@ -45,7 +52,7 @@ export function Files() {
     loadFiles();
   }, [projectId]);
 
-  // Загрузка файла на сервер
+  // Загрузка нового файла на сервер
   const handleUpload = async () => {
     if (!selectedFile || !projectId) return;
 
@@ -58,6 +65,28 @@ export function Files() {
     loadFiles();
   };
 
+  // Открытие формы редактирования
+  const handleEditClick = (file: FileInList) => {
+    setEditingFile(file);
+    setFormData({ name: file.name });
+    setIsFormOpen(true);
+  };
+
+  // Отправка формы редактирования файла
+  const handleSubmitClick = async () => {
+    if (!editingFile || !projectId) return;
+
+    setLoading(true);
+    const response = await updateFileById(projectId, editingFile.id, formData);
+    setLoading(false);
+
+    if (response === undefined) return;
+
+    setIsFormOpen(false);
+    setEditingFile(null);
+    loadFiles();
+  };
+
   const filteredFiles = files.filter((file) =>
     file.name.toLowerCase().includes(search.toLowerCase()),
   );
@@ -66,6 +95,7 @@ export function Files() {
     <div className="max-w-6xl mx-auto m-2">
       <ButtonBack onClick={() => navigate("/projects")} />
 
+      {/* Блок загрузки файла */}
       <div className="mb-8 border border-gray-200 rounded-4xl p-6">
         <TextUI variant="title">Загрузка файла</TextUI>
 
@@ -133,6 +163,7 @@ export function Files() {
               onClick={() =>
                 navigate(`/projects/${projectId}/files/${file.id}/1`)
               }
+              onEditClick={() => handleEditClick(file)}
               onDeleteClick={() =>
                 deleteFileById(projectId, file.id).then(() => loadFiles())
               }
@@ -140,6 +171,49 @@ export function Files() {
           ))}
         </div>
       </div>
+
+      {isFormOpen && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+          <div
+            onClick={() => setIsFormOpen(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
+          />
+
+          <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
+            <TextUI variant="title">Редактировать файл</TextUI>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <TextUI variant="label">Название файла</TextUI>
+                <TextField
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  name="name"
+                  placeholder="Новое имя файла..."
+                />
+              </div>
+
+              <div className="flex justify-between items-center pt-4">
+                <ButtonUI
+                  onClick={() => {
+                    setIsFormOpen(false);
+                    setEditingFile(null);
+                  }}
+                  variant="secondary"
+                >
+                  Отмена
+                </ButtonUI>
+
+                <ButtonUI onClick={handleSubmitClick}>
+                  Сохранить изменения
+                </ButtonUI>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

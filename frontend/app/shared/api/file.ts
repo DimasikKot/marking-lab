@@ -97,7 +97,7 @@ export const fetchFileById = async (
   }
 };
 
-interface PatchFileRequest {
+export interface PatchFileRequest {
   name: string;
 }
 
