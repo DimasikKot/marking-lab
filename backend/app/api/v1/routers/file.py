@@ -69,18 +69,19 @@ async def get_files(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
-    search: str | None = Query(None, description="Поиск по имени файла"),
+    search: str | None = Query(None, description="Поиск по имени модели"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    files = fetch_files_by_project_id(
+    files_db = fetch_files_by_project_id(
         project_id=project_id,
         user_id=user_id,
         db=db,
         sort=sort,
         search=search,
     )
-    return GetResponse.model_validate(files)
+
+    return GetResponse(data=[PostResponse.model_validate(file) for file in files_db])
 
 
 class GetPageResponse(BaseModel):

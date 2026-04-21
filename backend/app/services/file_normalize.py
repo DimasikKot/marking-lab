@@ -13,7 +13,7 @@ def normalize_label(label: str) -> str:
     return f"{bio}-{ent.lower()}"
 
 
-def normalize_to_sentence_csv(content_stream: TextIO) -> str:
+def normalize_content_to_csv(content_stream: TextIO) -> str:
     content = content_stream.read()
 
     sentences: list[tuple[str, str]] = []

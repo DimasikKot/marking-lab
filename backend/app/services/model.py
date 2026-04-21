@@ -1,3 +1,4 @@
+from typing import Literal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -54,12 +55,22 @@ def create_model(
     return model_db
 
 
+SortType = Literal[
+    "name_asc",
+    "name_desc",
+    "created_at_asc",
+    "created_at_desc",
+    "updated_at_asc",
+    "updated_at_desc",
+]
+
+
 # router
 def fetch_models_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    sort: str | None = None,
+    sort: SortType | None = None,
     search: str | None = None,
 ) -> list[ModelDB]:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
@@ -73,8 +84,14 @@ def fetch_models_by_project_id(
         models_db = models_db.order_by(ModelDB.name.asc())
     elif sort == "name_desc":
         models_db = models_db.order_by(ModelDB.name.desc())
-    else:
+    elif sort == "created_at_asc":
+        models_db = models_db.order_by(ModelDB.created_at.asc())
+    elif sort == "created_at_desc":
         models_db = models_db.order_by(ModelDB.created_at.desc())
+    elif sort == "updated_at_asc":
+        models_db = models_db.order_by(ModelDB.updated_at.asc())
+    elif sort == "updated_at_desc":
+        models_db = models_db.order_by(ModelDB.updated_at.desc())
 
     return models_db.all()
 

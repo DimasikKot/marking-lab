@@ -59,12 +59,12 @@ class ProjectDB(Base):
         TIMESTAMP, server_default=func.now(), onupdate=func.now()
     )
 
-    files = relationship("File", back_populates="project", cascade="all, delete-orphan")
+    files = relationship("FileDB", back_populates="project", cascade="all, delete-orphan")
     models = relationship(
-        "Model", back_populates="project", cascade="all, delete-orphan"
+        "ModelDB", back_populates="project", cascade="all, delete-orphan"
     )
     experiments = relationship(
-        "Experiment", back_populates="project", cascade="all, delete-orphan"
+        "ExperimentDB", back_populates="project", cascade="all, delete-orphan"
     )
 
 
@@ -82,12 +82,12 @@ class FileDB(Base):
         TIMESTAMP, server_default=func.now(), onupdate=func.now()
     )
 
-    project = relationship("Project", back_populates="files")
+    project = relationship("ProjectDB", back_populates="files")
     models = relationship(
-        "Model", secondary=model_training_files_table, back_populates="files"
+        "ModelDB", secondary=model_training_files_table, back_populates="files"
     )
     experiments = relationship(
-        "Experiment",
+        "ExperimentDB",
         secondary=experiment_testing_files_table,
         back_populates="test_files",
     )
@@ -111,10 +111,10 @@ class ModelDB(Base):
         JSON
     )  # сюда сохраняются веса/параметры после обучения
 
-    project = relationship("Project", back_populates="models")
-    experiments = relationship("Experiment", back_populates="model")
+    project = relationship("ProjectDB", back_populates="models")
+    experiments = relationship("ExperimentDB", back_populates="model")
     files = relationship(
-        "File", secondary=model_training_files_table, back_populates="models"
+        "FileDB", secondary=model_training_files_table, back_populates="models"
     )
 
 
@@ -134,8 +134,8 @@ class ExperimentDB(Base):
     results: Mapped[dict[str, Any]] = mapped_column(JSON)
     graphs: Mapped[dict[str, Any]] = mapped_column(JSON)
 
-    project = relationship("Project", back_populates="experiments")
-    model = relationship("Model", back_populates="experiments")
+    project = relationship("ProjectDB", back_populates="experiments")
+    model = relationship("ModelDB", back_populates="experiments")
     test_files = relationship(
-        "File", secondary=experiment_testing_files_table, back_populates="experiments"
+        "FileDB", secondary=experiment_testing_files_table, back_populates="experiments"
     )

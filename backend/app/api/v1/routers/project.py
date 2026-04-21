@@ -64,7 +64,7 @@ async def get_projects(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
-    search: str | None = Query(None, description="Поиск по имени файла"),
+    search: str | None = Query(None, description="Поиск по имени проекта"),
     is_public: bool | None = Query(
         None, description="Получать только публичные проекты или приватные"
     ),

@@ -6,12 +6,12 @@ from fastapi import HTTPException
 from pathlib import Path
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import Literal, TextIO
+from typing import BinaryIO, Literal, TextIO
 
 from app.core.config import settings
 from app.models.db import FileDB
 from app.services.project import is_owner_of_project
-from app.services.file_normalize import normalize_to_sentence_csv
+from app.services.file_normalize import normalize_content_to_csv
 
 
 def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) -> None:
@@ -125,25 +125,29 @@ def create_file_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    file: TextIO,
+    file: BinaryIO,
     name: str,
 ) -> FileDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    content_stream = TextIOWrapper(
-        file.buffer,
-        encoding="utf-8",
-        newline="",
-    )
+    try:
+        content_stream = TextIOWrapper(
+            file,
+            encoding="utf-8",
+            newline="",
+        )
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=415, detail="Неподдерживаемый формат файла")
 
-    content = normalize_to_sentence_csv(content_stream)
+    content = normalize_content_to_csv(content_stream)
     total_rows = _get_total_rows(content_stream)
 
     file_db = FileDB(name=name, project_id=project_id, total_rows=total_rows)
+    db.add(file_db)
+    db.flush()
 
     _create_file_on_disk(project_id, file_db.id, content)
 
-    db.add(file_db)
     db.commit()
     db.refresh(file_db)
 
@@ -165,28 +169,30 @@ def fetch_files_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    search: str | None = None,
     sort: SortType | None = None,
+    search: str | None = None,
 ) -> list[FileDB]:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    query = db.query(FileDB).filter(FileDB.project_id == project_id)
-    if search:
-        query = query.filter(FileDB.name.ilike(f"%{search}%"))
-    if sort == "name_asc":
-        query = query.order_by(FileDB.name.asc())
-    elif sort == "name_desc":
-        query = query.order_by(FileDB.name.desc())
-    elif sort == "created_at_asc":
-        query = query.order_by(FileDB.created_at.asc())
-    elif sort == "created_at_desc":
-        query = query.order_by(FileDB.created_at.desc())
-    elif sort == "updated_at_asc":
-        query = query.order_by(FileDB.updated_at.asc())
-    elif sort == "updated_at_desc":
-        query = query.order_by(FileDB.updated_at.desc())
+    files_db = db.query(FileDB).filter(FileDB.project_id == project_id)
 
-    return query.all()
+    if search:
+        files_db = files_db.filter(FileDB.name.ilike(f"%{search}%"))
+
+    if sort == "name_asc":
+        files_db = files_db.order_by(FileDB.name.asc())
+    elif sort == "name_desc":
+        files_db = files_db.order_by(FileDB.name.desc())
+    elif sort == "created_at_asc":
+        files_db = files_db.order_by(FileDB.created_at.asc())
+    elif sort == "created_at_desc":
+        files_db = files_db.order_by(FileDB.created_at.desc())
+    elif sort == "updated_at_asc":
+        files_db = files_db.order_by(FileDB.updated_at.asc())
+    elif sort == "updated_at_desc":
+        files_db = files_db.order_by(FileDB.updated_at.desc())
+
+    return files_db.all()
 
 
 # router

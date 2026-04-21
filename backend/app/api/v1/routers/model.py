@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, Form, Path
+from fastapi import APIRouter, Depends, Form, Path, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.services.get_user_id import get_user_id
 from app.services.model import (
+    SortType,
     create_model,
     delete_model_by_id,
     fetch_models_by_project_id,
@@ -34,7 +35,6 @@ class ModelResponse(BaseModel):
 async def post_create_model(
     project_id: int = Path(...),
     name: str = Form(...),
-    training_file_ids: list[int] | None = None,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -43,7 +43,6 @@ async def post_create_model(
         user_id=user_id,
         db=db,
         name=name,
-        training_file_ids=training_file_ids,
     )
     return model_db
 
@@ -51,8 +50,11 @@ async def post_create_model(
 @router.get("/", response_model=list[ModelResponse])
 async def get_models(
     project_id: int,
-    sort: str | None,
-    search: str | None,
+    sort: SortType | None = Query(
+        None,
+        description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
+    ),
+    search: str | None = Query(None, description="Поиск по имени файла"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
