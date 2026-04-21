@@ -18,16 +18,22 @@ def is_owner_of_file(db: Session, project_id: int, user_id: int, file_id: int) -
         db.query(File).filter(File.id == file_id, File.project_id == project_id).first()
         is None
     ):
-        raise HTTPException(status_code=403, detail="Нет доступа к проекту")
+        raise HTTPException(status_code=403, detail="Нет доступа к файлу")
 
 
-def get_file_path(project_id: int, file_id: int) -> Path:
+def get_file_path_by_id(project_id: int, file_id: int) -> Path:
     base_dir = Path(settings.STORAGE_PATH).resolve()
-    return base_dir / str(project_id) / "files" / f"{file_id}.csv"
+    file_path = base_dir / str(project_id) / "files" / f"{file_id}.csv"
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Файл не найден на диске")
+
+    return file_path
 
 
-def save_file_to_disk(project_id: int, file_id: int, content: str) -> None:
-    file_path: Path = get_file_path(project_id, file_id)
+def create_file_on_disk(project_id: int, file_id: int, content: str) -> None:
+    base_dir = Path(settings.STORAGE_PATH).resolve()
+    file_path = base_dir / str(project_id) / "files" / f"{file_id}.csv"
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     file_path.write_text(
@@ -38,7 +44,7 @@ def save_file_to_disk(project_id: int, file_id: int, content: str) -> None:
 
 
 def read_file_from_disk(project_id: int, file_id: int) -> str:
-    file_path: Path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path_by_id(project_id, file_id)
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден")
@@ -47,7 +53,7 @@ def read_file_from_disk(project_id: int, file_id: int) -> str:
 
 
 def delete_file_from_disk(project_id: int, file_id: int) -> None:
-    file_path: Path = get_file_path(project_id, file_id)
+    file_path: Path = get_file_path_by_id(project_id, file_id)
 
     if file_path.exists():
         file_path.unlink()
@@ -67,27 +73,30 @@ def get_total_rows(file: TextIO) -> int:
 
 
 def create_file_by_project_id(
-    db: Session,
-    name: str,
     project_id: int,
-    user_id: int,
     file: TextIO,
+    name: str,
+    user_id: int,
+    db: Session,
 ) -> File:
     is_owner_of_project(db, project_id, user_id)
 
-    text_stream = TextIOWrapper(
+    content_stream = TextIOWrapper(
         file,
         encoding="utf-8",
         newline="",
     )
-    validated_stream = normalize_to_sentence_csv(text_stream)
 
-    file_db = File(name=name, project_id=project_id, total_rows=get_total_rows(file))
+    content = normalize_to_sentence_csv(content_stream)
+    total_rows = get_total_rows(content_stream)
+
+    file_db = File(name=name, project_id=project_id, total_rows=total_rows)
+
+    create_file_on_disk(project_id, file_db.id, content)
+
     db.add(file_db)
     db.commit()
     db.refresh(file_db)
-
-    save_file_to_disk(project_id, file_db.id, validated_stream)
 
     return file_db
 
@@ -146,15 +155,15 @@ def update_file_by_id(
     file_id: int,
     user_id: int,
     name: str | None,
+    total_rows: int | None = None,
 ) -> File:
-    is_owner_of_file(db, project_id, user_id, file_id)
-
-    file_db = db.query(File).filter(File.id == file_id).first()
-    if not file_db:
-        raise HTTPException(status_code=404, detail="Файл не найден")
+    file_db = fetch_file_by_id(db, project_id, user_id, file_id)
 
     if name:
         file_db.name = name
+
+    if total_rows:
+        file_db.total_rows = total_rows
 
     db.commit()
     db.refresh(file_db)
@@ -170,13 +179,17 @@ def update_file_content_by_id(
     rows: int,
     new_rows: list[Row],
 ) -> File:
-    is_owner_of_file(db, project_id, user_id, file_id)
+    file_db = fetch_file_by_id(db, project_id, user_id, file_id)
 
-    file_db = db.query(File).filter(File.id == file_id).first()
-    if not file_db:
-        raise HTTPException(status_code=404, detail="Файл не найден")
+    file_path = get_file_path_by_id(project_id, file_id)
 
-    # TODO сделать сохранение на диск в файле file_frontend_saving.py
+    new_total_rows = write_page_to_file(
+        file_path=file_path,
+        page=page,
+        rows_per_page=rows,
+        new_rows=new_rows,
+        total_rows_in_db=file_db.total_rows,
+    )
 
     new_total_rows = file_db.total_rows - rows + len(new_rows)
     if new_total_rows:
@@ -188,12 +201,9 @@ def update_file_content_by_id(
 
 
 def delete_file_by_id(db: Session, project_id: int, user_id: int, file_id: int) -> None:
-    is_owner_of_file(db, project_id, user_id, file_id)
-
-    file_db = db.query(File).filter(File.id == file_id).first()
-    if not file_db:
-        raise HTTPException(status_code=404, detail="Файл не найден или уже удалён")
+    file_db = fetch_file_by_id(db, project_id, user_id, file_id)
 
     delete_file_from_disk(project_id, file_id)
+
     db.delete(file_db)
     db.commit()

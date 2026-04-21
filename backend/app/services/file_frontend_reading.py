@@ -51,6 +51,12 @@ def read_page_from_file(
     page: int = 1,
     rows_per_page: int = 40,
 ):
+    file_db = fetch_file_by_id(
+        db=db, project_id=project_id, user_id=user_id, file_id=file_id
+    )
+
+    file_path = get_file_path_by_id(project_id, file_id)
+
     start_idx = (page - 1) * rows_per_page
 
     sentences = list(iter_sentences(file_path, start=start_idx, count=rows_per_page))
