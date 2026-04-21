@@ -24,6 +24,7 @@ export function Projects() {
   // Состояния для модального окна формы
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [search, setSearch] = useState("");
   const [formData, setFormData] = useState<PatchProjectRequest>({
     name: "",
     description: "",
@@ -105,6 +106,10 @@ export function Projects() {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
+  const filteredProjects = projects.filter((project) =>
+    project.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
     <div>
       <Header>Страница проектов</Header>
@@ -113,15 +118,37 @@ export function Projects() {
         <ButtonPage onClick={() => navigate("/")} isLoading={loading} />
 
         <div className="border border-gray-200 rounded-4xl p-6">
-          <div className="flex justify-between items-center mb-6">
-            <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
+          <div className="mb-4 flex justify-between items-center">
+            <TextUI variant="header" className="max-w-xs w-full">
+              Файлы проекта
+            </TextUI>
+
+            <ButtonUI onClick={handleCreateClick} className="max-w-xs w-full">
+              + Новый проект
+            </ButtonUI>
+
+            <div className="max-w-xs w-full">
+              <TextField
+                value={search}
+                setValue={setSearch}
+                placeholder="Поиск по названию проекта..."
+              />
+            </div>
           </div>
 
-          {loading && <TextUI variant="desc">Загрузка...</TextUI>}
+          {filteredProjects.length === 0 && (
+            <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+              <TextUI variant="desc">
+                {search
+                  ? "Проекты по запросу не найдены"
+                  : "У вас пока нет проектов"}
+              </TextUI>
+            </div>
+          )}
 
-          {!loading && projects.length > 0 && (
+          {filteredProjects.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <ProjectCard
                   project={project}
                   onDeleteClick={() => handleDeleteClick(project.id)}

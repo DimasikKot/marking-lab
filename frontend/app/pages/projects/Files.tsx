@@ -123,7 +123,7 @@ export function Files() {
             onClick={handleUpload}
             disabled={!selectedFile || uploading}
           >
-            {uploading ? "Загружаем файл..." : "Загрузить на сервер"}
+            {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
           </ButtonUI>
         </div>
       </div>
@@ -142,12 +142,6 @@ export function Files() {
           </div>
         </div>
 
-        {loading && (
-          <TextUI variant="desc" className="mb-4">
-            Загрузка файлов...
-          </TextUI>
-        )}
-
         {filteredFiles.length === 0 && (
           <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
             <TextUI variant="desc">
@@ -158,7 +152,7 @@ export function Files() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredFiles.map((file) => (
             <FileCard
               key={file.id}
