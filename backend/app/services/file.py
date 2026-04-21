@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from pathlib import Path
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import BinaryIO, Literal, TextIO
+from typing import Any, BinaryIO, Generator, Literal, TextIO
 
 from app.core.config import settings
 from app.models.db import FileDB
@@ -89,7 +89,9 @@ class Row(BaseModel):
     words: list[Word]
 
 
-def _get_file_sentences(file_path: Path, start: int = 0, count: int = 40):
+def _get_file_rows(
+    file_path: Path, start: int = 0, count: int = 40
+) -> Generator[Row, Any, None]:
     """Генератор, который сразу пропускает start строк и читает только count"""
     with file_path.open(encoding="utf-8", errors="ignore") as file:
         # Пропускаем заголовок + нужное количество строк
@@ -118,6 +120,53 @@ def _get_file_sentences(file_path: Path, start: int = 0, count: int = 40):
 
             words = [Word(token=t, label=l) for t, l in zip(tokens, labels)]
             yield Row(words=words)
+
+
+def _write_new_rows(
+    file_path: Path, file_db: FileDB, page: int, rows: int, new_rows: list[Row]
+) -> int:
+    start = page * rows
+    end = start + rows
+    tmp = file_path.with_suffix(".tmp")
+
+    with file_path.open(encoding="utf-8") as src, tmp.open(
+        "w", encoding="utf-8", newline=""
+    ) as dst:
+        reader = csv.reader(src)
+        writer = csv.writer(dst)
+
+        writer.writerow(next(reader))  # header
+
+        for i, row in enumerate(reader):
+            if start <= i < end:
+                if i - start < len(new_rows):
+                    new_row = new_rows[i - start]
+                    writer.writerow(
+                        [
+                            " ".join(word.token for word in new_row.words),
+                            " ".join(word.label for word in new_row.words),
+                        ]
+                    )
+                # иначе — строка удаляется (замена короче)
+            else:
+                writer.writerow(row)
+
+        # если новых строк больше страницы — дописываем хвост
+        for new_row in new_rows[rows:]:
+            writer.writerow(
+                [
+                    " ".join(word.token for word in new_row.words),
+                    " ".join(word.label for word in new_row.words),
+                ]
+            )
+
+    tmp.replace(file_path)
+
+    return file_db.total_rows - rows + len(new_rows)
+
+    new_total_rows = file_db.total_rows - rows_in_old_page + len(new_rows)
+
+    return new_total_rows
 
 
 # router
@@ -165,7 +214,7 @@ SortType = Literal[
 
 
 # router
-def fetch_files_by_project_id(
+def fetch_files_db_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
@@ -208,29 +257,7 @@ def delete_file_by_id(project_id: int, file_id: int, user_id: int, db: Session) 
 
 
 # router
-def read_page_from_file(
-    project_id: int,
-    file_id: int,
-    user_id: int,
-    db: Session,
-    page: int,
-    rows: int,
-) -> tuple[FileDB, list[Row]]:
-    file_db = _fetch_file_db_by_id(
-        db=db, project_id=project_id, user_id=user_id, file_id=file_id
-    )
-
-    file_path = _get_file_path_by_id(project_id, file_id)
-
-    start_idx: int = (page - 1) * rows
-
-    page_rows = list(_get_file_sentences(file_path, start=start_idx, count=rows))
-
-    return file_db, page_rows
-
-
-# router
-def update_file_by_id(
+def update_file_db_by_id(
     project_id: int,
     file_id: int,
     user_id: int,
@@ -254,7 +281,28 @@ def update_file_by_id(
 
 
 # router
-def update_file_content_by_id(
+def read_page_by_id(
+    project_id: int,
+    file_id: int,
+    user_id: int,
+    db: Session,
+    page: int,
+    rows: int,
+) -> tuple[FileDB, list[Row]]:
+    file_db = _fetch_file_db_by_id(
+        db=db, project_id=project_id, user_id=user_id, file_id=file_id
+    )
+
+    file_path = _get_file_path_by_id(project_id, file_id)
+
+    start_idx: int = (page - 1) * rows
+    page_rows = list(_get_file_rows(file_path, start=start_idx, count=rows))
+
+    return file_db, page_rows
+
+
+# router
+def update_page_by_id(
     project_id: int,
     file_id: int,
     user_id: int,
@@ -267,20 +315,19 @@ def update_file_content_by_id(
         project_id=project_id, file_id=file_id, db=db, user_id=user_id
     )
 
-    # file_path = _get_file_path_by_id(project_id, file_id)
+    file_path = _get_file_path_by_id(project_id, file_id)
 
-    # new_total_rows = write_page_to_file(
-    #     file_path=file_path,
-    #     page=page,
-    #     rows_per_page=rows,
-    #     new_rows=new_rows,
-    #     total_rows_in_db=file_db.total_rows,
-    # )
+    new_total_rows = _write_new_rows(
+        file_path=file_path,
+        file_db=file_db,
+        page=page,
+        rows=rows,
+        new_rows=new_rows,
+    )
 
-    new_total_rows = file_db.total_rows - rows + len(new_rows)
-    if new_total_rows:
-        file_db.total_rows = new_total_rows
+    file_db.total_rows = new_total_rows
 
     db.commit()
     db.refresh(file_db)
+
     return file_db

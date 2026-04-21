@@ -19,10 +19,10 @@ from app.services.file import (
     SortType,
     create_file_by_project_id,
     delete_file_by_id,
-    fetch_files_by_project_id,
-    read_page_from_file,
-    update_file_content_by_id,
-    update_file_by_id,
+    fetch_files_db_by_project_id,
+    read_page_by_id,
+    update_page_by_id,
+    update_file_db_by_id,
 )
 
 
@@ -73,7 +73,7 @@ async def get_files(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    files_db = fetch_files_by_project_id(
+    files_db = fetch_files_db_by_project_id(
         project_id=project_id,
         user_id=user_id,
         db=db,
@@ -104,7 +104,7 @@ async def get_file(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    file_db, page_rows = read_page_from_file(
+    file_db, page_rows = read_page_by_id(
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,
@@ -138,7 +138,7 @@ async def patch_file(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    file_db = update_file_by_id(
+    file_db = update_file_db_by_id(
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,
@@ -153,13 +153,13 @@ async def patch_file(
 async def patch_file_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
-    page: int = Form(...),
-    rows: int = Form(...),
+    page: int = Form(1),
+    rows: int = Form(40),
     new_rows: list[Row] = Form(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    file_db = update_file_content_by_id(
+    file_db = update_page_by_id(
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,
