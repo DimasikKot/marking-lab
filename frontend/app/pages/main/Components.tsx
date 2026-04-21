@@ -5,7 +5,7 @@ import type { FileInList } from "@/shared/api/file";
 import type { Project } from "@/shared/api/projects";
 
 import { Header } from "@/shared/components/Header";
-import { ButtonBack } from "@/shared/components/ButtonBack";
+import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
@@ -45,7 +45,7 @@ export function Components() {
       <Header>Страница компонентов</Header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <ButtonBack onClick={() => navigate("/")} />
+        <ButtonPage onClick={() => navigate("/")} />
 
         <div className="mt-8 space-y-16">
           {/* TextUI */}

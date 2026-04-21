@@ -12,7 +12,7 @@ import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
-import { ButtonBack } from "@/shared/components/ButtonBack";
+import { ButtonPage } from "@/shared/components/ButtonPage";
 import type { PatchFileRequest } from "@/shared/api/file";
 
 export function Files() {
@@ -93,7 +93,10 @@ export function Files() {
 
   return (
     <div className="max-w-6xl mx-auto m-2">
-      <ButtonBack onClick={() => navigate("/projects")} />
+      <ButtonPage
+        onClick={() => navigate("/projects")}
+        isLoading={loading || uploading}
+      />
 
       {/* Блок загрузки файла */}
       <div className="mb-8 border border-gray-200 rounded-4xl p-6">

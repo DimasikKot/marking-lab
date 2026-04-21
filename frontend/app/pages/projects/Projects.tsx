@@ -14,7 +14,7 @@ import { ProjectCard } from "@/shared/components/ProjectCard";
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
 import { TextField } from "@/shared/components/TextField";
-import { ButtonBack } from "@/shared/components/ButtonBack";
+import { ButtonPage } from "@/shared/components/ButtonPage";
 
 export function Projects() {
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ export function Projects() {
       <Header>Страница проектов</Header>
 
       <div className="max-w-6xl mx-auto m-2">
-        <ButtonBack onClick={() => navigate("/")} />
+        <ButtonPage onClick={() => navigate("/")} isLoading={loading} />
 
         <div className="border border-gray-200 rounded-4xl p-6">
           <div className="flex justify-between items-center mb-6">

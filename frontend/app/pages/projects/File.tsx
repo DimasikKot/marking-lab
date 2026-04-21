@@ -10,7 +10,7 @@ import {
   type Line,
   type Word,
 } from "@/shared/api/file";
-import { ButtonBack } from "@/shared/components/ButtonBack";
+import { ButtonPage } from "@/shared/components/ButtonPage";
 
 export function File() {
   const { projectId = "0", fileId = "0", page = "1" } = useParams();
@@ -55,10 +55,13 @@ export function File() {
   };
   return (
     <div>
-      <Header>{loading ? "Загрузка..." : `Файл "${file?.name}"`}</Header>
+      <Header>{`Страница файла "${file?.name}"`}</Header>
 
       <div className="max-w-6xl mx-auto m-2">
-        <ButtonBack onClick={() => navigate(`/projects/${projectId}/files`)} />
+        <ButtonPage
+          onClick={() => navigate(`/projects/${projectId}/files`)}
+          isLoading={loading}
+        />
 
         <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
           <div className="flex justify-between items-start">

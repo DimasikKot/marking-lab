@@ -1,4 +1,4 @@
-import { ButtonBack } from "@/shared/components/ButtonBack";
+import { ButtonPage } from "@/shared/components/ButtonPage";
 import { useNavigate } from "react-router-dom";
 
 export function Models() {
@@ -7,7 +7,7 @@ export function Models() {
 
   return (
     <div className="max-w-6xl mx-auto m-2">
-      <ButtonBack onClick={() => navigate("/projects")} />
+      <ButtonPage onClick={() => navigate("/projects")} />
 
       <div className="border border-gray-200 rounded-4xl p-6">
         <p>Страница моделей</p>
