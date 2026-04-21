@@ -8,17 +8,6 @@ interface GetBackendResponse {
   status: boolean;
 }
 
-// export const fetchBackendEcho = async (
-//   setStatus: (status: boolean) => void,
-// ) => {
-//   try {
-//     const response = await api.get<GetBackendResponse>("/echos/backendd");
-//     setStatus(response.data.status);
-//   } catch {
-//     toast.error("Ошибка при запросе backend");
-//   }
-// };
-
 export const fetchBackendEcho = async (): Promise<
   GetBackendResponse | undefined
 > => {
