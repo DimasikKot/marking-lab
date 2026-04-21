@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Any
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
@@ -6,9 +8,10 @@ from datetime import datetime
 from app.core.database import get_db
 from app.services.get_user_id import get_user_id
 from app.services.project import (
+    SortType,
     create_project,
     delete_project_by_id,
-    fetch_project_by_id,
+    fetch_project_db_by_id,
     fetch_projects_by_user_id,
     update_project_by_id,
 )
@@ -41,14 +44,15 @@ async def post_create_project(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    project = create_project(
-        db, user_id=user_id, name=data.name, description=data.description
+    project_db = create_project(
+        user_id=user_id, db=db, name=data.name, description=data.description
     )
-    return project
+
+    return project_db
 
 
 class GetResponse(BaseModel):
-    data: list[PostResponse]
+    data: list[PostResponse | Any]
 
     class Config:
         from_attributes = True
@@ -60,17 +64,22 @@ async def get_projects(
         None, description="Получать только публичные проекты или приватные"
     ),
     search: str | None = Query(None, description="Поиск по имени файла"),
-    sort: str | None = Query(
+    sort: SortType | None = Query(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    projects = fetch_projects_by_user_id(
-        db, user_id=user_id, is_public=is_public, search=search, sort=sort
+    projects_db = fetch_projects_by_user_id(
+        db=db,
+        user_id=user_id,
+        is_public=is_public,
+        search=search,
+        sort=sort,
     )
-    return GetResponse(data=projects)
+
+    return GetResponse(data=projects_db)
 
 
 @router.get("/{project_id}", response_model=PostResponse)
@@ -79,8 +88,9 @@ async def get_project(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    project = fetch_project_by_id(db, user_id=user_id, project_id=project_id)
-    return project
+    project_db = fetch_project_db_by_id(project_id=project_id, user_id=user_id, db=db)
+
+    return project_db
 
 
 class UpdateRequest(BaseModel):
@@ -96,20 +106,16 @@ async def patch_project(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    if len(data.name) > 255:
-        raise HTTPException(status_code=400, detail="Название проекта слишком длинное")
-    if len(data.description) > 255:
-        raise HTTPException(status_code=400, detail="Описание проекта слишком длинное")
-
-    updated_project = update_project_by_id(
-        db,
+    project_db = update_project_by_id(
         project_id=project_id,
         user_id=user_id,
+        db=db,
         new_name=data.name,
-        new_is_public=data.is_public,
         new_description=data.description,
+        new_is_public=data.is_public,
     )
-    return updated_project
+
+    return project_db
 
 
 class DeleteResponse(BaseModel):
@@ -123,7 +129,8 @@ async def delete_project(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    delete_project_by_id(db, project_id=project_id, user_id=user_id)
+    delete_project_by_id(project_id=project_id, user_id=user_id, db=db)
+
     return DeleteResponse(detail="Проект успешно удалён", success=True)
 
 

@@ -4,9 +4,8 @@ from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.db import Model, File
+from app.models.db import ModelDB, FileDB
 from app.services.project import is_owner_of_project
-from app.services.file import read_file_from_disk, is_owner_of_file
 
 
 def is_owner_of_model(
@@ -15,8 +14,8 @@ def is_owner_of_model(
     is_owner_of_project(db, project_id, user_id)
 
     if (
-        db.query(Model)
-        .filter(Model.id == model_id, Model.project_id == project_id)
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
         .first()
         is None
     ):
@@ -29,18 +28,18 @@ def create_model(
     user_id: int,
     name: str,
     training_file_ids: List[int] | None = None,
-) -> Model:
+) -> ModelDB:
     is_owner_of_project(db, project_id, user_id)
 
-    model = Model(name=name, project_id=project_id)
+    model = ModelDB(name=name, project_id=project_id)
     db.add(model)
     db.commit()
     db.refresh(model)
 
     if training_file_ids:
         files = (
-            db.query(File)
-            .filter(File.id.in_(training_file_ids), File.project_id == project_id)
+            db.query(FileDB)
+            .filter(FileDB.id.in_(training_file_ids), FileDB.project_id == project_id)
             .all()
         )
         model.files = files
@@ -54,32 +53,32 @@ def fetch_models_by_project_id(
     user_id: int,
     search: str | None = None,
     sort: str | None = None,
-) -> List[Model]:
+) -> List[ModelDB]:
     is_owner_of_project(db, project_id, user_id)
 
-    query = db.query(Model).filter(Model.project_id == project_id)
+    query = db.query(ModelDB).filter(ModelDB.project_id == project_id)
 
     if search:
-        query = query.filter(Model.name.ilike(f"%{search}%"))
+        query = query.filter(ModelDB.name.ilike(f"%{search}%"))
 
     if sort == "name_asc":
-        query = query.order_by(Model.name.asc())
+        query = query.order_by(ModelDB.name.asc())
     elif sort == "name_desc":
-        query = query.order_by(Model.name.desc())
+        query = query.order_by(ModelDB.name.desc())
     else:
-        query = query.order_by(Model.created_at.desc())
+        query = query.order_by(ModelDB.created_at.desc())
 
     return query.all()
 
 
 def fetch_model_by_id(
     db: Session, project_id: int, user_id: int, model_id: int
-) -> Model:
+) -> ModelDB:
     is_owner_of_model(db, project_id, user_id, model_id)
 
     model = (
-        db.query(Model)
-        .filter(Model.id == model_id, Model.project_id == project_id)
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
         .first()
     )
     if not model:
@@ -102,7 +101,7 @@ async def train_model(
     #     training_data.extend(parse_bio_csv(content))  # list[dict]
 
     # Разделяем на два списка
-    text = [item["text"] for item in training_data]
+    text: list[] = [item["text"] for item in training_data]
     labels = [item["labels"] for item in training_data]
 
     async with AsyncClient(timeout=300.0) as client:
@@ -124,8 +123,8 @@ async def delete_model_by_id(
     is_owner_of_model(db, project_id, user_id, model_id)
 
     model = (
-        db.query(Model)
-        .filter(Model.id == model_id, Model.project_id == project_id)
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
         .first()
     )
     if not model:

@@ -2,31 +2,31 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
-class __Settings__(BaseSettings):
-    ML_URL: str
+class _Settings(BaseSettings):
+    ML_URL: str = "http://ml:8001/api/v1"
 
     # Основная БД
-    DB_HOST: str
-    DB_PORT: int
-    DB_USERNAME: str
-    DB_PASSWORD: str
-    DB_NAME: str
+    DB_HOST: str = "host.docker.internal"
+    DB_PORT: int = 5432
+    DB_USERNAME: str = "postgres"
+    DB_PASSWORD: str = "password"
+    DB_NAME: str = "marking-lab"
 
     # БД для аутентификации
-    AUTH_DB_HOST: str
-    AUTH_DB_PORT: int
-    AUTH_DB_USERNAME: str
-    AUTH_DB_PASSWORD: str
-    AUTH_DB_NAME: str
+    AUTH_DB_HOST: str = "host.docker.internal"
+    AUTH_DB_PORT: int = 5432
+    AUTH_DB_USERNAME: str = "postgres"
+    AUTH_DB_PASSWORD: str = "password"
+    AUTH_DB_NAME: str = "marking-lab-auth"
 
     # JWT-токены
-    JWT_ACCESS_TOKEN_SECRET: str
-    JWT_ACCESS_TOKEN_EXPIRATION_HOURS: int
-    JWT_REFRESH_TOKEN_SECRET: str
-    JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int
+    JWT_ACCESS_TOKEN_SECRET: str = "secret"
+    JWT_ACCESS_TOKEN_EXPIRATION_HOURS: int = 24
+    JWT_REFRESH_TOKEN_SECRET: str = "secret-refresh"
+    JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int = 240
 
     # Хранилище файлов
-    STORAGE_PATH: str
+    STORAGE_PATH: str = "./projects"
 
     @property
     def DATABASE_URL(self) -> str:
@@ -42,7 +42,7 @@ class __Settings__(BaseSettings):
 
 @lru_cache
 def __get_settings__():
-    return __Settings__()
+    return _Settings()
 
 
-settings: __Settings__ = __get_settings__()
+settings: _Settings = __get_settings__()

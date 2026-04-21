@@ -1,3 +1,4 @@
+from typing import Any
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -18,7 +19,7 @@ def get_password_hash(password: str) -> str:
     return password_crypt_context.hash(password)
 
 
-def verify_password(plain_password, hashed_password) -> bool:
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Проверяет, соответствует ли открытый пароль хешу пароля"""
     return password_crypt_context.verify(plain_password, hashed_password)
 
@@ -47,12 +48,12 @@ def authenticate_user(db: Session, login: str, password: str) -> User:
     return user
 
 
-def encode_access_token(data: dict) -> str:
+def encode_access_token(data: dict[Any, Any]) -> str:
     """Создаёт JWT-токен с данными из словаря и временем истечения, если указано"""
 
     # Копируем, чтобы не изменять передаваемый словарь
     # Данные в словаре будут зашифрованы, но их можно прочитать зная секретный ключ из параметров среды
-    to_encode: dict = data.copy()
+    to_encode: dict[Any, Any] = data.copy()
 
     # expire - дата истечения токена (expires_delta - время действия токена)
     expire: datetime = datetime.now(tz=timezone.utc) + timedelta(
@@ -66,7 +67,7 @@ def encode_access_token(data: dict) -> str:
     return jwt.encode(to_encode, settings.JWT_ACCESS_TOKEN_SECRET, algorithm="HS256")
 
 
-def decode_access_token(token: str) -> dict[str, any] | None:
+def decode_access_token(token: str) -> dict[str, Any] | None:
     """Возвращает payload из JWT-токена или None, если токен недействителен/просрочен"""
 
     try:

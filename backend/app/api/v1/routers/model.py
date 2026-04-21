@@ -1,15 +1,10 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, Form, HTTPException, Path
 from pydantic import BaseModel
-from datetime import datetime
-from typing import List
 from sqlalchemy.orm import Session
 
 from app.services.get_user_id import get_user_id
 from app.services.model import (
-    create_model,
     delete_model_by_id,
-    fetch_models_by_project_id,
-    train_model,
 )
 from app.core.database import get_db
 
@@ -79,4 +74,5 @@ async def delete_model(
     db: Session = Depends(get_db),
 ):
     delete_model_by_id(db, model_id=model_id, project_id=project_id, user_id=user_id)
+
     return DeleteResponse(detail="Модель успешно удалена", success=True)

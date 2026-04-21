@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.services.file_frontend_reading import Row
+from app.services.file import Row
 
 
 def write_page_to_file(
@@ -32,7 +32,7 @@ def write_page_to_file(
     end_idx = start_idx + rows_per_page
 
     # Подготавливаем новые строки в CSV-формате
-    new_lines = []
+    new_lines: list[str] = []
     for row in new_rows:
         tokens = " ".join(w.token for w in row.words)
         labels = " ".join(w.label for w in row.words)

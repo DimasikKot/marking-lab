@@ -59,5 +59,5 @@ class GetUserResponse(BaseModel):
 
 
 @router.get("/user", response_model=GetUserResponse)
-async def get_user_id(user_id: int = Depends(get_user_id)):
+async def fetch_user_id(user_id: int = Depends(get_user_id)):
     return GetUserResponse(user_id=user_id)

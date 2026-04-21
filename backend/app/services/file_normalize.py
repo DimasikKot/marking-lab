@@ -16,7 +16,7 @@ def normalize_label(label: str) -> str:
 def normalize_to_sentence_csv(content_stream: TextIO) -> str:
     content = content_stream.read()
 
-    sentences = []
+    sentences: list[tuple[str, str]] = []
 
     # 1. Пробуем прочитать как правильный CSV (text,labels)
     try:
@@ -47,8 +47,8 @@ def normalize_to_sentence_csv(content_stream: TextIO) -> str:
 
     except Exception:
         # 2. Если CSV не прочитался — пробуем старый TSV-формат (token\tlabel)
-        current_tokens = []
-        current_labels = []
+        current_tokens: list[str] = []
+        current_labels: list[str] = []
 
         for line in content.splitlines():
             line = line.strip()

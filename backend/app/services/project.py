@@ -5,16 +5,16 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.db import Project
+from app.models.db import ProjectDB
 
 
-def get_project_path(project_id: int) -> Path:
+def _get_project_path(project_id: int) -> Path:
     base_dir = Path(settings.STORAGE_PATH).resolve()
     return base_dir / str(project_id)
 
 
-def delete_project_from_disk(project_id: int) -> None:
-    project_path = get_project_path(project_id)
+def _delete_project_from_disk(project_id: int) -> None:
+    project_path = _get_project_path(project_id)
 
     if not project_path.exists():
         # raise HTTPException(
@@ -30,26 +30,29 @@ def delete_project_from_disk(project_id: int) -> None:
         raise OSError(f"Ошибка при удалении {project_path}: {e}")
 
 
-def is_owner_of_project(db: Session, project_id: int, user_id: int) -> None:
+def is_owner_of_project(project_id: int, user_id: int, db: Session) -> None:
     """Проверяет, является ли пользователь владельцем проекта"""
 
     if (
-        db.query(Project)
-        .filter(Project.id == project_id, Project.user_id == user_id)
+        db.query(ProjectDB)
+        .filter(ProjectDB.id == project_id, ProjectDB.user_id == user_id)
         .first()
         is None
     ):
         raise HTTPException(status_code=403, detail="Нет доступа к проекту")
 
 
-def create_project(db: Session, user_id: int, name: str, description: str) -> Project:
-    """Создаёт новый проект и сохраняет его в базе данных"""
+# router
+def create_project(user_id: int, db: Session, name: str, description: str) -> ProjectDB:
+    project_db: ProjectDB = ProjectDB(
+        name=name, user_id=user_id, description=description
+    )
 
-    project: Project = Project(name=name, user_id=user_id, description=description)
-    db.add(project)
+    db.add(project_db)
     db.commit()
-    db.refresh(project)
-    return project
+    db.refresh(project_db)
+
+    return project_db
 
 
 SortType = Literal[
@@ -62,85 +65,81 @@ SortType = Literal[
 ]
 
 
+# router
 def fetch_projects_by_user_id(
-    db: Session,
     user_id: int,
+    db: Session,
     is_public: bool | None = None,
     search: str | None = None,
     sort: SortType | None = None,
-) -> list[Project]:
+) -> list[ProjectDB]:
     """Получает все проекты, принадлежащие пользователю"""
 
-    query = db.query(Project).filter(Project.user_id == user_id)
+    query = db.query(ProjectDB).filter(ProjectDB.user_id == user_id)
     if is_public is not None:
-        query = query.filter(Project.is_public == is_public)
+        query = query.filter(ProjectDB.is_public == is_public)
 
     if search:
-        query = query.filter(Project.name.ilike(f"%{search}%"))
+        query = query.filter(ProjectDB.name.ilike(f"%{search}%"))
 
     if sort == "name_asc":
-        query = query.order_by(Project.name.asc())
+        query = query.order_by(ProjectDB.name.asc())
     elif sort == "name_desc":
-        query = query.order_by(Project.name.desc())
+        query = query.order_by(ProjectDB.name.desc())
     elif sort == "created_at_asc":
-        query = query.order_by(Project.created_at.asc())
+        query = query.order_by(ProjectDB.created_at.asc())
     elif sort == "created_at_desc":
-        query = query.order_by(Project.created_at.desc())
+        query = query.order_by(ProjectDB.created_at.desc())
     elif sort == "updated_at_asc":
-        query = query.order_by(Project.updated_at.asc())
+        query = query.order_by(ProjectDB.updated_at.asc())
     elif sort == "updated_at_desc":
-        query = query.order_by(Project.updated_at.desc())
+        query = query.order_by(ProjectDB.updated_at.desc())
 
-    return db.query(Project).filter(Project.user_id == user_id).all()
+    return db.query(ProjectDB).filter(ProjectDB.user_id == user_id).all()
 
 
-def fetch_project_by_id(db: Session, project_id: int, user_id: int) -> Project:
-    """Получает проект по его ID"""
+# router
+def fetch_project_db_by_id(project_id: int, user_id: int, db: Session) -> ProjectDB:
+    is_owner_of_project(project_id, user_id, db)
 
-    is_owner_of_project(db, project_id, user_id)
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
+    project_db = db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
+    if not project_db:
         raise HTTPException(status_code=404, detail="Проект не найден")
-    return project
+
+    return project_db
 
 
+# router
 def update_project_by_id(
-    db: Session,
-    new_description: str,
     project_id: int,
     user_id: int,
+    db: Session,
     new_name: str | None = None,
+    new_description: str | None = None,
     new_is_public: bool | None = None,
-) -> Project:
+) -> ProjectDB:
     """Обновляет проект с заданным ID"""
 
-    is_owner_of_project(db, project_id, user_id)
-
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Проект не найден")
+    project_db = fetch_project_db_by_id(project_id=project_id, user_id=user_id, db=db)
 
     if new_name is not None:
-        project.name = new_name
+        project_db.name = new_name
     if new_description is not None:
-        project.description = new_description
+        project_db.description = new_description
     if new_is_public is not None:
-        project.is_public = new_is_public
+        project_db.is_public = new_is_public
 
     db.commit()
-    db.refresh(project)
-    return project
+    db.refresh(project_db)
+
+    return project_db
 
 
-def delete_project_by_id(db: Session, project_id: int, user_id: int) -> None:
-    """Удаляет проект с заданным ID и все связанные с ним данные"""
+# router
+def delete_project_by_id(project_id: int, user_id: int, db: Session) -> None:
+    project_db = fetch_project_db_by_id(project_id=project_id, user_id=user_id, db=db)
 
-    is_owner_of_project(db, project_id, user_id)
+    _delete_project_from_disk(project_id)
 
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Проект не найден или уже удалён")
-
-    delete_project_from_disk(project_id)
-    db.delete(project)
+    db.delete(project_db)
     db.commit()

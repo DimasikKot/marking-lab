@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP
+from datetime import datetime
+from sqlalchemy import Integer, String, TIMESTAMP
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
 from app.core.database import AuthBase
@@ -7,9 +9,15 @@ from app.core.database import AuthBase
 class User(AuthBase):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    role = Column(String(255), default='user')  # 'user', 'moderator', 'admin'
-    username = Column(String(255), unique=True, nullable=False, index=True)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    hashed_password = Column(String(255), nullable=False)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    role: Mapped[str] = mapped_column(
+        String(255), default="user"
+    )  # 'user', 'moderator', 'admin'
+    username: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
