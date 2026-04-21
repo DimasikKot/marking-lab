@@ -1,6 +1,5 @@
 import csv
 from collections import deque
-from io import TextIOWrapper
 from itertools import islice
 from fastapi import HTTPException
 from pathlib import Path
@@ -175,16 +174,7 @@ def create_file_by_project_id(
 ) -> FileDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    try:
-        content_stream = TextIOWrapper(
-            file,
-            encoding="utf-8",
-            newline="",
-        )
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=415, detail="Неподдерживаемый формат файла")
-
-    content, total_rows = normalize_content_to_csv(content_stream)
+    content, total_rows = normalize_content_to_csv(file)
 
     file_db = FileDB(name=name, project_id=project_id, total_rows=total_rows)
     db.add(file_db)

@@ -1,6 +1,8 @@
 import csv
-from io import StringIO
-from typing import TextIO
+from io import StringIO, TextIOWrapper
+from typing import BinaryIO
+
+from fastapi import HTTPException
 
 
 def normalize_label(label: str) -> str:
@@ -13,8 +15,16 @@ def normalize_label(label: str) -> str:
     return f"{bio}-{ent.lower()}"
 
 
-def normalize_content_to_csv(content_stream: TextIO) -> tuple[str, int]:
-    content = content_stream.read()
+def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int]:
+    try:
+        content_stream = TextIOWrapper(
+            file,
+            encoding="utf-8",
+            newline="",
+        )
+        content = content_stream.read()
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=415, detail="Неподдерживаемый формат файла")
 
     sentences: list[tuple[str, str]] = []
 
