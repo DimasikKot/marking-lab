@@ -65,6 +65,16 @@ export function Files() {
     loadFiles();
   };
 
+  const handleDeleteClick = async (file_id: number) => {
+    if (!window.confirm("Вы уверены, что хотите удалить проект?")) return;
+
+    setLoading(true);
+    const response = deleteFileById(projectId, file_id);
+    setLoading(false);
+    if (response === undefined) return;
+    loadFiles();
+  };
+
   // Открытие формы редактирования
   const handleEditClick = (file: FileInList) => {
     setEditingFile(file);
@@ -161,9 +171,7 @@ export function Files() {
                 navigate(`/projects/${projectId}/files/${file.id}/1`)
               }
               onEditClick={() => handleEditClick(file)}
-              onDeleteClick={() =>
-                deleteFileById(projectId, file.id).then(() => loadFiles())
-              }
+              onDeleteClick={() => handleDeleteClick(file.id)}
             />
           ))}
         </div>
