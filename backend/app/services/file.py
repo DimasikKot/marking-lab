@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from pathlib import Path
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import Any, BinaryIO, Generator, Literal, TextIO
+from typing import Any, BinaryIO, Generator, Literal
 
 from app.core.config import settings
 from app.models.db import FileDB
@@ -67,14 +67,12 @@ def _delete_file_from_disk(project_id: int, file_id: int) -> None:
         file_path.unlink()
 
 
-def _get_total_rows(file: TextIO) -> int:
+def _get_total_rows(content: str) -> int:
     """Считает количество строк в файле (кроме заголовка)"""
     count = 0
-    file.seek(0)  # на всякий случай возвращаем в начало
-    next(file, None)  # пропускаем заголовок
 
-    for line in file:
-        if line.strip():  # считаем только непустые строки
+    for row in content.split("\n"):
+        if row:
             count += 1
 
     return count
@@ -89,21 +87,20 @@ class Row(BaseModel):
     words: list[Word]
 
 
-def _get_file_rows(
-    file_path: Path, start: int = 0, count: int = 40
-) -> Generator[Row, Any, None]:
-    """Генератор, который сразу пропускает start строк и читает только count"""
+def _get_file_rows(file_path: Path, page: int, rows: int) -> Generator[Row, Any, None]:
+    start_idx = (page - 1) * rows
+
     with file_path.open(encoding="utf-8", errors="ignore") as file:
         # Пропускаем заголовок + нужное количество строк
-        islice(file, start + 1)  # не пропускает строки вообще
+        islice(file, start_idx + 1)  # не пропускает строки вообще
         # for _ in range(start + 1):  # +1 — заголовок
         #     # next(file, None)
         #     file.readline()
-        deque(islice(file, start + 1), maxlen=0)
+        deque(islice(file, start_idx + 1), maxlen=0)
 
         reader = csv.reader(file)
 
-        for row in islice(reader, count):
+        for row in islice(reader, rows):
             if len(row) < 2:
                 continue
             tokens_str = row[0].strip()
@@ -123,10 +120,10 @@ def _get_file_rows(
 
 
 def _write_new_rows(
-    file_path: Path, file_db: FileDB, page: int, rows: int, new_rows: list[Row]
+    file_path: Path, page: int, rows: int, new_rows: list[Row], total_rows: int
 ) -> int:
-    start = page * rows
-    end = start + rows
+    start_idx = (page - 1) * rows
+    end_idx = start_idx + rows
     tmp = file_path.with_suffix(".tmp")
 
     with file_path.open(encoding="utf-8") as src, tmp.open(
@@ -137,10 +134,12 @@ def _write_new_rows(
 
         writer.writerow(next(reader))  # header
 
+        inserted_tail = False
+
         for i, row in enumerate(reader):
-            if start <= i < end:
-                if i - start < len(new_rows):
-                    new_row = new_rows[i - start]
+            if start_idx <= i < end_idx:
+                if i - start_idx < len(new_rows):
+                    new_row = new_rows[i - start_idx]
                     writer.writerow(
                         [
                             " ".join(word.token for word in new_row.words),
@@ -149,22 +148,41 @@ def _write_new_rows(
                     )
                 # иначе — строка удаляется (замена короче)
             else:
+                if i == end_idx and not inserted_tail:
+                    for new_row in new_rows[rows:]:
+                        writer.writerow(
+                            [
+                                " ".join(word.token for word in new_row.words),
+                                " ".join(word.label for word in new_row.words),
+                            ]
+                        )
+                    inserted_tail = True
+
                 writer.writerow(row)
 
-        # если новых строк больше страницы — дописываем хвост
-        for new_row in new_rows[rows:]:
-            writer.writerow(
-                [
-                    " ".join(word.token for word in new_row.words),
-                    " ".join(word.label for word in new_row.words),
-                ]
-            )
+        new_total_rows = total_rows - rows + len(new_rows)
+        if not inserted_tail:
+            # если файл закончился ровно на последней странице
+            if start_idx < total_rows:
+                tail_start = end_idx - total_rows
+                for new_row in new_rows[tail_start:]:
+                    writer.writerow(
+                        [
+                            " ".join(word.token for word in new_row.words),
+                            " ".join(word.label for word in new_row.words),
+                        ]
+                    )
+            else:
+                for new_row in new_rows:
+                    writer.writerow(
+                        [
+                            " ".join(word.token for word in new_row.words),
+                            " ".join(word.label for word in new_row.words),
+                        ]
+                    )
+                new_total_rows = total_rows + len(new_rows)
 
     tmp.replace(file_path)
-
-    return file_db.total_rows - rows + len(new_rows)
-
-    new_total_rows = file_db.total_rows - rows_in_old_page + len(new_rows)
 
     return new_total_rows
 
@@ -189,7 +207,7 @@ def create_file_by_project_id(
         raise HTTPException(status_code=415, detail="Неподдерживаемый формат файла")
 
     content = normalize_content_to_csv(content_stream)
-    total_rows = _get_total_rows(content_stream)
+    total_rows = _get_total_rows(content)
 
     file_db = FileDB(name=name, project_id=project_id, total_rows=total_rows)
     db.add(file_db)
@@ -218,7 +236,7 @@ def fetch_files_db_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    sort: SortType | None = None,
+    sort: SortType | None = "updated_at_desc",
     search: str | None = None,
 ) -> list[FileDB]:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
@@ -295,8 +313,7 @@ def read_page_by_id(
 
     file_path = _get_file_path_by_id(project_id, file_id)
 
-    start_idx: int = (page - 1) * rows
-    page_rows = list(_get_file_rows(file_path, start=start_idx, count=rows))
+    page_rows = list(_get_file_rows(file_path, page=page, rows=rows))
 
     return file_db, page_rows
 
@@ -319,10 +336,10 @@ def update_page_by_id(
 
     new_total_rows = _write_new_rows(
         file_path=file_path,
-        file_db=file_db,
         page=page,
         rows=rows,
         new_rows=new_rows,
+        total_rows=file_db.total_rows,
     )
 
     file_db.total_rows = new_total_rows

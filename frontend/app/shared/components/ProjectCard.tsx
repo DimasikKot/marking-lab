@@ -51,8 +51,10 @@ export const ProjectCard = ({
 
           <TextUI variant="desc" className="text-right">
             {new Date(date).toLocaleDateString("ru-RU", {
-              month: "short",
+              month: "long",
               day: "numeric",
+              hour: "numeric",
+              minute: "numeric",
             })}
           </TextUI>
         </div>

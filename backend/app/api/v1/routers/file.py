@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi import (
     APIRouter,
+    Body,
     Depends,
     File,
     Form,
@@ -66,7 +67,7 @@ class GetResponse(BaseModel):
 async def get_files(
     project_id: int,
     sort: SortType | None = Query(
-        None,
+        "updated_at_desc",
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
     search: str | None = Query(None, description="Поиск по имени модели"),
@@ -153,9 +154,9 @@ async def patch_file(
 async def patch_file_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
-    page: int = Form(1),
-    rows: int = Form(40),
-    new_rows: list[Row] = Form(...),
+    page: int = 1,
+    rows: int = 40,
+    new_rows: list[Row] = Body(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):

@@ -37,8 +37,10 @@ export const FileCard = ({
 
       <TextUI variant="desc" className="mt-auto pt-4 text-right">
         {new Date(date).toLocaleDateString("ru-RU", {
-          month: "short",
+          month: "long",
           day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
         })}
       </TextUI>
 
