@@ -108,12 +108,13 @@ def _get_file_rows(file_path: Path, page: int, rows: int) -> Generator[Row, Any,
             yield Row(words=words)
 
 
-def _write_new_rows(
-    file_path: Path, page: int, rows: int, new_rows: list[Row], total_rows: int
-) -> int:
+def _write_new_rows(file_path: Path, page: int, rows: int, new_rows: list[Row]) -> int:
     start_idx = (page - 1) * rows
     end_idx = start_idx + rows
     tmp = file_path.with_suffix(".tmp")
+
+    new_total_rows = 0
+    inserted_rows = 0
 
     with file_path.open(encoding="utf-8") as src, tmp.open(
         "w", encoding="utf-8", newline=""
@@ -121,55 +122,43 @@ def _write_new_rows(
         reader = csv.reader(src)
         writer = csv.writer(dst)
 
-        writer.writerow(next(reader))  # header
+        # 1. Переносим заголовок
+        writer.writerow(next(reader))
 
-        inserted_tail = False
-
+        # 2. Идем по старым строкам
         for i, row in enumerate(reader):
-            if start_idx <= i < end_idx:
-                if i - start_idx < len(new_rows):
-                    new_row = new_rows[i - start_idx]
-                    writer.writerow(
-                        [
-                            " 1".join(word.token for word in new_row.words),
-                            " 2".join(word.label for word in new_row.words),
-                        ]
-                    )
-                # иначе — строка удаляется (замена короче)
-            else:
-                if i == end_idx and not inserted_tail:
-                    for new_row in new_rows[rows:]:
-                        writer.writerow(
-                            [
-                                " 3".join(word.token for word in new_row.words),
-                                " 4".join(word.label for word in new_row.words),
-                            ]
-                        )
-                    inserted_tail = True
 
+            # Если это строка ДО или ПОСЛЕ заменяемой страницы -> просто копируем
+            if i < start_idx or i >= end_idx:
                 writer.writerow(row)
+                new_total_rows += 1
 
-        new_total_rows = total_rows - rows + len(new_rows)
-        if not inserted_tail:
-            # если файл закончился ровно на последней странице
-            if start_idx < total_rows:
-                tail_start = end_idx - total_rows
-                for new_row in new_rows[tail_start:]:
-                    writer.writerow(
-                        [
-                            " 5".join(word.token for word in new_row.words),
-                            " 6".join(word.label for word in new_row.words),
-                        ]
-                    )
-            else:
+            # Если мы дошли ровно до начала заменяемой страницы -> вываливаем все новые строки разом
+            elif i == start_idx:
                 for new_row in new_rows:
                     writer.writerow(
                         [
-                            " 7".join(word.token for word in new_row.words),
-                            " 8".join(word.label for word in new_row.words),
+                            " ".join(word.token for word in new_row.words),
+                            " ".join(word.label for word in new_row.words),
                         ]
                     )
-                new_total_rows = total_rows + len(new_rows)
+                    new_total_rows += 1
+                    inserted_rows += 1
+
+            # Примечание: если start_idx < i < end_idx, код ничего не делает
+            # Старые строки просто пропускаются (удаляются)
+
+        # 3. Подстраховка: если мы добавляли новую страницу в самый конец файла,
+        # цикл мог закончиться раньше, чем наступил start_idx. Дописываем в конец.
+        if inserted_rows < len(new_rows):
+            for new_row in new_rows[inserted_rows:]:
+                writer.writerow(
+                    [
+                        " ".join(word.token for word in new_row.words),
+                        " ".join(word.label for word in new_row.words),
+                    ]
+                )
+                new_total_rows += 1
 
     tmp.replace(file_path)
 
@@ -327,7 +316,6 @@ def update_page_by_id(
         page=page,
         rows=rows,
         new_rows=new_rows,
-        total_rows=file_db.total_rows,
     )
 
     file_db.total_rows = new_total_rows
