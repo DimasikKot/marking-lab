@@ -1,8 +1,7 @@
-from typing import List
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.db import ExperimentDB, ModelDB, FileDB
+from app.models.db import ExperimentDB
 from app.services.project import is_owner_of_project
 from app.services.model import is_owner_of_model
 
@@ -10,7 +9,7 @@ from app.services.model import is_owner_of_model
 def _is_owner_of_experiment(
     project_id: int, experiment_id: int, user_id: int, db: Session
 ) -> None:
-    is_owner_of_project(db, project_id, user_id)
+    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     if (
         db.query(ExperimentDB)
@@ -21,66 +20,49 @@ def _is_owner_of_experiment(
         raise HTTPException(status_code=404, detail="Нет доступа к эксперименту")
 
 
-def _fetch_experiment_db_by_id(
-    db: Session, project_id: int, user_id: int, file_id: int
-) -> FileDB:
-    _is_owner_of_experiment(db, project_id, user_id, file_id)
+# router
+def fetch_experiment_db_by_id(
+    project_id: int, experiment_id: int, user_id: int, db: Session
+) -> ExperimentDB:
+    _is_owner_of_experiment(
+        project_id=project_id, experiment_id=experiment_id, user_id=user_id, db=db
+    )
 
-    file_db = db.query(FileDB).filter(FileDB.id == file_id).first()
-    if not file_db:
+    experiment_db = (
+        db.query(ExperimentDB).filter(ExperimentDB.id == experiment_id).first()
+    )
+    if not experiment_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    return file_db
+    return experiment_db
 
 
+# router
 def create_experiment(
     project_id: int,
     model_id: int,
     user_id: int,
     db: Session,
     name: str,
-    test_file_ids: List[int] | None = None,
 ) -> ExperimentDB:
-    is_owner_of_model(db, project_id, user_id, model_id)
+    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
 
-    model = (
-        db.query(ModelDB)
-        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
-        .first()
-    )
-    if not model:
-        raise HTTPException(status_code=404, detail="Модель не найдена")
+    experiment_db = ExperimentDB(name=name, project_id=project_id, model_id=model_id)
 
-    experiment = ExperimentDB(name=name, project_id=project_id, model_id=model_id)
-    db.add(experiment)
+    db.add(experiment_db)
     db.commit()
-    db.refresh(experiment)
+    db.refresh(experiment_db)
 
-    if test_file_ids:
-        files = (
-            db.query(FileDB)
-            .filter(FileDB.id.in_(test_file_ids), FileDB.project_id == project_id)
-            .all()
-        )
-        experiment.test_files = files
-        db.commit()
-    return experiment
+    return experiment_db
 
 
+# router
 def delete_experiment_by_id(
     project_id: int, experiment_id: int, user_id: int, db: Session
 ) -> None:
-    _is_owner_of_experiment(
+    experiment_db = fetch_experiment_db_by_id(
         project_id=project_id, experiment_id=experiment_id, user_id=user_id, db=db
     )
 
-    experiment = (
-        db.query(ExperimentDB)
-        .filter(ExperimentDB.id == experiment_id, ExperimentDB.project_id == project_id)
-        .first()
-    )
-    if not experiment:
-        raise HTTPException(status_code=404, detail="Эксперимент не найден")
-
-    db.delete(experiment)
+    db.delete(experiment_db)
     db.commit()

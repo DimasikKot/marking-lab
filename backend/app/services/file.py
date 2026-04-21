@@ -15,7 +15,7 @@ from app.services.file_normalize import normalize_to_sentence_csv
 
 
 def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) -> None:
-    is_owner_of_project(project_id=project_id, user_id , db)
+    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     if (
         db.query(FileDB)
@@ -128,7 +128,7 @@ def create_file_by_project_id(
     file: TextIO,
     name: str,
 ) -> FileDB:
-    is_owner_of_project(db, project_id, user_id)
+    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     content_stream = TextIOWrapper(
         file.buffer,
@@ -168,7 +168,7 @@ def fetch_files_by_project_id(
     search: str | None = None,
     sort: SortType | None = None,
 ) -> list[FileDB]:
-    is_owner_of_project(db, project_id, user_id)
+    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     query = db.query(FileDB).filter(FileDB.project_id == project_id)
     if search:
@@ -191,7 +191,9 @@ def fetch_files_by_project_id(
 
 # router
 def delete_file_by_id(project_id: int, file_id: int, user_id: int, db: Session) -> None:
-    file_db = _fetch_file_db_by_id(db, project_id, user_id, file_id)
+    file_db = _fetch_file_db_by_id(
+        project_id=project_id, file_id=file_id, user_id=user_id, db=db
+    )
 
     _delete_file_from_disk(project_id, file_id)
 
@@ -203,10 +205,10 @@ def delete_file_by_id(project_id: int, file_id: int, user_id: int, db: Session) 
 def read_page_from_file(
     project_id: int,
     file_id: int,
-    page: int,
-    rows: int,
     user_id: int,
     db: Session,
+    page: int,
+    rows: int,
 ) -> tuple[FileDB, list[Row]]:
     file_db = _fetch_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
@@ -223,20 +225,22 @@ def read_page_from_file(
 
 # router
 def update_file_by_id(
-    db: Session,
     project_id: int,
     file_id: int,
     user_id: int,
+    db: Session,
     name: str | None = None,
     total_rows: int | None = None,
 ) -> FileDB:
-    file_db = _fetch_file_db_by_id(db, project_id, user_id, file_id)
+    file_db = _fetch_file_db_by_id(
+        db=db, project_id=project_id, user_id=user_id, file_id=file_id
+    )
 
     if name:
-        file_db[name] = name
+        file_db.name = name
 
     if total_rows:
-        file_db[total_rows] = total_rows
+        file_db.total_rows = total_rows
 
     db.commit()
     db.refresh(file_db)
@@ -247,13 +251,15 @@ def update_file_by_id(
 def update_file_content_by_id(
     project_id: int,
     file_id: int,
+    user_id: int,
+    db: Session,
     page: int,
     rows: int,
     new_rows: list[Row],
-    user_id: int,
-    db: Session,
 ) -> FileDB:
-    file_db = _fetch_file_db_by_id(db, project_id, user_id, file_id)
+    file_db = _fetch_file_db_by_id(
+        project_id=project_id, file_id=file_id, db=db, user_id=user_id
+    )
 
     # file_path = _get_file_path_by_id(project_id, file_id)
 
@@ -265,9 +271,9 @@ def update_file_content_by_id(
     #     total_rows_in_db=file_db.total_rows,
     # )
 
-    # new_total_rows = file_db.total_rows - rows + len(new_rows)
-    # if new_total_rows:
-    #     file_db.total_rows = new_total_rows
+    new_total_rows = file_db.total_rows - rows + len(new_rows)
+    if new_total_rows:
+        file_db.total_rows = new_total_rows
 
     db.commit()
     db.refresh(file_db)

@@ -60,13 +60,13 @@ class GetResponse(BaseModel):
 
 @router.get("/", response_model=GetResponse)
 async def get_projects(
-    is_public: bool | None = Query(
-        None, description="Получать только публичные проекты или приватные"
-    ),
-    search: str | None = Query(None, description="Поиск по имени файла"),
     sort: SortType | None = Query(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
+    ),
+    search: str | None = Query(None, description="Поиск по имени файла"),
+    is_public: bool | None = Query(
+        None, description="Получать только публичные проекты или приватные"
     ),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -74,9 +74,9 @@ async def get_projects(
     projects_db = fetch_projects_by_user_id(
         db=db,
         user_id=user_id,
-        is_public=is_public,
-        search=search,
         sort=sort,
+        search=search,
+        is_public=is_public,
     )
 
     return GetResponse(data=projects_db)

@@ -17,7 +17,6 @@ class DeleteResponse(BaseModel):
     success: bool
 
 
-# Нужно переделать
 @router.delete("/{experiment_id}", response_model=DeleteResponse)
 async def delete_experiment(
     project_id: int = Path(...),

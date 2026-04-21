@@ -7,7 +7,6 @@ from fastapi import (
     Depends,
     File,
     Form,
-    HTTPException,
     Path,
     Query,
     UploadFile,
@@ -50,10 +49,10 @@ async def post_create_file(
 ):
     file = create_file_by_project_id(
         project_id=project_id,
-        file=file.file,
-        name=name,
         user_id=user_id,
         db=db,
+        file=file.file,
+        name=name,
     )
 
     return file
@@ -66,20 +65,20 @@ class GetResponse(BaseModel):
 @router.get("/", response_model=GetResponse)
 async def get_files(
     project_id: int,
-    search: str | None = Query(None, description="Поиск по имени файла"),
     sort: SortType | None = Query(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
+    search: str | None = Query(None, description="Поиск по имени файла"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     files = fetch_files_by_project_id(
-        db=db,
         project_id=project_id,
         user_id=user_id,
-        search=search,
+        db=db,
         sort=sort,
+        search=search,
     )
     return GetResponse.model_validate(files)
 
@@ -105,7 +104,12 @@ async def get_file(
     db: Session = Depends(get_db),
 ):
     file_db, page_rows = read_page_from_file(
-        project_id, file_id, page, rows, user_id, db
+        project_id=project_id,
+        file_id=file_id,
+        user_id=user_id,
+        db=db,
+        page=page,
+        rows=rows,
     )
     total_pages = ceil(file_db.total_rows / rows)
 
@@ -134,15 +138,12 @@ async def patch_file(
     db: Session = Depends(get_db),
 ):
     file_db = update_file_by_id(
-        db=db,
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,
+        db=db,
         name=data.name,
     )
-
-    if not file_db:
-        raise HTTPException(status_code=400, detail="Ошибка при обновлении файла")
 
     return file_db
 
@@ -158,13 +159,13 @@ async def patch_file_content(
     db: Session = Depends(get_db),
 ):
     file_db = update_file_content_by_id(
-        project_id,
-        file_id,
-        page,
-        rows,
-        new_rows,
-        user_id,
-        db,
+        project_id=project_id,
+        file_id=file_id,
+        user_id=user_id,
+        db=db,
+        page=page,
+        rows=rows,
+        new_rows=new_rows,
     )
 
     return file_db
@@ -182,6 +183,6 @@ async def delete_file(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    delete_file_by_id(db=db, project_id=project_id, user_id=user_id, file_id=file_id)
+    delete_file_by_id(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
 
     return DeleteResponse(detail="Файл успешно удалён", success=True)

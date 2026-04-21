@@ -69,9 +69,9 @@ SortType = Literal[
 def fetch_projects_by_user_id(
     user_id: int,
     db: Session,
-    is_public: bool | None = None,
-    search: str | None = None,
     sort: SortType | None = None,
+    search: str | None = None,
+    is_public: bool | None = None,
 ) -> list[ProjectDB]:
     """Получает все проекты, принадлежащие пользователю"""
 

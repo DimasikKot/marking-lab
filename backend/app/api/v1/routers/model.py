@@ -1,10 +1,15 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, Path
+from datetime import datetime
+from typing import Any
+
+from fastapi import APIRouter, Depends, Form, Path
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.services.get_user_id import get_user_id
 from app.services.model import (
+    create_model,
     delete_model_by_id,
+    fetch_models_by_project_id,
 )
 from app.core.database import get_db
 
@@ -12,52 +17,49 @@ from app.core.database import get_db
 router = APIRouter()
 
 
-# class ModelResponse(BaseModel):
-#     id: int
-#     name: str
-#     is_draft: bool
-#     saved_in_memory: bool
-#     created_at: datetime
-#     updated_at: datetime
-#     parameters: dict | None = None
+class ModelResponse(BaseModel):
+    id: int
+    name: str
+    is_draft: bool
+    saved_in_memory: bool
+    created_at: datetime
+    updated_at: datetime
+    parameters: dict[str, Any] | None = None
 
-#     class Config:
-#         from_attributes = True
-
-
-# @router.post("/", response_model=ModelResponse)
-# async def post_create_model(
-#     project_id: int = Path(...),
-#     name: str = Form(...),
-#     training_file_ids: List[int] | None = None,
-#     user_id: int = Depends(get_current_user_id),
-#     db: Session = Depends(get_db),
-# ):
-#     model = create_model(db, project_id, user_id, name, training_file_ids)
-#     return model
+    class Config:
+        from_attributes = True
 
 
-# @router.get("/", response_model=list[ModelResponse])
-# async def get_models(
-#     project_id: int,
-#     search: str | None = Query(None),
-#     sort: str | None = Query(None),
-#     user_id: int = Depends(get_current_user_id),
-#     db: Session = Depends(get_db),
-# ):
-#     models = fetch_models_by_project_id(db, project_id, user_id, search, sort)
-#     return models
-
-
-@router.post("/train")
-async def post_train_model(
+@router.post("/", response_model=ModelResponse)
+async def post_create_model(
     project_id: int = Path(...),
-    file_id: int = Form(...),
+    name: str = Form(...),
+    training_file_ids: list[int] | None = None,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
 ):
-    model = await train_model(project_id, file_id)
-    if not model:
-        raise HTTPException(status_code=400, detail="Не удалось запустить обучение")
-    return model
+    model_db = create_model(
+        project_id=project_id,
+        user_id=user_id,
+        db=db,
+        name=name,
+        training_file_ids=training_file_ids,
+    )
+    return model_db
+
+
+@router.get("/", response_model=list[ModelResponse])
+async def get_models(
+    project_id: int,
+    sort: str | None,
+    search: str | None,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    models_db = fetch_models_by_project_id(
+        project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
+    )
+    return models_db
 
 
 class DeleteResponse(BaseModel):
@@ -73,6 +75,6 @@ async def delete_model(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    delete_model_by_id(db, model_id=model_id, project_id=project_id, user_id=user_id)
+    delete_model_by_id(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
 
     return DeleteResponse(detail="Модель успешно удалена", success=True)
