@@ -13,67 +13,39 @@ def normalize_label(label: str) -> str:
     return f"{bio}-{ent.lower()}"
 
 
-def normalize_content_to_csv(content_stream: TextIO) -> str:
+def normalize_content_to_csv(content_stream: TextIO) -> tuple[str, int]:
     content = content_stream.read()
 
     sentences: list[tuple[str, str]] = []
 
-    # 1. Пробуем прочитать как правильный CSV (text,labels)
-    try:
-        reader = csv.DictReader(StringIO(content))
-        for row in reader:
-            text = (row.get("text") or row.get("token") or "").strip()
-            labels_str = (row.get("labels") or row.get("label") or "").strip()
+    # Пробуем прочитать как правильный CSV (text,labels)
+    reader = csv.DictReader(StringIO(content))
 
-            if not text:
-                continue
+    for row in reader:
+        text = (row.get("text") or row.get("tokens") or "").strip()
+        labels_str = (row.get("labels") or row.get("label") or "").strip()
 
-            tokens = text.split()
-            raw_labels = labels_str.split() if labels_str else []
+        if not text:
+            continue
 
-            labels = [normalize_label(l) for l in raw_labels]
-            if len(labels) < len(tokens):
-                labels += ["O"] * (len(tokens) - len(labels))
-            labels = labels[: len(tokens)]
+        tokens = text.split()
+        raw_labels = labels_str.split() if labels_str else []
 
-            # BIO auto-fix
-            prev = "O"
-            for i, lab in enumerate(labels):
-                if lab.startswith("I-") and (prev == "O" or prev[2:] != lab[2:]):
-                    labels[i] = "B" + lab[1:]
-                prev = labels[i]
+        labels = [normalize_label(l) for l in raw_labels]
+        if len(labels) < len(tokens):
+            labels += ["O"] * (len(tokens) - len(labels))
+        labels = labels[: len(tokens)]
 
-            sentences.append((" ".join(tokens), " ".join(labels)))
+        # BIO auto-fix
+        prev = "O"
+        for i, lab in enumerate(labels):
+            if lab.startswith("I-") and (prev == "O" or prev[2:] != lab[2:]):
+                labels[i] = "B" + lab[1:]
+            prev = labels[i]
 
-    except Exception:
-        # 2. Если CSV не прочитался — пробуем старый TSV-формат (token\tlabel)
-        current_tokens: list[str] = []
-        current_labels: list[str] = []
+        sentences.append((" ".join(tokens), " ".join(labels)))
 
-        for line in content.splitlines():
-            line = line.strip()
-            if not line:
-                if current_tokens:
-                    text = " ".join(current_tokens)
-                    labels_str = " ".join(current_labels)
-                    sentences.append((text, labels_str))
-                    current_tokens.clear()
-                    current_labels.clear()
-                continue
-
-            if line.lower().startswith(("token", "text")):
-                continue
-
-            parts = line.split("\t", 1)
-            if len(parts) == 2:
-                token, label = parts
-                current_tokens.append(token)
-                current_labels.append(normalize_label(label))
-
-        if current_tokens:
-            sentences.append((" ".join(current_tokens), " ".join(current_labels)))
-
-    # 3. Если ничего не нашлось — plain text fallback
+    # plain text
     if not sentences:
         for line in content.splitlines():
             line = line.strip()
@@ -82,14 +54,19 @@ def normalize_content_to_csv(content_stream: TextIO) -> str:
                 labels = ["O"] * len(tokens)
                 sentences.append((" ".join(tokens), " ".join(labels)))
 
-    # Записываем правильно в CSV
+    # CSV output
     output = StringIO()
     writer = csv.writer(
         output, delimiter=",", quoting=csv.QUOTE_MINIMAL, lineterminator="\n"
     )
-    writer.writerow(["text", "labels"])
 
+    writer.writerow(["text", "labels"])
     for text, labels_str in sentences:
         writer.writerow([text, labels_str])
 
-    return output.getvalue()
+    csv_result = output.getvalue()
+
+    # 4. total_rows
+    total_rows = len(sentences)
+
+    return csv_result, total_rows

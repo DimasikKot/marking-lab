@@ -67,17 +67,6 @@ def _delete_file_from_disk(project_id: int, file_id: int) -> None:
         file_path.unlink()
 
 
-def _get_total_rows(content: str) -> int:
-    """Считает количество строк в файле (кроме заголовка)"""
-    count = 0
-
-    for row in content.split("\n"):
-        if row:
-            count += 1
-
-    return count
-
-
 class Word(BaseModel):
     token: str
     label: str
@@ -142,8 +131,8 @@ def _write_new_rows(
                     new_row = new_rows[i - start_idx]
                     writer.writerow(
                         [
-                            " ".join(word.token for word in new_row.words),
-                            " ".join(word.label for word in new_row.words),
+                            " 1".join(word.token for word in new_row.words),
+                            " 2".join(word.label for word in new_row.words),
                         ]
                     )
                 # иначе — строка удаляется (замена короче)
@@ -152,8 +141,8 @@ def _write_new_rows(
                     for new_row in new_rows[rows:]:
                         writer.writerow(
                             [
-                                " ".join(word.token for word in new_row.words),
-                                " ".join(word.label for word in new_row.words),
+                                " 3".join(word.token for word in new_row.words),
+                                " 4".join(word.label for word in new_row.words),
                             ]
                         )
                     inserted_tail = True
@@ -168,16 +157,16 @@ def _write_new_rows(
                 for new_row in new_rows[tail_start:]:
                     writer.writerow(
                         [
-                            " ".join(word.token for word in new_row.words),
-                            " ".join(word.label for word in new_row.words),
+                            " 5".join(word.token for word in new_row.words),
+                            " 6".join(word.label for word in new_row.words),
                         ]
                     )
             else:
                 for new_row in new_rows:
                     writer.writerow(
                         [
-                            " ".join(word.token for word in new_row.words),
-                            " ".join(word.label for word in new_row.words),
+                            " 7".join(word.token for word in new_row.words),
+                            " 8".join(word.label for word in new_row.words),
                         ]
                     )
                 new_total_rows = total_rows + len(new_rows)
@@ -206,8 +195,7 @@ def create_file_by_project_id(
     except UnicodeDecodeError:
         raise HTTPException(status_code=415, detail="Неподдерживаемый формат файла")
 
-    content = normalize_content_to_csv(content_stream)
-    total_rows = _get_total_rows(content)
+    content, total_rows = normalize_content_to_csv(content_stream)
 
     file_db = FileDB(name=name, project_id=project_id, total_rows=total_rows)
     db.add(file_db)
