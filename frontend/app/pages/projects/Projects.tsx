@@ -150,9 +150,12 @@ export function Projects() {
                     <TextUI variant="label">Название</TextUI>
 
                     <TextField
+                      name="name"
                       value={formData.name}
                       onChange={handleFormChange}
-                      name="name"
+                      onEnter={handleSubmitClick}
+                      onEscape={() => setIsFormOpen(false)}
+                      autoFocus
                     />
                   </div>
 
@@ -163,7 +166,9 @@ export function Projects() {
                       name="description"
                       value={formData.description}
                       onChange={handleFormChange}
-                      isArea={true}
+                      onEnter={handleSubmitClick}
+                      onEscape={() => setIsFormOpen(false)}
+                      isArea
                       rows={4}
                     />
                   </div>

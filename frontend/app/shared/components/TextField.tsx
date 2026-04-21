@@ -11,7 +11,7 @@ export const TextField = ({
   type = "text",
   className = "",
   isArea = false,
-  rows = 1,
+  rows = 3,
 }: {
   value: string;
   setValue?: React.Dispatch<React.SetStateAction<string>>;

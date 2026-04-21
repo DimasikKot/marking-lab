@@ -145,7 +145,7 @@ export function Files() {
           </TextUI>
         )}
 
-        {!loading && filteredFiles.length === 0 && (
+        {filteredFiles.length === 0 && (
           <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
             <TextUI variant="desc">
               {search
@@ -187,9 +187,15 @@ export function Files() {
                 <TextUI variant="label">Название файла</TextUI>
                 <TextField
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                  onChange={(event) =>
+                    setFormData({ ...formData, name: event.target.value })
                   }
+                  onEnter={handleSubmitClick}
+                  onEscape={() => {
+                    setIsFormOpen(false);
+                    setEditingFile(null);
+                  }}
+                  autoFocus
                   name="name"
                   placeholder="Новое имя файла..."
                 />
