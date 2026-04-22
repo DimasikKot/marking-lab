@@ -23,6 +23,7 @@ def get_db():
     finally:
         db.close()
 
+
 def get_auth_db():
     db = AuthSessionLocal()
     try:

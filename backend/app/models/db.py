@@ -59,7 +59,9 @@ class ProjectDB(Base):
         TIMESTAMP, server_default=func.now(), onupdate=func.now()
     )
 
-    files = relationship("FileDB", back_populates="project", cascade="all, delete-orphan")
+    files = relationship(
+        "FileDB", back_populates="project", cascade="all, delete-orphan"
+    )
     models = relationship(
         "ModelDB", back_populates="project", cascade="all, delete-orphan"
     )
