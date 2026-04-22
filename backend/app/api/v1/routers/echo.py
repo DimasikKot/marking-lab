@@ -15,7 +15,7 @@ class GetBackendResponse(BaseModel):
 
 
 @router.get("/backend", response_model=GetBackendResponse)
-async def test_backend():
+async def get_backend():
     return GetBackendResponse(detail="Backend контейнер исправно работает", status=True)
 
 
@@ -25,7 +25,7 @@ class GetMlResponse(BaseModel):
 
 
 @router.get("/ml", response_model=GetMlResponse)
-async def test_ml():
+async def get_ml():
     async with AsyncClient() as client:
         response_dict = await client.get(settings.ML_URL + "/echos/ml")
         response_json = response_dict.json()
@@ -42,7 +42,7 @@ class PostEchosMlRequest(BaseModel):
 
 
 @router.get("/ml_post", response_model=GetMlResponse)
-async def test_ml_post():
+async def get_ml_post():
     async with AsyncClient() as client:
         response_dict = await client.post(
             settings.ML_URL + "/echos/ml",
@@ -64,5 +64,5 @@ class GetUserResponse(BaseModel):
 
 
 @router.get("/user", response_model=GetUserResponse)
-async def fetch_user_id(user_id: int = Depends(get_user_id)):
+async def get_user(user_id: int = Depends(get_user_id)):
     return GetUserResponse(user_id=user_id)

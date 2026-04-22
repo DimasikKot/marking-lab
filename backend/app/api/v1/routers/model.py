@@ -35,7 +35,7 @@ class PostModelResponse(BaseModel):
 
 
 @router.post("/", response_model=PostModelResponse)
-async def post_create_model(
+async def post(
     project_id: int,
     data: PostModelRequest,
     user_id: int = Depends(get_user_id),
@@ -56,7 +56,7 @@ class GetResponse(BaseModel):
 
 
 @router.get("/", response_model=GetResponse)
-async def get_models(
+async def get(
     project_id: int,
     sort: SortType | None = Query(
         None,
@@ -80,7 +80,7 @@ class DeleteModelResponse(BaseModel):
 
 # Нужно переделать
 @router.delete("/{model_id}", response_model=DeleteModelResponse)
-async def delete_model(
+async def delete_by_id(
     project_id: int,
     model_id: int,
     user_id: int = Depends(get_user_id),

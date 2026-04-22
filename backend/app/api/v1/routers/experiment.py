@@ -18,7 +18,7 @@ class DeleteExperimentResponse(BaseModel):
 
 
 @router.delete("/{experiment_id}", response_model=DeleteExperimentResponse)
-async def delete_experiment(
+async def delete_by_id(
     project_id: int = Path(...),
     experiment_id: int = Path(...),
     user_id: int = Depends(get_user_id),

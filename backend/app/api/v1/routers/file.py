@@ -41,7 +41,7 @@ class PostResponse(BaseModel):
 
 
 @router.post("/", response_model=PostResponse)
-async def post_create_file(
+async def post(
     project_id: int = Path(...),
     file: UploadFile = File(...),
     # name: str = Form(...) - используем `Form(...)``,
@@ -66,7 +66,7 @@ class GetResponse(BaseModel):
 
 
 @router.get("/", response_model=GetResponse)
-async def get_files(
+async def get(
     project_id: int,
     sort: SortType | None = Query(
         "updated_at_desc",
@@ -101,7 +101,7 @@ class GetFileResponse(BaseModel):
 
 
 @router.get("/{file_id}", response_model=GetFileResponse)
-async def get_file(
+async def get_by_id(
     project_id: int,
     file_id: int,
     page: int = Query(1, description="Номер страницы"),
@@ -136,7 +136,7 @@ class PatchFileRequest(BaseModel):
 
 
 @router.patch("/{file_id}", response_model=PostResponse)
-async def patch_file(
+async def patch_by_id(
     project_id: int,
     file_id: int,
     data: PatchFileRequest,
@@ -159,7 +159,7 @@ class PatchFileContentRequest(BaseModel):
 
 
 @router.patch("/{file_id}/content", response_model=PostResponse)
-async def patch_file_content(
+async def patch_by_id_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
     page: int = Query(1, description="Номер страницы"),
@@ -187,7 +187,7 @@ class DeleteFileResponse(BaseModel):
 
 
 @router.delete("/{file_id}")
-async def delete_file(
+async def delete_by_id(
     project_id: int,
     file_id: int,
     user_id: int = Depends(get_user_id),

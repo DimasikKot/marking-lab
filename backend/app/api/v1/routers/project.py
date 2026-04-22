@@ -38,7 +38,7 @@ class PostResponse(BaseModel):
 
 
 @router.post("/", response_model=PostResponse)
-async def post_create_project(
+async def post(
     data: PostRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -55,7 +55,7 @@ class GetResponse(BaseModel):
 
 
 @router.get("/", response_model=GetResponse)
-async def get_projects(
+async def get(
     sort: SortType | None = Query(
         None,
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
@@ -81,7 +81,7 @@ async def get_projects(
 
 
 @router.get("/{project_id}", response_model=PostResponse)
-async def get_project(
+async def get_by_id(
     project_id: int,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -98,7 +98,7 @@ class PatchProjectRequest(BaseModel):
 
 
 @router.patch("/{project_id}", response_model=PostResponse)
-async def patch_project(
+async def patch_by_id(
     project_id: int,
     data: PatchProjectRequest,
     user_id: int = Depends(get_user_id),
@@ -122,7 +122,7 @@ class DeleteProjectResponse(BaseModel):
 
 
 @router.delete("/{project_id}", response_model=DeleteProjectResponse)
-async def delete_project(
+async def delete_by_id(
     project_id: int,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
