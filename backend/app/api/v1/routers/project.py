@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -20,7 +18,7 @@ from app.services.project import (
 router = APIRouter()
 
 
-class PostProjectsRequest(BaseModel):
+class PostRequest(BaseModel):
     name: str
     description: str
 
@@ -34,13 +32,14 @@ class PostResponse(BaseModel):
     updated_at: datetime
 
     # Возвращаем только нужные поля из модели Project, игнорируя user_id
+    # Вместе с этим нужно использовать model_validate (если где-то список)
     class Config:
         from_attributes = True
 
 
 @router.post("/", response_model=PostResponse)
 async def post_create_project(
-    data: PostProjectsRequest,
+    data: PostRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -52,10 +51,7 @@ async def post_create_project(
 
 
 class GetResponse(BaseModel):
-    data: list[PostResponse | Any]
-
-    class Config:
-        from_attributes = True
+    data: list[PostResponse]
 
 
 @router.get("/", response_model=GetResponse)
@@ -72,14 +68,16 @@ async def get_projects(
     db: Session = Depends(get_db),
 ):
     projects_db = fetch_projects_by_user_id(
-        db=db,
         user_id=user_id,
+        db=db,
         sort=sort,
         search=search,
         is_public=is_public,
     )
 
-    return GetResponse(data=projects_db)
+    return GetResponse(
+        data=[PostResponse.model_validate(project_db) for project_db in projects_db]
+    )
 
 
 @router.get("/{project_id}", response_model=PostResponse)
@@ -93,7 +91,7 @@ async def get_project(
     return project_db
 
 
-class UpdateRequest(BaseModel):
+class PatchProjectRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     is_public: bool | None = None
@@ -102,7 +100,7 @@ class UpdateRequest(BaseModel):
 @router.patch("/{project_id}", response_model=PostResponse)
 async def patch_project(
     project_id: int,
-    data: UpdateRequest,
+    data: PatchProjectRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -118,12 +116,12 @@ async def patch_project(
     return project_db
 
 
-class DeleteResponse(BaseModel):
+class DeleteProjectResponse(BaseModel):
     detail: str
     success: bool
 
 
-@router.delete("/{project_id}", response_model=DeleteResponse)
+@router.delete("/{project_id}", response_model=DeleteProjectResponse)
 async def delete_project(
     project_id: int,
     user_id: int = Depends(get_user_id),
@@ -131,7 +129,7 @@ async def delete_project(
 ):
     delete_project_by_id(project_id=project_id, user_id=user_id, db=db)
 
-    return DeleteResponse(detail="Проект успешно удалён", success=True)
+    return DeleteProjectResponse(detail="Проект успешно удалён", success=True)
 
 
 from app.api.v1.routers import file

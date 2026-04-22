@@ -44,6 +44,8 @@ class PostResponse(BaseModel):
 async def post_create_file(
     project_id: int = Path(...),
     file: UploadFile = File(...),
+    # name: str = Form(...) - используем `Form(...)``,
+    # тк если передаются файлы, то только с этим атрибутом работает
     name: str = Form(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -82,10 +84,12 @@ async def get_files(
         search=search,
     )
 
-    return GetResponse(data=[PostResponse.model_validate(file) for file in files_db])
+    return GetResponse(
+        data=[PostResponse.model_validate(file_db) for file_db in files_db]
+    )
 
 
-class GetPageResponse(BaseModel):
+class GetFileResponse(BaseModel):
     id: int
     name: str
     created_at: datetime
@@ -96,12 +100,12 @@ class GetPageResponse(BaseModel):
     rows: list[Row]
 
 
-@router.get("/{file_id}", response_model=GetPageResponse)
+@router.get("/{file_id}", response_model=GetFileResponse)
 async def get_file(
     project_id: int,
     file_id: int,
-    page: int = 1,
-    rows: int = 40,
+    page: int = Query(1, description="Номер страницы"),
+    rows: int = Query(40, description="Количество строк на странице"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -115,7 +119,7 @@ async def get_file(
     )
     total_pages = ceil(file_db.total_rows / rows)
 
-    return GetPageResponse(
+    return GetFileResponse(
         id=file_db.id,
         name=file_db.name,
         created_at=file_db.created_at,
@@ -127,7 +131,7 @@ async def get_file(
     )
 
 
-class PatchRequest(BaseModel):
+class PatchFileRequest(BaseModel):
     name: str | None = None
 
 
@@ -135,7 +139,7 @@ class PatchRequest(BaseModel):
 async def patch_file(
     project_id: int,
     file_id: int,
-    data: PatchRequest,
+    data: PatchFileRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -150,13 +154,17 @@ async def patch_file(
     return file_db
 
 
+class PatchFileContentRequest(BaseModel):
+    new_rows: list[Row]
+
+
 @router.patch("/{file_id}/content", response_model=PostResponse)
 async def patch_file_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
-    page: int = 1,
-    rows: int = 40,
-    new_rows: list[Row] = Body(...),
+    page: int = Query(1, description="Номер страницы"),
+    rows: int = Query(40, description="Количество строк на странице"),
+    data: PatchFileContentRequest = Body(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -167,24 +175,24 @@ async def patch_file_content(
         db=db,
         page=page,
         rows=rows,
-        new_rows=new_rows,
+        new_rows=data.new_rows,
     )
 
     return file_db
 
 
-class DeleteResponse(BaseModel):
+class DeleteFileResponse(BaseModel):
     detail: str
     success: bool
 
 
 @router.delete("/{file_id}")
 async def delete_file(
-    file_id: int,
     project_id: int,
+    file_id: int,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     delete_file_by_id(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
 
-    return DeleteResponse(detail="Файл успешно удалён", success=True)
+    return DeleteFileResponse(detail="Файл успешно удалён", success=True)

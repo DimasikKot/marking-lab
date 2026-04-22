@@ -1,24 +1,27 @@
 from datetime import datetime
 from typing import Any
-
-from fastapi import APIRouter, Depends, Form, Path, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.services.get_user_id import get_user_id
+from app.core.database import get_db
 from app.services.model import (
     SortType,
     create_model,
     delete_model_by_id,
     fetch_models_by_project_id,
 )
-from app.core.database import get_db
 
 
 router = APIRouter()
 
 
-class ModelResponse(BaseModel):
+class PostModelRequest(BaseModel):
+    name: str
+
+
+class PostModelResponse(BaseModel):
     id: int
     name: str
     is_draft: bool
@@ -31,10 +34,10 @@ class ModelResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("/", response_model=ModelResponse)
+@router.post("/", response_model=PostModelResponse)
 async def post_create_model(
-    project_id: int = Path(...),
-    name: str = Form(...),
+    project_id: int,
+    data: PostModelRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -42,12 +45,17 @@ async def post_create_model(
         project_id=project_id,
         user_id=user_id,
         db=db,
-        name=name,
+        name=data.name,
     )
+
     return model_db
 
 
-@router.get("/", response_model=list[ModelResponse])
+class GetResponse(BaseModel):
+    files: list[PostModelResponse]
+
+
+@router.get("/", response_model=GetResponse)
 async def get_models(
     project_id: int,
     sort: SortType | None = Query(
@@ -61,22 +69,23 @@ async def get_models(
     models_db = fetch_models_by_project_id(
         project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
     )
+
     return models_db
 
 
-class DeleteResponse(BaseModel):
+class DeleteModelResponse(BaseModel):
     detail: str
     success: bool
 
 
 # Нужно переделать
-@router.delete("/{model_id}", response_model=DeleteResponse)
+@router.delete("/{model_id}", response_model=DeleteModelResponse)
 async def delete_model(
-    model_id: int = Path(...),
-    project_id: int = Path(...),
+    project_id: int,
+    model_id: int,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
     delete_model_by_id(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
 
-    return DeleteResponse(detail="Модель успешно удалена", success=True)
+    return DeleteModelResponse(detail="Модель успешно удалена", success=True)

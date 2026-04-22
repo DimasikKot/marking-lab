@@ -12,12 +12,12 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-class DeleteResponse(BaseModel):
+class DeleteExperimentResponse(BaseModel):
     detail: str
     success: bool
 
 
-@router.delete("/{experiment_id}", response_model=DeleteResponse)
+@router.delete("/{experiment_id}", response_model=DeleteExperimentResponse)
 async def delete_experiment(
     project_id: int = Path(...),
     experiment_id: int = Path(...),
@@ -27,4 +27,5 @@ async def delete_experiment(
     delete_experiment_by_id(
         project_id=project_id, experiment_id=experiment_id, user_id=user_id, db=db
     )
-    return DeleteResponse(detail="Эксперимент успешно удален", success=True)
+
+    return DeleteExperimentResponse(detail="Эксперимент успешно удален", success=True)
