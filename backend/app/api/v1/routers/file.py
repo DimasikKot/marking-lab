@@ -186,7 +186,7 @@ class DeleteFileResponse(BaseModel):
     success: bool
 
 
-@router.delete("/{file_id}")
+@router.delete("/{file_id}", response_model=DeleteFileResponse)
 async def delete_by_id(
     project_id: int,
     file_id: int,
