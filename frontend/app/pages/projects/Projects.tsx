@@ -15,6 +15,7 @@ import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
+import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 export function Projects() {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ export function Projects() {
     if (!window.confirm("Вы уверены, что хотите удалить проект?")) return;
 
     setLoading(true);
-    const response = deleteProjectById(id);
+    const response = await deleteProjectById(id);
     setLoading(false);
     if (response === undefined) return;
     loadProjects();
@@ -202,6 +203,17 @@ export function Projects() {
                       rows={4}
                     />
                   </div>
+
+                  <CheckboxUI
+                    title="Публичный?"
+                    selectedFileIsLabeled={formData.is_public}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        is_public: !formData.is_public,
+                      })
+                    }
+                  />
 
                   <div className="flex justify-between items-center pl-4">
                     <ButtonUI

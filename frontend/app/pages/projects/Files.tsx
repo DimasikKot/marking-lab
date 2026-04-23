@@ -14,7 +14,7 @@ import { TextUI } from "@/shared/components/TextUI";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
-import { Checkbox } from "@/shared/components/Checkbox";
+import { CheckboxUI } from "@/shared/components/CheckboxUI";
 import type { PatchFileDbRequest } from "@/shared/api/file";
 
 export function Files() {
@@ -72,6 +72,7 @@ export function Files() {
     if (response === undefined) return;
     toast.success("Файл успешно загружен");
     setSelectedFile(null);
+    setSelectedFileIsLabeled(false);
     loadFiles();
   };
 
@@ -79,7 +80,7 @@ export function Files() {
     if (!window.confirm("Вы уверены, что хотите удалить проект?")) return;
 
     setLoading(true);
-    const response = deleteFileById(projectId, file_id);
+    const response = await deleteFileById(projectId, file_id);
     setLoading(false);
     if (response === undefined) return;
     loadFiles();
@@ -139,7 +140,7 @@ export function Files() {
                 hover:file:bg-blue-200 transition-colors"
           />
 
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-4">
             <ButtonUI
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
@@ -147,10 +148,10 @@ export function Files() {
               {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
             </ButtonUI>
 
-            <Checkbox
+            <CheckboxUI
+              title="Уже размечен?"
               selectedFileIsLabeled={selectedFileIsLabeled}
               onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
-              title="Уже размечен?"
             />
           </div>
         </div>
@@ -225,12 +226,12 @@ export function Files() {
                 />
               </div>
 
-              <Checkbox
+              <CheckboxUI
+                title="Уже размечен?"
                 selectedFileIsLabeled={formData.is_labeled}
                 onClick={() =>
                   setFormData({ ...formData, is_labeled: !formData.is_labeled })
                 }
-                title="Уже размечен?"
               />
 
               <div className="flex justify-between items-center pt-4">

@@ -1,4 +1,6 @@
-export const Checkbox = ({
+import { TextUI } from "./TextUI";
+
+export const CheckboxUI = ({
   selectedFileIsLabeled,
   onClick,
   title,
@@ -14,19 +16,17 @@ export const Checkbox = ({
       type="button"
       onClick={onClick}
       // flex и items-center выравнивают иконку и текст в одну линию
-      className={`flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors ${className}`}
+      className={`flex items-center w-max cursor-pointer gap-2 -ml-2 p-2 hover:bg-gray-100 rounded-full transition-colors ${className}`}
     >
       {/* Иконка из библиотеки Material Icons */}
       <span
-        className={`material-icons ${selectedFileIsLabeled ? "text-blue-600" : "text-gray-400"}`}
+        className={`material-icons select-none ${selectedFileIsLabeled ? "text-blue-600" : "text-gray-400"}`}
       >
         {selectedFileIsLabeled ? "check_box" : "check_box_outline_blank"}
       </span>
 
       {/* Текст кнопки */}
-      {title && (
-        <span className="text-sm font-medium text-gray-700">{title}</span>
-      )}
+      {title && <TextUI variant="label">{title}</TextUI>}
     </button>
   );
 };
