@@ -1,9 +1,15 @@
+import io
+import json
+from pathlib import Path
 from typing import Any, Literal
 from fastapi import HTTPException
+import httpx
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.models.db import FileDB, ModelDB
 from app.services.project import is_owner_of_project
+from app.services.file import get_file_path_by_id
 
 
 def is_owner_of_model(
@@ -18,6 +24,16 @@ def is_owner_of_model(
         is None
     ):
         raise HTTPException(status_code=404, detail="Нет доступа к модели")
+
+
+def _get_model_path_by_id(project_id: int, model_id: int) -> Path:
+    base_dir = Path(settings.STORAGE_PATH).resolve()
+    file_path = base_dir / str(project_id) / "models" / f"{model_id}.txt"
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Файл не найден на диске")
+
+    return file_path
 
 
 # router
@@ -169,7 +185,7 @@ def update_model_db_by_id(
 
 
 # router
-def train_model_by_id(
+async def train_model_by_id(
     project_id: int,
     model_id: int,
     user_id: int,
@@ -187,14 +203,68 @@ def train_model_by_id(
     if len(model_db.files) == 0:
         raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
 
-    model_db.is_draft = False
+    # model_db.is_draft = False
 
-    db.commit()
-    db.refresh(model_db)
+    # db.commit()
+    # db.refresh(model_db)
 
-    # TODO: отправляем параметры и файлы модели в обучающий сервис
-    # получаем оттуда метрики и графики
-    # обновляем данные в БД
+    files_paths: set[Path] = {
+        get_file_path_by_id(project_id=file_db.project_id, file_id=file_db.id)
+        for file_db in model_db.files
+    }
+
+    # 1. Подготавливаем параметры для обучения
+    training_params: dict[str, Any] = {
+        "model": "ner",
+        "epochs": 5,
+        "batch_size": 8,
+        "learning_rate": 0.001,
+    }
+
+    # 2. Формируем запрос к внешнему сервису
+    # Мы используем context manager, чтобы гарантированно закрыть файлы
+    async with httpx.AsyncClient() as client:
+        files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
+        opened_files: list[io.BufferedReader] = []
+
+        try:
+            for path in files_paths:
+                file_stream: io.BufferedReader = open(path, "rb")
+                opened_files.append(file_stream)
+                # Формат: (название_поля, (имя_файла, объект_файла, content_type))
+                files_to_send.append(("files", (path.name, file_stream, "text/plain")))
+
+            # Отправляем POST запрос
+            response = await client.post(
+                settings.ML_URL + "/models/train",  # URL обучающего сервиса
+                data={"parameters": json.dumps(training_params)},
+                files=files_to_send,
+                timeout=None,  # Обучение может длиться долго
+            )
+
+            for file_stream in opened_files:
+                file_stream.close()
+
+            if response.status_code != 200:
+                raise HTTPException(status_code=500, detail="Ошибка обучающего сервиса")
+
+            # 3. Обработка результата
+            # Метрики забираем из заголовка (как реализовано в вашем эндпоинте)
+            metrics_raw = response.headers.get("X-Metrics")
+            metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
+
+            # Содержимое результирующего файла (если нужно сохранить)
+            # result_content = response.content
+
+            # TODO: Здесь обновляем model_db данными из metrics и сохраняем графики
+            model_db.metrics = metrics
+            # model_db.accuracy = metrics.get("accuracy") # Пример
+
+        finally:
+            model_db.is_draft = False
+
+            db.commit()
+            db.refresh(model_db)
 
     return model_db
 

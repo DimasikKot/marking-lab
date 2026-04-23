@@ -142,7 +142,7 @@ async def get_by_id_train(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    model_db = train_model_by_id(
+    model_db = await train_model_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 

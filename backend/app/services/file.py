@@ -37,7 +37,7 @@ def _fetch_file_db_by_id(
     return file_db
 
 
-def _get_file_path_by_id(project_id: int, file_id: int) -> Path:
+def get_file_path_by_id(project_id: int, file_id: int) -> Path:
     base_dir = Path(settings.STORAGE_PATH).resolve()
     file_path = base_dir / str(project_id) / "files" / f"{file_id}.csv"
 
@@ -60,7 +60,7 @@ def _create_file_on_disk(project_id: int, file_id: int, content: str) -> None:
 
 
 def _delete_file_from_disk(project_id: int, file_id: int) -> None:
-    file_path = _get_file_path_by_id(project_id, file_id)
+    file_path = get_file_path_by_id(project_id, file_id)
 
     if file_path.exists():
         file_path.unlink()
@@ -281,7 +281,7 @@ def get_page_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
     )
 
-    file_path = _get_file_path_by_id(project_id, file_id)
+    file_path = get_file_path_by_id(project_id, file_id)
 
     page_rows = list(_get_file_rows(file_path, page=page, rows=rows))
 
@@ -302,7 +302,7 @@ def update_page_by_id(
         project_id=project_id, file_id=file_id, db=db, user_id=user_id
     )
 
-    file_path = _get_file_path_by_id(project_id, file_id)
+    file_path = get_file_path_by_id(project_id, file_id)
 
     new_total_rows = _write_new_rows(
         file_path=file_path,
