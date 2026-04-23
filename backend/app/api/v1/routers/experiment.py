@@ -1,23 +1,18 @@
 from fastapi import APIRouter, Depends, Path
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
+from app.api.v1.routers.echo import GetEchoResponse
 from app.services.get_user_id import get_user_id
+from app.core.database import get_db
 from app.services.experiment import (
     delete_experiment_by_id,
 )
-from app.core.database import get_db
-from sqlalchemy.orm import Session
 
 
 router = APIRouter()
 
 
-class DeleteExperimentResponse(BaseModel):
-    detail: str
-    success: bool
-
-
-@router.delete("/{experiment_id}", response_model=DeleteExperimentResponse)
+@router.delete("/{experiment_id}", response_model=GetEchoResponse)
 async def delete_by_id(
     project_id: int = Path(...),
     experiment_id: int = Path(...),
@@ -28,4 +23,4 @@ async def delete_by_id(
         project_id=project_id, experiment_id=experiment_id, user_id=user_id, db=db
     )
 
-    return DeleteExperimentResponse(detail="Эксперимент успешно удален", success=True)
+    return GetEchoResponse(detail="Эксперимент успешно удален", success=True)

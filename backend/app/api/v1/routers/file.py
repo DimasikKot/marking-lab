@@ -13,6 +13,7 @@ from fastapi import (
     UploadFile,
 )
 
+from app.api.v1.routers.echo import GetEchoResponse
 from app.services.get_user_id import get_user_id
 from app.core.database import get_db
 from app.services.file import (
@@ -42,14 +43,14 @@ class FileDbResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("/", response_model=FileDbResponse)
+@router.post("", response_model=FileDbResponse)
 async def post(
     project_id: int = Path(...),
     file_db: UploadFile = File(...),
     # name: str = Form(...) - используем `Form(...)``,
     # тк если передаются файлы, то только с этим атрибутом работает
     name: str = Form(...),
-    is_labeled: bool = Form(...),
+    is_labeled: str = Form(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -59,7 +60,7 @@ async def post(
         db=db,
         file=file_db.file,
         name=name,
-        is_labeled=is_labeled,
+        is_labeled=bool(is_labeled),
     )
 
     return file_db
@@ -69,7 +70,7 @@ class GetFilesResponse(BaseModel):
     data: list[FileDbResponse]
 
 
-@router.get("/", response_model=GetFilesResponse)
+@router.get("", response_model=GetFilesResponse)
 async def get(
     project_id: int,
     sort: SortType | None = Query(
@@ -189,12 +190,7 @@ async def patch_by_id_content(
     return file_db
 
 
-class DeleteFileResponse(BaseModel):
-    detail: str
-    success: bool
-
-
-@router.delete("/{file_id}", response_model=DeleteFileResponse)
+@router.delete("/{file_id}", response_model=GetEchoResponse)
 async def delete_by_id(
     project_id: int,
     file_id: int,
@@ -203,4 +199,4 @@ async def delete_by_id(
 ):
     delete_file_by_id(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
 
-    return DeleteFileResponse(detail="Файл успешно удалён", success=True)
+    return GetEchoResponse(detail="Файл успешно удалён", success=True)

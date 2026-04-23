@@ -2,6 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 import api from "@/shared/api/axios";
+import type { GetEchoResponse } from "./echo";
 
 export interface FileDbResponse {
   id: number;
@@ -16,16 +17,16 @@ export const uploadFile = async (
   projectId: string | number,
   file: File,
   name: string,
-  is_labeled: string | boolean,
+  is_labeled: boolean,
 ): Promise<FileDbResponse | undefined> => {
   const formData = new FormData();
-  formData.append("file", file);
   formData.append("name", name);
   formData.append("is_labeled", is_labeled.toString());
+  formData.append("file", file);
 
   try {
     const response = await api.post<FileDbResponse>(
-      `/projects/${projectId}/files/`,
+      `/projects/${projectId}/files`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -135,9 +136,9 @@ export const updateFileById = async (
 export const deleteFileById = async (
   projectId: string | number,
   fileId: string | number,
-): Promise<GetFilePageResponse | undefined> => {
+): Promise<GetEchoResponse | undefined> => {
   try {
-    const response = await api.delete<GetFilePageResponse>(
+    const response = await api.delete<GetEchoResponse>(
       `/projects/${projectId}/files/${fileId}`,
     );
     return response.data;

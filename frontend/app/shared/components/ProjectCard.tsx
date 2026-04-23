@@ -1,11 +1,11 @@
 import toast from "react-hot-toast";
 
-import type { Project } from "@/shared/api/projects";
+import type { ProjectDbResponse } from "@/shared/api/projects";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
 type ProjectCardProps = {
-  project: Project;
+  project: ProjectDbResponse;
   onClick?: () => void;
   onEditClick?: () => void;
   onDeleteClick?: () => void;

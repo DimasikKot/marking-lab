@@ -47,11 +47,11 @@ export function Header({
     const load = async () => {
       const dataBackend = await fetchBackendEcho();
       if (dataBackend === undefined) return;
-      setBackendStatus(dataBackend.status);
+      setBackendStatus(dataBackend.success);
 
       const dataMl = await fetchMLEcho();
       if (dataMl === undefined) return;
-      setMlStatus(dataMl.status);
+      setMlStatus(dataMl.success);
     };
 
     load();

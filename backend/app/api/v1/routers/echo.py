@@ -8,22 +8,17 @@ from app.core.config import settings
 router: APIRouter = APIRouter()
 
 
-class GetBackendResponse(BaseModel):
+class GetEchoResponse(BaseModel):
     detail: str
-    status: bool
+    success: bool
 
 
-@router.get("/backend", response_model=GetBackendResponse)
+@router.get("/backend", response_model=GetEchoResponse)
 async def get_backend():
-    return GetBackendResponse(detail="Backend контейнер исправно работает", status=True)
+    return GetEchoResponse(detail="Backend контейнер исправно работает", success=True)
 
 
-class GetMlResponse(BaseModel):
-    detail: str
-    status: bool
-
-
-@router.get("/ml", response_model=GetMlResponse)
+@router.get("/ml", response_model=GetEchoResponse)
 async def get_ml():
     async with AsyncClient() as client:
         response_dict = await client.get(settings.ML_URL + "/echos/ml")

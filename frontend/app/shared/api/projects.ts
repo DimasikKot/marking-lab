@@ -2,8 +2,9 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 import api from "@/shared/api/axios";
+import type { GetEchoResponse } from "./echo";
 
-export interface Project {
+export interface ProjectDbResponse {
   id: number;
   name: string;
   description: string;
@@ -12,19 +13,24 @@ export interface Project {
   updated_at: string;
 }
 
+export const createProject = async (
+  data: PatchProjectRequest,
+): Promise<ProjectDbResponse | undefined> => {
+  try {
+    const response = await api.post<ProjectDbResponse>("/projects", data);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const error_text =
+        error.response?.data?.detail ||
+        "Ошибка при создании проекта: " + error.message;
+      toast.error(error_text);
+    }
+  }
+};
+
 export interface GetProjectsResponse {
-  data: Project[];
-}
-
-export interface PatchProjectRequest {
-  name: string;
-  description: string;
-  is_public: boolean;
-}
-
-export interface DeleteProjectResponce {
-  detail: string;
-  success: boolean;
+  data: ProjectDbResponse[];
 }
 
 export const fetchProjects = async (): Promise<
@@ -43,9 +49,11 @@ export const fetchProjects = async (): Promise<
   }
 };
 
-export const fetchProjectById = async (id: string | number) => {
+export const fetchProjectById = async (
+  projectId: string | number,
+): Promise<ProjectDbResponse | undefined> => {
   try {
-    const response = await api.get<Project>(`/projects/${id}`);
+    const response = await api.get<ProjectDbResponse>(`/projects/${projectId}`);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -57,26 +65,21 @@ export const fetchProjectById = async (id: string | number) => {
   }
 };
 
-export const createProject = async (data: PatchProjectRequest) => {
-  try {
-    const response = await api.post<Project>("/projects", data);
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при создании проекта: " + error.message;
-      toast.error(error_text);
-    }
-  }
-};
+export interface PatchProjectRequest {
+  name: string;
+  description: string;
+  is_public: boolean;
+}
 
 export const patchProjectById = async (
-  id: string | number,
+  projectId: string | number,
   data: PatchProjectRequest,
-) => {
+): Promise<ProjectDbResponse | undefined> => {
   try {
-    const response = await api.patch<Project>(`/projects/${id}`, data);
+    const response = await api.patch<ProjectDbResponse>(
+      `/projects/${projectId}`,
+      data,
+    );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -88,9 +91,13 @@ export const patchProjectById = async (
   }
 };
 
-export const deleteProjectById = async (id: string | number) => {
+export const deleteProjectById = async (
+  projectId: string | number,
+): Promise<GetEchoResponse | undefined> => {
   try {
-    const response = await api.delete<DeleteProjectResponce>(`/projects/${id}`);
+    const response = await api.delete<GetEchoResponse>(
+      `/projects/${projectId}`,
+    );
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

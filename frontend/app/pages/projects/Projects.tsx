@@ -6,7 +6,7 @@ import {
   createProject,
   patchProjectById,
   deleteProjectById,
-  type Project,
+  type ProjectDbResponse,
   type PatchProjectRequest,
 } from "@/shared/api/projects";
 import { ButtonUI } from "@/shared/components/ButtonUI";
@@ -18,12 +18,13 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 
 export function Projects() {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectDbResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   // Состояния для модального окна формы
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] =
+    useState<ProjectDbResponse | null>(null);
   const [search, setSearch] = useState("");
   const [formData, setFormData] = useState<PatchProjectRequest>({
     name: "",
@@ -60,7 +61,7 @@ export function Projects() {
   };
 
   // Обработка открытия формы редактирования
-  const handleEditClick = (project: Project) => {
+  const handleEditClick = (project: ProjectDbResponse) => {
     setEditingProject(project);
     setFormData({
       name: project.name,

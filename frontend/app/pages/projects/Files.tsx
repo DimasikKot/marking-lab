@@ -15,6 +15,39 @@ import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import type { PatchFileDbRequest } from "@/shared/api/file";
 
+const Checkbox = ({
+  selectedFileIsLabeled,
+  setSelectedFileIsLabeled,
+  title,
+  className,
+}: {
+  selectedFileIsLabeled: boolean;
+  setSelectedFileIsLabeled: React.Dispatch<React.SetStateAction<boolean>>;
+  title?: string;
+  className?: string;
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
+      // flex и items-center выравнивают иконку и текст в одну линию
+      className={`flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors ${className}`}
+    >
+      {/* Иконка из библиотеки Material Icons */}
+      <span
+        className={`material-icons ${selectedFileIsLabeled ? "text-blue-600" : "text-gray-400"}`}
+      >
+        {selectedFileIsLabeled ? "check_box" : "check_box_outline_blank"}
+      </span>
+
+      {/* Текст кнопки */}
+      {title && (
+        <span className="text-sm font-medium text-gray-700">{title}</span>
+      )}
+    </button>
+  );
+};
+
 export function Files() {
   const { projectId = "0" } = useParams<{ projectId: string }>();
 
@@ -23,6 +56,7 @@ export function Files() {
   const [loading, setLoading] = useState(true);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFileIsLabeled, setSelectedFileIsLabeled] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -30,6 +64,7 @@ export function Files() {
   const [editingFile, setEditingFile] = useState<FileDbResponse | null>(null);
   const [formData, setFormData] = useState<PatchFileDbRequest>({
     name: "",
+    is_labeled: false,
   });
 
   const loadFiles = async () => {
@@ -57,7 +92,12 @@ export function Files() {
     if (!selectedFile || !projectId) return;
 
     setUploading(true);
-    const result = await uploadFile(selectedFile, selectedFile.name, projectId);
+    const result = await uploadFile(
+      projectId,
+      selectedFile,
+      selectedFile.name,
+      selectedFileIsLabeled,
+    );
     setUploading(false);
 
     if (result === undefined) return;
@@ -78,7 +118,7 @@ export function Files() {
   // Открытие формы редактирования
   const handleEditClick = (file: FileDbResponse) => {
     setEditingFile(file);
-    setFormData({ name: file.name });
+    setFormData({ name: file.name, is_labeled: file.is_labeled });
     setIsFormOpen(true);
   };
 
@@ -129,12 +169,20 @@ export function Files() {
                 hover:file:bg-blue-200 transition-colors"
           />
 
-          <ButtonUI
-            onClick={handleUpload}
-            disabled={!selectedFile || uploading}
-          >
-            {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
-          </ButtonUI>
+          <div className="flex flex-row gap-2">
+            <ButtonUI
+              onClick={handleUpload}
+              disabled={!selectedFile || uploading}
+            >
+              {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
+            </ButtonUI>
+
+            <Checkbox
+              title="Уже размечен?"
+              selectedFileIsLabeled={selectedFileIsLabeled}
+              setSelectedFileIsLabeled={setSelectedFileIsLabeled}
+            />
+          </div>
         </div>
       </div>
 

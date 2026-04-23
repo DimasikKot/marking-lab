@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
 
+from app.api.v1.routers.echo import GetEchoResponse
 from app.core.database import get_db
 from app.services.get_user_id import get_user_id
 from app.services.project import (
@@ -37,7 +38,7 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("/", response_model=PostResponse)
+@router.post("", response_model=PostResponse)
 async def post(
     data: PostRequest,
     user_id: int = Depends(get_user_id),
@@ -54,7 +55,7 @@ class GetResponse(BaseModel):
     data: list[PostResponse]
 
 
-@router.get("/", response_model=GetResponse)
+@router.get("", response_model=GetResponse)
 async def get(
     sort: SortType | None = Query(
         "updated_at_desc",
@@ -116,12 +117,7 @@ async def patch_by_id(
     return project_db
 
 
-class DeleteProjectResponse(BaseModel):
-    detail: str
-    success: bool
-
-
-@router.delete("/{project_id}", response_model=DeleteProjectResponse)
+@router.delete("/{project_id}", response_model=GetEchoResponse)
 async def delete_by_id(
     project_id: int,
     user_id: int = Depends(get_user_id),
@@ -129,4 +125,4 @@ async def delete_by_id(
 ):
     delete_project_by_id(project_id=project_id, user_id=user_id, db=db)
 
-    return DeleteProjectResponse(detail="Проект успешно удалён", success=True)
+    return GetEchoResponse(detail="Проект успешно удалён", success=True)

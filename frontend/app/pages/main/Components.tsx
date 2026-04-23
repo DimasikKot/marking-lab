@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import type { FileDbResponse } from "@/shared/api/file";
-import type { Project } from "@/shared/api/projects";
+import type { ProjectDbResponse } from "@/shared/api/projects";
 
 import { Header } from "@/shared/components/Header";
 import { ButtonPage } from "@/shared/components/ButtonPage";
@@ -24,7 +24,7 @@ export function Components() {
   const [textValue, setTextValue] = useState("");
   const [currentPage, setCurrentPage] = useState("1");
 
-  const project: Project = {
+  const project: ProjectDbResponse = {
     id: 1,
     name: "NER определитель",
     description: "Самое крутое описание, чтобы не забыть, что за проект",

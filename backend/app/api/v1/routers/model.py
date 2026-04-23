@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.api.v1.routers.echo import GetEchoResponse
 from app.services.get_user_id import get_user_id
 from app.core.database import get_db
 from app.services.model import (
@@ -36,7 +37,7 @@ class PostModelResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("/", response_model=PostModelResponse)
+@router.post("", response_model=PostModelResponse)
 async def post(
     project_id: int,
     data: PostModelRequest,
@@ -57,7 +58,7 @@ class GetResponse(BaseModel):
     data: list[PostModelResponse]
 
 
-@router.get("/", response_model=GetResponse)
+@router.get("", response_model=GetResponse)
 async def get(
     project_id: int,
     sort: SortType | None = Query(
@@ -91,12 +92,7 @@ async def get_by_id(
     return model_db
 
 
-class DeleteModelResponse(BaseModel):
-    detail: str
-    success: bool
-
-
-@router.delete("/{model_id}", response_model=DeleteModelResponse)
+@router.delete("/{model_id}", response_model=GetEchoResponse)
 async def delete_by_id(
     project_id: int,
     model_id: int,
@@ -105,4 +101,4 @@ async def delete_by_id(
 ):
     delete_model_by_id(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
 
-    return DeleteModelResponse(detail="Модель успешно удалена", success=True)
+    return GetEchoResponse(detail="Модель успешно удалена", success=True)

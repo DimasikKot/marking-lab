@@ -39,7 +39,7 @@ class PostResponse(BaseModel):
 
 
 # Пишем метод, путь и какие данные будем возвращать
-@router.post("/", response_model=PostResponse)
+@router.post("", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
 async def post(data: PostRequest, db: Session = Depends(get_auth_db)):
     user: User = create_user(db, data.username, data.email, data.password)
@@ -75,7 +75,7 @@ class PostValidateUsernameRequest(BaseModel):
 
 
 class PostValidateResponse(BaseModel):
-    status: bool
+    success: bool
 
 
 @router.post("/validate-username", response_model=PostValidateResponse)
@@ -97,7 +97,7 @@ async def post_validate_username(
     if existing_username:
         raise HTTPException(status_code=400, detail="Имя пользователя уже занято")
 
-    return PostValidateResponse(status=True)
+    return PostValidateResponse(success=True)
 
 
 class PostValidateEmailRequest(BaseModel):
@@ -120,7 +120,7 @@ async def post_validate_email(
             status_code=400, detail="Электронная почта уже зарегестрирована"
         )
 
-    return PostValidateResponse(status=True)
+    return PostValidateResponse(success=True)
 
 
 class PostValidateLoginRequest(BaseModel):
@@ -139,4 +139,4 @@ async def post_validate_login(
         if not user:
             raise HTTPException(status_code=401, detail="Пользователь не найден")
 
-    return PostValidateResponse(status=True)
+    return PostValidateResponse(success=True)

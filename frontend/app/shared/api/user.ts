@@ -74,7 +74,7 @@ interface ValidateUsernameRequest {
 }
 
 interface ValidateResponse {
-  status: boolean;
+  success: boolean;
 }
 
 export const validateUsername = async (

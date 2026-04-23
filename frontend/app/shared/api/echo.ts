@@ -3,16 +3,16 @@ import toast from "react-hot-toast";
 
 import api from "@/shared/api/axios";
 
-interface GetBackendResponse {
+export interface GetEchoResponse {
   detail: string;
-  status: boolean;
+  success: boolean;
 }
 
 export const fetchBackendEcho = async (): Promise<
-  GetBackendResponse | undefined
+  GetEchoResponse | undefined
 > => {
   try {
-    const response = await api.get<GetBackendResponse>("/echos/backend");
+    const response = await api.get<GetEchoResponse>("/echos/backend");
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -24,11 +24,9 @@ export const fetchBackendEcho = async (): Promise<
   }
 };
 
-export const fetchMLEcho = async (): Promise<
-  GetBackendResponse | undefined
-> => {
+export const fetchMLEcho = async (): Promise<GetEchoResponse | undefined> => {
   try {
-    const response = await api.get<GetBackendResponse>("/echos/ml");
+    const response = await api.get<GetEchoResponse>("/echos/ml");
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
