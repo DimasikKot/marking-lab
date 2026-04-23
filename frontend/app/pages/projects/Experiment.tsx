@@ -3,10 +3,10 @@ import { Header } from "@/shared/components/Header";
 export function Experiment() {
   return (
     <div>
-      <Header>Страница эксперимента</Header>
+      <Header title="Эксперимент" />
 
       <div className="max-w-6xl mx-auto m-2">
-        <p>Страница эксперимента</p>
+        <p>...</p>
       </div>
     </div>
   );

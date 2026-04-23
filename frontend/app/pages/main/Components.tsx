@@ -33,16 +33,18 @@ export function Components() {
     updated_at: "2024-03-20T15:30:00Z",
   };
 
-  const fileInList: FileDbResponse = {
+  const file: FileDbResponse = {
     id: 1,
     name: "Собрание в Москве",
+    total_rows: 100,
+    is_labeled: true,
     created_at: "2026-03-26T08:15:00.000Z",
     updated_at: "2026-03-28T09:45:00.000Z",
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header>Страница компонентов</Header>
+      <Header title="Компоненты" />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <ButtonPage onClick={() => navigate("/")} />
@@ -130,8 +132,8 @@ export function Components() {
               FileCard
             </TextUI>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <FileCard file={fileInList} />
-              <FileCard file={fileInList} dateIsCreatedAt={true} />
+              <FileCard file={file} />
+              <FileCard file={file} dateIsCreatedAt={true} />
             </div>
           </div>
 

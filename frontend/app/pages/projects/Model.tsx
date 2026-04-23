@@ -3,10 +3,10 @@ import { Header } from "@/shared/components/Header";
 export function Model() {
   return (
     <div>
-      <Header>Страница модели</Header>
+      <Header title="Модель" />
 
       <div className="max-w-6xl mx-auto m-2">
-        <p>Страница модели</p>
+        <p>...</p>
       </div>
     </div>
   );

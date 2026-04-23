@@ -55,7 +55,7 @@ export function File() {
   };
   return (
     <div>
-      <Header>{`Страница файла "${file?.name}"`}</Header>
+      <Header title={`Файл "${file?.name}"`} />
 
       <div className="max-w-6xl mx-auto m-2">
         <ButtonPage

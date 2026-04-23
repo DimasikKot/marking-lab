@@ -77,7 +77,7 @@ def fetch_projects_db_by_user_id(
 
     projects_db = db.query(ProjectDB).filter(ProjectDB.user_id == user_id)
 
-    if search:
+    if search is not None:
         projects_db = projects_db.filter(ProjectDB.name.ilike(f"%{search}%"))
 
     if sort == "name_asc":
@@ -125,8 +125,10 @@ def update_project_by_id(
 
     if new_name is not None:
         project_db.name = new_name
+
     if new_description is not None:
         project_db.description = new_description
+
     if new_is_public is not None:
         project_db.is_public = new_is_public
 

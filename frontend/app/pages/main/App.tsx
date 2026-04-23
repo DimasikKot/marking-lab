@@ -17,10 +17,11 @@ export function App() {
   return (
     <Router>
       <ToasterUI />
+
       <div className="bg-white">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/not-found" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
           <Route path="/components" element={<Components />} />
 
           <Route path="/login" element={<Login />} />

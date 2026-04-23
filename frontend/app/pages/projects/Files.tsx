@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import {
   deleteFileById,
@@ -13,40 +14,8 @@ import { TextUI } from "@/shared/components/TextUI";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
+import { Checkbox } from "@/shared/components/Checkbox";
 import type { PatchFileDbRequest } from "@/shared/api/file";
-
-const Checkbox = ({
-  selectedFileIsLabeled,
-  setSelectedFileIsLabeled,
-  title,
-  className,
-}: {
-  selectedFileIsLabeled: boolean;
-  setSelectedFileIsLabeled: React.Dispatch<React.SetStateAction<boolean>>;
-  title?: string;
-  className?: string;
-}) => {
-  return (
-    <button
-      type="button"
-      onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
-      // flex и items-center выравнивают иконку и текст в одну линию
-      className={`flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors ${className}`}
-    >
-      {/* Иконка из библиотеки Material Icons */}
-      <span
-        className={`material-icons ${selectedFileIsLabeled ? "text-blue-600" : "text-gray-400"}`}
-      >
-        {selectedFileIsLabeled ? "check_box" : "check_box_outline_blank"}
-      </span>
-
-      {/* Текст кнопки */}
-      {title && (
-        <span className="text-sm font-medium text-gray-700">{title}</span>
-      )}
-    </button>
-  );
-};
 
 export function Files() {
   const { projectId = "0" } = useParams<{ projectId: string }>();
@@ -92,7 +61,7 @@ export function Files() {
     if (!selectedFile || !projectId) return;
 
     setUploading(true);
-    const result = await uploadFile(
+    const response = await uploadFile(
       projectId,
       selectedFile,
       selectedFile.name,
@@ -100,7 +69,8 @@ export function Files() {
     );
     setUploading(false);
 
-    if (result === undefined) return;
+    if (response === undefined) return;
+    toast.success("Файл успешно загружен");
     setSelectedFile(null);
     loadFiles();
   };
@@ -178,9 +148,9 @@ export function Files() {
             </ButtonUI>
 
             <Checkbox
-              title="Уже размечен?"
               selectedFileIsLabeled={selectedFileIsLabeled}
-              setSelectedFileIsLabeled={setSelectedFileIsLabeled}
+              onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
+              title="Уже размечен?"
             />
           </div>
         </div>
@@ -253,6 +223,14 @@ export function Files() {
                   placeholder="Новое имя файла..."
                 />
               </div>
+
+              <Checkbox
+                selectedFileIsLabeled={formData.is_labeled}
+                onClick={() =>
+                  setFormData({ ...formData, is_labeled: !formData.is_labeled })
+                }
+                title="Уже размечен?"
+              />
 
               <div className="flex justify-between items-center pt-4">
                 <ButtonUI

@@ -31,9 +31,11 @@ const UserIcon = ({ username }: { username: string }) => (
 );
 
 export function Header({
-  className = "",
+  title,
+  className,
   children,
 }: {
+  title?: string;
   className?: string;
   children?: React.ReactNode;
 }) {
@@ -63,9 +65,13 @@ export function Header({
     >
       <Logo onClick={() => navigate("/")} />
 
-      <TextUI variant="header" className={`w-2xl text-center`}>
-        {children}
-      </TextUI>
+      {title && (
+        <TextUI variant="header" className={`w-2xl text-center`}>
+          {title}
+        </TextUI>
+      )}
+
+      {children}
 
       <div className="flex gap-4 items-center rounded-3xl w-2xl justify-end">
         {/* Индикаторы состояния контейнеров */}

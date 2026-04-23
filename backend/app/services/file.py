@@ -213,7 +213,7 @@ def fetch_files_db_by_project_id(
 
     files_db = db.query(FileDB).filter(FileDB.project_id == project_id)
 
-    if search:
+    if search is not None:
         files_db = files_db.filter(FileDB.name.ilike(f"%{search}%"))
 
     if sort == "name_asc":
@@ -257,10 +257,10 @@ def update_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
     )
 
-    if name:
+    if name is not None:
         file_db.name = name
 
-    if is_labeled:
+    if is_labeled is not None:
         file_db.is_labeled = is_labeled
 
     db.commit()

@@ -10,7 +10,7 @@ export function Models() {
       <ButtonPage onClick={() => navigate("/projects")} />
 
       <div className="border border-gray-200 rounded-4xl p-6">
-        <p>Страница моделей</p>
+        <p>Список моделей</p>
       </div>
     </div>
   );

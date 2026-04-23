@@ -77,7 +77,7 @@ def fetch_models_db_by_project_id(
 
     models_db = db.query(ModelDB).filter(ModelDB.project_id == project_id)
 
-    if search:
+    if search is not None:
         models_db = models_db.filter(ModelDB.name.ilike(f"%{search}%"))
 
     if sort == "name_asc":

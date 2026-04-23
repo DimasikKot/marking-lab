@@ -50,7 +50,7 @@ async def post(
     # name: str = Form(...) - используем `Form(...)``,
     # тк если передаются файлы, то только с этим атрибутом работает
     name: str = Form(...),
-    is_labeled: str = Form(...),
+    is_labeled: bool = Form(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -60,7 +60,7 @@ async def post(
         db=db,
         file=file_db.file,
         name=name,
-        is_labeled=bool(is_labeled),
+        is_labeled=is_labeled,
     )
 
     return file_db

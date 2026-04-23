@@ -10,7 +10,7 @@ export function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header>Главная</Header>
+      <Header title="Главная" />
 
       {/* Центральная область */}
       <div className="flex-1 flex m-2 justify-center">

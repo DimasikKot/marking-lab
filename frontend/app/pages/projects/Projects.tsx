@@ -113,7 +113,7 @@ export function Projects() {
 
   return (
     <div>
-      <Header>Страница проектов</Header>
+      <Header title="Проекты" />
 
       <div className="max-w-6xl mx-auto m-2">
         <ButtonPage onClick={() => navigate("/")} isLoading={loading} />
@@ -151,6 +151,7 @@ export function Projects() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredProjects.map((project) => (
                 <ProjectCard
+                  key={project.id}
                   project={project}
                   onDeleteClick={() => handleDeleteClick(project.id)}
                   onEditClick={() => handleEditClick(project)}
