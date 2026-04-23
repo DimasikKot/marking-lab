@@ -86,6 +86,8 @@ export function Register() {
             </span>
             <TextField
               key={isLoading ? step + 10 : step}
+              name="login"
+              type="text"
               value={username}
               setValue={setUsername}
               onEnter={handleNext}
@@ -108,6 +110,7 @@ export function Register() {
         children: (
           <TextField
             key={isLoading ? step + 10 : step}
+            name="email"
             type="email"
             value={email}
             setValue={setEmail}
@@ -130,6 +133,7 @@ export function Register() {
       children: (
         <TextField
           key={isLoading ? step + 10 : step}
+          name="password"
           type="password"
           value={password}
           setValue={setPassword}

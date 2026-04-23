@@ -63,6 +63,7 @@ export function Login() {
         children: (
           <TextField
             key={isLoading ? step + 10 : step}
+            name="login"
             value={login}
             setValue={setLogin}
             onEnter={handleNext}
@@ -70,7 +71,6 @@ export function Login() {
             autoFocus
             placeholder="Имя пользователя или email"
             disabled={isLoading}
-            type="text"
           />
         ),
         backButton: undefined,
@@ -84,6 +84,7 @@ export function Login() {
       children: (
         <TextField
           key={isLoading ? step + 10 : step}
+          name="password"
           value={password}
           setValue={setPassword}
           onEnter={handleNext}
