@@ -83,6 +83,7 @@ export function Files() {
     const response = await deleteFileById(projectId, file_id);
     setLoading(false);
     if (response === undefined) return;
+    toast.success("Файл успешно удалён");
     loadFiles();
   };
 
@@ -102,7 +103,7 @@ export function Files() {
     setLoading(false);
 
     if (response === undefined) return;
-
+    toast.success("Файл успешно изменён");
     setIsFormOpen(false);
     setEditingFile(null);
     loadFiles();

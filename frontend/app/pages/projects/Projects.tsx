@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 import {
   fetchProjects,
@@ -79,11 +80,13 @@ export function Projects() {
       const response = await patchProjectById(editingProject.id, formData);
       setLoading(false);
       if (response === undefined) return;
+      toast.success("Проект успешно изменён");
     } else {
       setLoading(true);
       const response = await createProject(formData);
       setLoading(false);
       if (response === undefined) return;
+      toast.success("Проект успешно создан");
     }
     loadProjects();
     setIsFormOpen(false);
@@ -98,6 +101,7 @@ export function Projects() {
     const response = await deleteProjectById(id);
     setLoading(false);
     if (response === undefined) return;
+    toast.success("Проект успешно удалён");
     loadProjects();
   };
 
