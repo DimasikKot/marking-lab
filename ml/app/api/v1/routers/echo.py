@@ -5,11 +5,11 @@ from pydantic import BaseModel
 router: APIRouter = APIRouter()
 
 
-class MlGetResponse(BaseModel):
+class GetEchoResponse(BaseModel):
     detail: str
-    status: bool
+    success: bool
 
 
-@router.get("/ml", response_model=MlGetResponse)
+@router.get("/ml", response_model=GetEchoResponse)
 def test_ml():
-    return MlGetResponse(detail="ML контейнер исправно работает", status=True)
+    return GetEchoResponse(detail="ML контейнер исправно работает", success=True)
