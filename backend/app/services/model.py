@@ -21,7 +21,7 @@ def is_owner_of_model(
 
 
 # router
-def _fetch_model_db_by_id(
+def fetch_model_db_by_id(
     project_id: int, model_id: int, user_id: int, db: Session
 ) -> ModelDB:
     is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
@@ -88,6 +88,10 @@ def fetch_models_db_by_project_id(
         models_db = models_db.order_by(ModelDB.created_at.asc())
     elif sort == "created_at_desc":
         models_db = models_db.order_by(ModelDB.created_at.desc())
+    elif sort == "updated_at_asc":
+        models_db = models_db.order_by(ModelDB.updated_at.asc())
+    elif sort == "updated_at_desc":
+        models_db = models_db.order_by(ModelDB.updated_at.desc())
 
     return models_db.all()
 
@@ -96,7 +100,7 @@ def fetch_models_db_by_project_id(
 def delete_model_by_id(
     project_id: int, model_id: int, user_id: int, db: Session
 ) -> None:
-    model_db = _fetch_model_db_by_id(
+    model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 

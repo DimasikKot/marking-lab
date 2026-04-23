@@ -30,9 +30,11 @@ from app.services.file import (
 router = APIRouter()
 
 
-class PostResponse(BaseModel):
+class FileDbResponse(BaseModel):
     id: int
     name: str
+    total_rows: int
+    is_labeled: bool
     created_at: datetime
     updated_at: datetime
 
@@ -40,32 +42,34 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("/", response_model=PostResponse)
+@router.post("/", response_model=FileDbResponse)
 async def post(
     project_id: int = Path(...),
-    file: UploadFile = File(...),
+    file_db: UploadFile = File(...),
     # name: str = Form(...) - используем `Form(...)``,
     # тк если передаются файлы, то только с этим атрибутом работает
     name: str = Form(...),
+    is_labeled: bool = Form(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    file = create_file_by_project_id(
+    file_db = create_file_by_project_id(
         project_id=project_id,
         user_id=user_id,
         db=db,
-        file=file.file,
+        file=file_db.file,
         name=name,
+        is_labeled=is_labeled,
     )
 
-    return file
+    return file_db
 
 
-class GetResponse(BaseModel):
-    data: list[PostResponse]
+class GetFilesResponse(BaseModel):
+    data: list[FileDbResponse]
 
 
-@router.get("/", response_model=GetResponse)
+@router.get("/", response_model=GetFilesResponse)
 async def get(
     project_id: int,
     sort: SortType | None = Query(
@@ -84,23 +88,24 @@ async def get(
         search=search,
     )
 
-    return GetResponse(
-        data=[PostResponse.model_validate(file_db) for file_db in files_db]
+    return GetFilesResponse(
+        data=[FileDbResponse.model_validate(file_db) for file_db in files_db]
     )
 
 
-class GetFileResponse(BaseModel):
+class GetFilePageResponse(BaseModel):
     id: int
     name: str
+    total_rows: int
+    total_pages: int
+    page: int
+    rows: list[Row]
+    is_labeled: bool
     created_at: datetime
     updated_at: datetime
-    page: int
-    total_pages: int
-    total_rows: int
-    rows: list[Row]
 
 
-@router.get("/{file_id}", response_model=GetFileResponse)
+@router.get("/{file_id}", response_model=GetFilePageResponse)
 async def get_by_id(
     project_id: int,
     file_id: int,
@@ -119,27 +124,29 @@ async def get_by_id(
     )
     total_pages = ceil(file_db.total_rows / rows)
 
-    return GetFileResponse(
+    return GetFilePageResponse(
         id=file_db.id,
         name=file_db.name,
+        total_rows=file_db.total_rows,
+        total_pages=total_pages,
+        page=page,
+        rows=page_rows,
+        is_labeled=file_db.is_labeled,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
-        page=page,
-        total_pages=total_pages,
-        total_rows=file_db.total_rows,
-        rows=page_rows,
     )
 
 
-class PatchFileRequest(BaseModel):
+class PatchFileDbRequest(BaseModel):
     name: str | None = None
+    is_labeled: bool | None = None
 
 
-@router.patch("/{file_id}", response_model=PostResponse)
+@router.patch("/{file_id}", response_model=FileDbResponse)
 async def patch_by_id(
     project_id: int,
     file_id: int,
-    data: PatchFileRequest,
+    data: PatchFileDbRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -149,22 +156,23 @@ async def patch_by_id(
         user_id=user_id,
         db=db,
         name=data.name,
+        is_labeled=data.is_labeled,
     )
 
     return file_db
 
 
-class PatchFileContentRequest(BaseModel):
+class PatchFilePageRequest(BaseModel):
     new_rows: list[Row]
 
 
-@router.patch("/{file_id}/content", response_model=PostResponse)
+@router.patch("/{file_id}/content", response_model=FileDbResponse)
 async def patch_by_id_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
     page: int = Query(1, description="Номер страницы"),
     rows: int = Query(40, description="Количество строк на странице"),
-    data: PatchFileContentRequest = Body(...),
+    data: PatchFilePageRequest = Body(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):

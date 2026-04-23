@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 
-import type { FileInList as File } from "@/shared/api/file";
+import type { FileDbResponse as File } from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
 

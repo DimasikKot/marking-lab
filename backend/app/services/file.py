@@ -171,12 +171,15 @@ def create_file_by_project_id(
     db: Session,
     file: BinaryIO,
     name: str,
+    is_labeled: bool,
 ) -> FileDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     content, total_rows = normalize_content_to_csv(file)
 
-    file_db = FileDB(name=name, project_id=project_id, total_rows=total_rows)
+    file_db = FileDB(
+        name=name, project_id=project_id, total_rows=total_rows, is_labeled=is_labeled
+    )
     db.add(file_db)
     db.flush()
 
@@ -248,6 +251,7 @@ def update_file_db_by_id(
     user_id: int,
     db: Session,
     name: str | None,
+    is_labeled: bool | None,
 ) -> FileDB:
     file_db = _fetch_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
@@ -255,6 +259,9 @@ def update_file_db_by_id(
 
     if name:
         file_db.name = name
+
+    if is_labeled:
+        file_db.is_labeled = is_labeled
 
     db.commit()
     db.refresh(file_db)

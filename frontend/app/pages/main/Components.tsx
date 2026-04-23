@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-import type { FileInList } from "@/shared/api/file";
+import type { FileDbResponse } from "@/shared/api/file";
 import type { Project } from "@/shared/api/projects";
 
 import { Header } from "@/shared/components/Header";
@@ -33,7 +33,7 @@ export function Components() {
     updated_at: "2024-03-20T15:30:00Z",
   };
 
-  const fileInList: FileInList = {
+  const fileInList: FileDbResponse = {
     id: 1,
     name: "Собрание в Москве",
     created_at: "2026-03-26T08:15:00.000Z",

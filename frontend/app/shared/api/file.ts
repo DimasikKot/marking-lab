@@ -3,50 +3,34 @@ import toast from "react-hot-toast";
 
 import api from "@/shared/api/axios";
 
-export interface Word {
-  token: string;
-  label: string;
-}
-
-export interface Line {
-  words: Word[];
-}
-
-export interface FileDetail {
+export interface FileDbResponse {
   id: number;
   name: string;
-  created_at: string;
-  updated_at: string;
-  page: number;
-  total_pages: number;
   total_rows: number;
-  rows: Line[];
-}
-
-export interface FileInList {
-  id: number;
-  name: string;
+  is_labeled: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface GetFilesResponse {
-  data: FileInList[];
 }
 
 export const uploadFile = async (
+  projectId: string | number,
   file: File,
   name: string,
-  projectId: string | number,
-) => {
+  is_labeled: string | boolean,
+): Promise<FileDbResponse | undefined> => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
+  formData.append("is_labeled", is_labeled.toString());
 
   try {
-    const response = await api.post(`/projects/${projectId}/files/`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post<FileDbResponse>(
+      `/projects/${projectId}/files/`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     toast.success("Файл успешно загружен");
     return response.data;
   } catch (error: unknown) {
@@ -58,6 +42,10 @@ export const uploadFile = async (
     }
   }
 };
+
+export interface GetFilesResponse {
+  data: FileDbResponse[];
+}
 
 export const fetchFiles = async (
   projectId: string | number,
@@ -77,13 +65,34 @@ export const fetchFiles = async (
   }
 };
 
+export interface Word {
+  token: string;
+  label: string;
+}
+
+export interface Row {
+  words: Word[];
+}
+
+export interface GetFilePageResponse {
+  id: number;
+  name: string;
+  total_rows: number;
+  total_pages: number;
+  page: number;
+  rows: Row[];
+  is_labeled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
   page: string | number = 1,
-): Promise<FileDetail | undefined> => {
+): Promise<GetFilePageResponse | undefined> => {
   try {
-    const response = await api.get<FileDetail>(
+    const response = await api.get<GetFilePageResponse>(
       `/projects/${projectId}/files/${fileId}?page=${page}`,
     );
     return response.data;
@@ -97,17 +106,18 @@ export const fetchFileById = async (
   }
 };
 
-export interface PatchFileRequest {
+export interface PatchFileDbRequest {
   name: string;
+  is_labeled: boolean;
 }
 
 export const updateFileById = async (
   projectId: string | number,
   fileId: string | number,
-  data: PatchFileRequest,
-) => {
+  data: PatchFileDbRequest,
+): Promise<FileDbResponse | undefined> => {
   try {
-    const response = await api.patch<FileInList>(
+    const response = await api.patch<FileDbResponse>(
       `/projects/${projectId}/files/${fileId}`,
       data,
     );
@@ -125,9 +135,9 @@ export const updateFileById = async (
 export const deleteFileById = async (
   projectId: string | number,
   fileId: string | number,
-) => {
+): Promise<GetFilePageResponse | undefined> => {
   try {
-    const response = await api.delete<FileDetail>(
+    const response = await api.delete<GetFilePageResponse>(
       `/projects/${projectId}/files/${fileId}`,
     );
     return response.data;

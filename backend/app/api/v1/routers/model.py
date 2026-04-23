@@ -10,6 +10,7 @@ from app.services.model import (
     SortType,
     create_model,
     delete_model_by_id,
+    fetch_model_db_by_id,
     fetch_models_db_by_project_id,
 )
 
@@ -26,8 +27,10 @@ class PostModelResponse(BaseModel):
     name: str
     is_draft: bool
     saved_in_memory: bool
+    parameters: dict[str, Any]
+    metrics: dict[str, Any]
     created_at: datetime
-    parameters: dict[str, Any] | None = None
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -51,7 +54,7 @@ async def post(
 
 
 class GetResponse(BaseModel):
-    files: list[PostModelResponse]
+    data: list[PostModelResponse]
 
 
 @router.get("/", response_model=GetResponse)
@@ -69,7 +72,23 @@ async def get(
         project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
     )
 
-    return models_db
+    return GetResponse(
+        data=[PostModelResponse.model_validate(model_db) for model_db in models_db]
+    )
+
+
+@router.get("/{model_id}", response_model=PostModelResponse)
+async def get_by_id(
+    project_id: int,
+    model_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = fetch_model_db_by_id(
+        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+    )
+
+    return model_db
 
 
 class DeleteModelResponse(BaseModel):

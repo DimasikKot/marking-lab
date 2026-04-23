@@ -6,20 +6,20 @@ import {
   fetchFiles,
   updateFileById,
   uploadFile,
-  type FileInList,
+  type FileDbResponse,
 } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
 import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
-import type { PatchFileRequest } from "@/shared/api/file";
+import type { PatchFileDbRequest } from "@/shared/api/file";
 
 export function Files() {
   const { projectId = "0" } = useParams<{ projectId: string }>();
 
   const navigate = useNavigate();
-  const [files, setFiles] = useState<FileInList[]>([]);
+  const [files, setFiles] = useState<FileDbResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -27,8 +27,8 @@ export function Files() {
   const [search, setSearch] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [editingFile, setEditingFile] = useState<FileInList | null>(null);
-  const [formData, setFormData] = useState<PatchFileRequest>({
+  const [editingFile, setEditingFile] = useState<FileDbResponse | null>(null);
+  const [formData, setFormData] = useState<PatchFileDbRequest>({
     name: "",
   });
 
@@ -76,7 +76,7 @@ export function Files() {
   };
 
   // Открытие формы редактирования
-  const handleEditClick = (file: FileInList) => {
+  const handleEditClick = (file: FileDbResponse) => {
     setEditingFile(file);
     setFormData({ name: file.name });
     setIsFormOpen(true);

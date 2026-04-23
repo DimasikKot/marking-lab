@@ -6,8 +6,8 @@ import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import {
   fetchFileById,
-  type FileDetail,
-  type Line,
+  type GetFilePageResponse,
+  type Row,
   type Word,
 } from "@/shared/api/file";
 import { ButtonPage } from "@/shared/components/ButtonPage";
@@ -16,7 +16,7 @@ export function File() {
   const { projectId = "0", fileId = "0", page = "1" } = useParams();
   const navigate = useNavigate();
 
-  const [file, setFile] = useState<FileDetail | null>(null);
+  const [file, setFile] = useState<GetFilePageResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ export function File() {
 
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
             <div className="space-y-10 text-[17px] leading-relaxed">
-              {file?.rows.map((line: Line, lineIndex: number) => (
+              {file?.rows.map((line: Row, lineIndex: number) => (
                 <div
                   key={lineIndex}
                   className="pb-8 border-b border-gray-100 last:border-none"
