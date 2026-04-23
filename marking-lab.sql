@@ -15,31 +15,35 @@ CREATE TABLE IF NOT EXISTS files (
     project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,  -- если проект удаляется, удаляются и файлы
     name            VARCHAR(255)    NOT NULL,
     total_rows      INTEGER         NOT NULL,
+    is_labeled      BOOLEAN         DEFAULT FALSE,
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS models CASCADE;
 CREATE TABLE IF NOT EXISTS models (
-    id                SERIAL        PRIMARY KEY,
-    project_id        INTEGER       REFERENCES projects(id) ON DELETE CASCADE,
-    name              VARCHAR(255)  NOT NULL,
-    is_draft          BOOLEAN       DEFAULT TRUE,
-    saved_in_memory   BOOLEAN       DEFAULT FALSE,
-    parameters        JSONB,
-    created_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+    id              SERIAL          PRIMARY KEY,
+    project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,
+    name            VARCHAR(255)    NOT NULL,
+    is_draft        BOOLEAN         DEFAULT TRUE,
+    saved_in_memory BOOLEAN         DEFAULT FALSE,
+    parameters      JSONB,          -- параметры модели
+    metrics         JSONB,          -- численные метрики на тестовом наборе
+    created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS experiments CASCADE;
 CREATE TABLE IF NOT EXISTS experiments (
     id          SERIAL          PRIMARY KEY,
     project_id  INTEGER         REFERENCES projects(id) ON DELETE CASCADE,
-    name        VARCHAR(255)    NOT NULL,
-    created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    is_draft    BOOLEAN         DEFAULT TRUE,
     model_id    INTEGER         REFERENCES models(id) ON DELETE SET NULL,   -- если модель удаляется, эксперимент сохраняется, но без модели
-    results     JSONB,          -- численные метрики
-    graphs      JSONB           -- графики обучения
+    name        VARCHAR(255)    NOT NULL,
+    is_draft    BOOLEAN         DEFAULT TRUE,
+    metrics     JSONB,          -- численные метрики
+    graphs      JSONB,          -- графики обучения
+    created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS model_training_files;

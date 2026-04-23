@@ -79,6 +79,7 @@ class FileDB(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     total_rows: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_labeled: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), onupdate=func.now()
@@ -103,12 +104,14 @@ class ModelDB(Base):
         Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
     is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
     saved_in_memory: Mapped[bool] = mapped_column(Boolean, default=False)
-    parameters: Mapped[dict[str, Any]] = mapped_column(
-        JSON
-    )  # сюда сохраняются веса/параметры после обучения
+    parameters: Mapped[dict[str, Any]] = mapped_column(JSON)  # параметры обучения
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSON)  # метрики на тестовом наборе
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+    )
 
     project = relationship("ProjectDB", back_populates="models")
     experiments = relationship("ExperimentDB", back_populates="model")
@@ -124,14 +127,17 @@ class ExperimentDB(Base):
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
     )
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
-    is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
     model_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("models.id", ondelete="SET NULL"), nullable=True
     )
-    results: Mapped[dict[str, Any]] = mapped_column(JSON)
-    graphs: Mapped[dict[str, Any]] = mapped_column(JSON)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSON)  # численные метрики
+    graphs: Mapped[dict[str, Any]] = mapped_column(JSON)  # графики обучения
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+    )
 
     project = relationship("ProjectDB", back_populates="experiments")
     model = relationship("ModelDB", back_populates="experiments")
