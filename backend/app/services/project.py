@@ -66,36 +66,37 @@ SortType = Literal[
 
 
 # router
-def fetch_projects_by_user_id(
+def fetch_projects_db_by_user_id(
     user_id: int,
     db: Session,
-    sort: SortType | None = None,
-    search: str | None = None,
-    is_public: bool | None = None,
+    sort: SortType | None,
+    search: str | None,
+    is_public: bool | None,
 ) -> list[ProjectDB]:
     """Получает все проекты, принадлежащие пользователю"""
 
-    query = db.query(ProjectDB).filter(ProjectDB.user_id == user_id)
-    if is_public is not None:
-        query = query.filter(ProjectDB.is_public == is_public)
+    projects_db = db.query(ProjectDB).filter(ProjectDB.user_id == user_id)
 
     if search:
-        query = query.filter(ProjectDB.name.ilike(f"%{search}%"))
+        projects_db = projects_db.filter(ProjectDB.name.ilike(f"%{search}%"))
 
     if sort == "name_asc":
-        query = query.order_by(ProjectDB.name.asc())
+        projects_db = projects_db.order_by(ProjectDB.name.asc())
     elif sort == "name_desc":
-        query = query.order_by(ProjectDB.name.desc())
+        projects_db = projects_db.order_by(ProjectDB.name.desc())
     elif sort == "created_at_asc":
-        query = query.order_by(ProjectDB.created_at.asc())
+        projects_db = projects_db.order_by(ProjectDB.created_at.asc())
     elif sort == "created_at_desc":
-        query = query.order_by(ProjectDB.created_at.desc())
+        projects_db = projects_db.order_by(ProjectDB.created_at.desc())
     elif sort == "updated_at_asc":
-        query = query.order_by(ProjectDB.updated_at.asc())
+        projects_db = projects_db.order_by(ProjectDB.updated_at.asc())
     elif sort == "updated_at_desc":
-        query = query.order_by(ProjectDB.updated_at.desc())
+        projects_db = projects_db.order_by(ProjectDB.updated_at.desc())
 
-    return db.query(ProjectDB).filter(ProjectDB.user_id == user_id).all()
+    if is_public is not None:
+        projects_db = projects_db.filter(ProjectDB.is_public == is_public)
+
+    return projects_db.all()
 
 
 # router
@@ -114,9 +115,9 @@ def update_project_by_id(
     project_id: int,
     user_id: int,
     db: Session,
-    new_name: str | None = None,
-    new_description: str | None = None,
-    new_is_public: bool | None = None,
+    new_name: str | None,
+    new_description: str | None,
+    new_is_public: bool | None,
 ) -> ProjectDB:
     """Обновляет проект с заданным ID"""
 

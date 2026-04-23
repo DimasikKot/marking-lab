@@ -70,8 +70,8 @@ def fetch_models_db_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    sort: SortType | None = "updated_at_desc",
-    search: str | None = None,
+    sort: SortType | None,
+    search: str | None,
 ) -> list[ModelDB]:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
@@ -88,10 +88,6 @@ def fetch_models_db_by_project_id(
         models_db = models_db.order_by(ModelDB.created_at.asc())
     elif sort == "created_at_desc":
         models_db = models_db.order_by(ModelDB.created_at.desc())
-    elif sort == "updated_at_asc":
-        models_db = models_db.order_by(ModelDB.updated_at.asc())
-    elif sort == "updated_at_desc":
-        models_db = models_db.order_by(ModelDB.updated_at.desc())
 
     return models_db.all()
 

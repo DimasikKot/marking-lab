@@ -10,7 +10,7 @@ from app.services.project import (
     create_project,
     delete_project_by_id,
     fetch_project_db_by_id,
-    fetch_projects_by_user_id,
+    fetch_projects_db_by_user_id,
     update_project_by_id,
 )
 
@@ -57,7 +57,7 @@ class GetResponse(BaseModel):
 @router.get("/", response_model=GetResponse)
 async def get(
     sort: SortType | None = Query(
-        None,
+        "updated_at_desc",
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
     search: str | None = Query(None, description="Поиск по имени проекта"),
@@ -67,7 +67,7 @@ async def get(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    projects_db = fetch_projects_by_user_id(
+    projects_db = fetch_projects_db_by_user_id(
         user_id=user_id,
         db=db,
         sort=sort,

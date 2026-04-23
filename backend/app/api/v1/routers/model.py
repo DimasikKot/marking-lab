@@ -27,7 +27,6 @@ class PostModelResponse(BaseModel):
     is_draft: bool
     saved_in_memory: bool
     created_at: datetime
-    updated_at: datetime
     parameters: dict[str, Any] | None = None
 
     class Config:

@@ -203,8 +203,8 @@ def fetch_files_db_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    sort: SortType | None = "updated_at_desc",
-    search: str | None = None,
+    sort: SortType | None,
+    search: str | None,
 ) -> list[FileDB]:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
@@ -247,8 +247,7 @@ def update_file_db_by_id(
     file_id: int,
     user_id: int,
     db: Session,
-    name: str | None = None,
-    total_rows: int | None = None,
+    name: str | None,
 ) -> FileDB:
     file_db = _fetch_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
@@ -256,9 +255,6 @@ def update_file_db_by_id(
 
     if name:
         file_db.name = name
-
-    if total_rows:
-        file_db.total_rows = total_rows
 
     db.commit()
     db.refresh(file_db)

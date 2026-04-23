@@ -104,9 +104,6 @@ class ModelDB(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.now()
-    )
     is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
     saved_in_memory: Mapped[bool] = mapped_column(Boolean, default=False)
     parameters: Mapped[dict[str, Any]] = mapped_column(
