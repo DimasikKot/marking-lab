@@ -21,10 +21,6 @@ from app.services.model import (
 router = APIRouter()
 
 
-class PostModelRequest(BaseModel):
-    name: str
-
-
 class ModelDbResponse(BaseModel):
     id: int
     name: str
@@ -32,11 +28,16 @@ class ModelDbResponse(BaseModel):
     saved_in_memory: bool
     parameters: dict[str, Any]
     metrics: dict[str, Any]
+    files_ids: list[int]
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class PostModelRequest(BaseModel):
+    name: str
 
 
 @router.post("", response_model=ModelDbResponse)
@@ -53,7 +54,9 @@ async def post(
         name=data.name,
     )
 
-    return model_db
+    return ModelDbResponse(
+        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+    )
 
 
 class GetModelsResponse(BaseModel):
@@ -67,7 +70,7 @@ async def get(
         "updated_at_desc",
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
-    search: str | None = Query(None, description="Поиск по имени файла"),
+    search: str | None = Query(None, description="Поиск по имени модели"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ) -> GetModelsResponse:
@@ -76,7 +79,12 @@ async def get(
     )
 
     return GetModelsResponse(
-        data=[ModelDbResponse.model_validate(model_db) for model_db in models_db]
+        data=[
+            ModelDbResponse(
+                files_ids=[file.id for file in model_db.files], **model_db.__dict__
+            )
+            for model_db in models_db
+        ]
     )
 
 
@@ -91,7 +99,9 @@ async def get_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    return model_db
+    return ModelDbResponse(
+        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+    )
 
 
 class PatchModelDbRequest(BaseModel):
@@ -118,7 +128,9 @@ async def patch_by_id(
         files_ids=data.files_ids,
     )
 
-    return model_db
+    return ModelDbResponse(
+        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+    )
 
 
 @router.get("/{model_id}/train", response_model=ModelDbResponse)
@@ -132,7 +144,9 @@ async def get_by_id_train(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    return model_db
+    return ModelDbResponse(
+        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+    )
 
 
 @router.delete("/{model_id}", response_model=GetEchoResponse)

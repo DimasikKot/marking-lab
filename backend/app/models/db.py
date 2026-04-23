@@ -106,8 +106,26 @@ class ModelDB(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
     saved_in_memory: Mapped[bool] = mapped_column(Boolean, default=False)
-    parameters: Mapped[dict[str, Any]] = mapped_column(JSON)  # параметры обучения
-    metrics: Mapped[dict[str, Any]] = mapped_column(JSON)  # метрики на тестовом наборе
+    parameters: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        default={"model": "ner", "epochs": 3, "batch_size": 4, "learning_rate": 0.001},
+    )  # параметры обучения
+    metrics: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        default={
+            "accuracy": 0,
+            "precision": 0,
+            "recall": 0,
+            "f1": 0,
+            "loss": 0,
+            "val_accuracy": 0,
+            "val_precision": 0,
+            "val_recall": 0,
+            "val_f1": 0,
+            "val_loss": 0,
+        },
+    )  # численные метрики на тестовом наборе
+    graphs: Mapped[dict[str, Any]] = mapped_column(JSON, default={})  # графики обучения
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), onupdate=func.now()
@@ -133,7 +151,7 @@ class ExperimentDB(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
     metrics: Mapped[dict[str, Any]] = mapped_column(JSON)  # численные метрики
-    graphs: Mapped[dict[str, Any]] = mapped_column(JSON)  # графики обучения
+    graphs: Mapped[dict[str, Any]] = mapped_column(JSON)  # графики
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), onupdate=func.now()
