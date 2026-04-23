@@ -26,10 +26,29 @@ def create_model(
     user_id: int,
     db: Session,
     name: str,
+    files_ids: list[int] | None,
 ) -> ModelDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     model_db = ModelDB(name=name, project_id=project_id)
+
+    if files_ids is not None:
+        # Получаем текущие связанные файлы
+        current_files = {file.id: file for file in model_db.files}
+
+        # Загружаем новые файлы из БД
+        new_files = db.query(FileDB).filter(FileDB.id.in_(files_ids)).all()
+        new_files_dict = {file.id: file for file in new_files}
+
+        # Удаляем старые связи
+        for file_id in list(current_files.keys()):
+            if file_id not in new_files_dict:
+                model_db.files.remove(current_files[file_id])
+
+        # Добавляем новые связи
+        for file_id, file_db in new_files_dict.items():
+            if file_id not in current_files:
+                model_db.files.append(file_db)
 
     db.add(model_db)
     db.commit()
@@ -44,15 +63,16 @@ def fetch_model_db_by_id(
 ) -> ModelDB:
     is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
 
-    model = (
+    model_db = (
         db.query(ModelDB)
         .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
         .first()
     )
-    if not model:
+
+    if not model_db:
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
-    return model
+    return model_db
 
 
 SortType = Literal[
@@ -96,6 +116,7 @@ def fetch_models_db_by_project_id(
     return models_db.all()
 
 
+# router
 def update_model_db_by_id(
     project_id: int,
     model_id: int,
@@ -113,9 +134,18 @@ def update_model_db_by_id(
         model_db.name = name
 
     if parameters is not None:
+        if model_db.is_draft is False:
+            raise HTTPException(
+                status_code=400, detail="Нельзя изменять параметры обученной модели"
+            )
         model_db.parameters = parameters
 
     if files_ids is not None:
+        if model_db.is_draft is False:
+            raise HTTPException(
+                status_code=400, detail="Нельзя изменять файлы обученной модели"
+            )
+
         # Получаем текущие связанные файлы
         current_files = {file.id: file for file in model_db.files}
 
@@ -138,6 +168,7 @@ def update_model_db_by_id(
     return model_db
 
 
+# router
 def train_model_by_id(
     project_id: int,
     model_id: int,
@@ -147,6 +178,19 @@ def train_model_by_id(
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
+
+    if model_db.is_draft is False:
+        raise HTTPException(
+            status_code=400, detail="Нельзя обучать уже обученную модель"
+        )
+
+    if len(model_db.files) == 0:
+        raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
+
+    model_db.is_draft = False
+
+    db.commit()
+    db.refresh(model_db)
 
     # TODO: отправляем параметры и файлы модели в обучающий сервис
     # получаем оттуда метрики и графики

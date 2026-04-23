@@ -38,6 +38,7 @@ class ModelDbResponse(BaseModel):
 
 class PostModelRequest(BaseModel):
     name: str
+    files_ids: list[int] | None = None
 
 
 @router.post("", response_model=ModelDbResponse)
@@ -52,6 +53,7 @@ async def post(
         user_id=user_id,
         db=db,
         name=data.name,
+        files_ids=data.files_ids,
     )
 
     return ModelDbResponse(

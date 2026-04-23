@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS models (
     name            VARCHAR(255)    NOT NULL,
     is_draft        BOOLEAN         DEFAULT TRUE,
     saved_in_memory BOOLEAN         DEFAULT FALSE,
-    parameters      JSONB,          DEFAULT '{"epochs": 3, "batch_size": 4, "learning_rate": 0.001}',   -- параметры модели
-    metrics         JSONB,          DEFAULT '{"accuracy": 0, "precision": 0, "recall": 0, "f1": 0, "loss": 0, "val_accuracy": 0, "val_precision": 0, "val_recall": 0, "val_f1": 0, "val_loss": 0}', -- численные метрики на тестовом наборе
-    graphs          JSONB,          -- графики обучения
+    parameters      JSONB           DEFAULT '{"epochs": 3, "batch_size": 4, "learning_rate": 0.001}', -- параметры модели
+    metrics         JSONB           DEFAULT '{"accuracy": 0, "precision": 0, "recall": 0, "f1": 0, "loss": 0, "val_accuracy": 0, "val_precision": 0, "val_recall": 0, "val_f1": 0, "val_loss": 0}',   -- численные метрики на тестовом наборе
+    graphs          JSONB           DEFAULT '{}', -- графики обучения
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS experiments (
     model_id    INTEGER         REFERENCES models(id) ON DELETE SET NULL,   -- если модель удаляется, эксперимент сохраняется, но без модели
     name        VARCHAR(255)    NOT NULL,
     is_draft    BOOLEAN         DEFAULT TRUE,
-    metrics     JSONB,          -- численные метрики
-    graphs      JSONB,          -- графики
+    metrics     JSONB           DEFAULT '{"accuracy": 0, "precision": 0, "recall": 0, "f1": 0, "loss": 0, "val_accuracy": 0, "val_precision": 0, "val_recall": 0, "val_f1": 0, "val_loss": 0}',   -- численные метрики
+    graphs      JSONB           DEFAULT '{}', -- графики
     created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
