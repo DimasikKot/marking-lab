@@ -1,7 +1,4 @@
-import axios from "axios";
-import toast from "react-hot-toast";
-
-import api from "@/shared/api/axios";
+import api, { errorValidate } from "@/shared/api/axios";
 import type { GetEchoResponse } from "./echo";
 
 export interface ProjectDbResponse {
@@ -20,12 +17,7 @@ export const createProject = async (
     const response = await api.post<ProjectDbResponse>("/projects", data);
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при создании проекта: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -40,12 +32,7 @@ export const fetchProjects = async (): Promise<
     const response = await api.get<GetProjectsResponse>("/projects");
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при получении проектов: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -56,12 +43,7 @@ export const fetchProjectById = async (
     const response = await api.get<ProjectDbResponse>(`/projects/${projectId}`);
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при получении проекта: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -82,12 +64,7 @@ export const patchProjectById = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при обновлении проекта: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -100,11 +77,6 @@ export const deleteProjectById = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при удалении проекта: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };

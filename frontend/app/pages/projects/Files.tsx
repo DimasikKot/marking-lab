@@ -163,6 +163,7 @@ export function Files() {
 
           <div className="max-w-xs w-full">
             <TextField
+              name="searchFile"
               value={search}
               setValue={setSearch}
               placeholder="Поиск по имени файла..."

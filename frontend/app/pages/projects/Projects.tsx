@@ -130,6 +130,7 @@ export function Projects() {
 
             <div className="max-w-xs w-full">
               <TextField
+                name="searchProject"
                 value={search}
                 setValue={setSearch}
                 placeholder="Поиск по названию проекта..."

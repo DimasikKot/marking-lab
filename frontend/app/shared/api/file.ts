@@ -1,7 +1,4 @@
-import axios from "axios";
-import toast from "react-hot-toast";
-
-import api from "@/shared/api/axios";
+import api, { errorValidate } from "@/shared/api/axios";
 import type { GetEchoResponse } from "./echo";
 
 export interface FileDbResponse {
@@ -21,7 +18,7 @@ export const uploadFile = async (
 ): Promise<FileDbResponse | undefined> => {
   const formData = new FormData();
   formData.append("name", name);
-  formData.append("is_labeled", is_labeled.toString());
+  formData.append("is_labeled", String(is_labeled));
   formData.append("file", file);
 
   try {
@@ -32,15 +29,9 @@ export const uploadFile = async (
         headers: { "Content-Type": "multipart/form-data" },
       },
     );
-    toast.success("Файл успешно загружен");
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при загрузке файла: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -57,12 +48,7 @@ export const fetchFiles = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при получении списка файлов: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -90,7 +76,7 @@ export interface GetFilePageResponse {
 export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
-  page: string | number = 1,
+  page: string | number,
 ): Promise<GetFilePageResponse | undefined> => {
   try {
     const response = await api.get<GetFilePageResponse>(
@@ -98,12 +84,7 @@ export const fetchFileById = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при выгрузке файла: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -124,12 +105,7 @@ export const updateFileById = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при обновлении файла: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -143,11 +119,6 @@ export const deleteFileById = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при удалении файла: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };

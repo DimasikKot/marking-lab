@@ -169,9 +169,9 @@ def create_file_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    file: BinaryIO,
     name: str,
     is_labeled: bool,
+    file: BinaryIO,
 ) -> FileDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 

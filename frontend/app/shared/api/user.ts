@@ -1,7 +1,4 @@
-import axios from "axios";
-import toast from "react-hot-toast";
-
-import api from "@/shared/api/axios";
+import api, { errorValidate } from "@/shared/api/axios";
 
 interface PostRequest {
   username: string;
@@ -24,12 +21,7 @@ export const registerUser = async (
     localStorage.setItem("access_token", response.data.access_token);
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при регистрации: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -47,11 +39,7 @@ export const loginUser = async (
     localStorage.setItem("access_token", response.data.access_token);
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail || "Ошибка при входе: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -61,11 +49,7 @@ export const logoutUser = async () => {
     localStorage.removeItem("access_token");
     window.location.href = "/";
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail || "Ошибка при выходе: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -87,12 +71,7 @@ export const validateUsername = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при проверке имени пользователя: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -110,12 +89,7 @@ export const validateEmail = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при проверке электронной почты: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -133,11 +107,6 @@ export const validateLogin = async (
     );
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при проверке логина: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };

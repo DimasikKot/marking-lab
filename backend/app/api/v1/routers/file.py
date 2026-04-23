@@ -46,11 +46,11 @@ class FileDbResponse(BaseModel):
 @router.post("", response_model=FileDbResponse)
 async def post(
     project_id: int = Path(...),
-    file_db: UploadFile = File(...),
     # name: str = Form(...) - используем `Form(...)``,
     # тк если передаются файлы, то только с этим атрибутом работает
     name: str = Form(...),
     is_labeled: bool = Form(...),
+    file: UploadFile = File(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -58,9 +58,9 @@ async def post(
         project_id=project_id,
         user_id=user_id,
         db=db,
-        file=file_db.file,
         name=name,
         is_labeled=is_labeled,
+        file=file.file,
     )
 
     return file_db

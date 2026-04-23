@@ -1,7 +1,4 @@
-import axios from "axios";
-import toast from "react-hot-toast";
-
-import api from "@/shared/api/axios";
+import api, { errorValidate } from "@/shared/api/axios";
 
 export interface GetEchoResponse {
   detail: string;
@@ -15,12 +12,7 @@ export const fetchBackendEcho = async (): Promise<
     const response = await api.get<GetEchoResponse>("/echos/backend");
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при запросе backend: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
 
@@ -29,11 +21,6 @@ export const fetchMLEcho = async (): Promise<GetEchoResponse | undefined> => {
     const response = await api.get<GetEchoResponse>("/echos/ml");
     return response.data;
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      const error_text =
-        error.response?.data?.detail ||
-        "Ошибка при запросе ml: " + error.message;
-      toast.error(error_text);
-    }
+    errorValidate(error);
   }
 };
