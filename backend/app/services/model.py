@@ -1,8 +1,8 @@
-from typing import Literal
+from typing import Any, Literal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.db import ModelDB
+from app.models.db import FileDB, ModelDB
 from app.services.project import is_owner_of_project
 
 
@@ -21,23 +21,6 @@ def is_owner_of_model(
 
 
 # router
-def fetch_model_db_by_id(
-    project_id: int, model_id: int, user_id: int, db: Session
-) -> ModelDB:
-    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
-
-    model = (
-        db.query(ModelDB)
-        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
-        .first()
-    )
-    if not model:
-        raise HTTPException(status_code=404, detail="Модель не найдена")
-
-    return model
-
-
-# router
 def create_model(
     project_id: int,
     user_id: int,
@@ -53,6 +36,23 @@ def create_model(
     db.refresh(model_db)
 
     return model_db
+
+
+# router
+def fetch_model_db_by_id(
+    project_id: int, model_id: int, user_id: int, db: Session
+) -> ModelDB:
+    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
+
+    model = (
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
+        .first()
+    )
+    if not model:
+        raise HTTPException(status_code=404, detail="Модель не найдена")
+
+    return model
 
 
 SortType = Literal[
@@ -94,6 +94,65 @@ def fetch_models_db_by_project_id(
         models_db = models_db.order_by(ModelDB.updated_at.desc())
 
     return models_db.all()
+
+
+def update_model_db_by_id(
+    project_id: int,
+    model_id: int,
+    user_id: int,
+    db: Session,
+    name: str | None,
+    parameters: dict[str, Any] | None,
+    files_ids: list[int] | None,
+) -> ModelDB:
+    model_db = fetch_model_db_by_id(
+        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+    )
+
+    if name is not None:
+        model_db.name = name
+
+    if parameters is not None:
+        model_db.parameters = parameters
+
+    if files_ids is not None:
+        # Получаем текущие связанные файлы
+        current_files = {file.id: file for file in model_db.files}
+
+        # Загружаем новые файлы из БД
+        new_files = db.query(FileDB).filter(FileDB.id.in_(files_ids)).all()
+        new_files_dict = {file.id: file for file in new_files}
+
+        # Удаляем старые связи
+        for file_id in list(current_files.keys()):
+            if file_id not in new_files_dict:
+                model_db.files.remove(current_files[file_id])
+
+        # Добавляем новые связи
+        for file_id, file_db in new_files_dict.items():
+            if file_id not in current_files:
+                model_db.files.append(file_db)
+
+    db.commit()
+    db.refresh(model_db)
+    return model_db
+
+
+def train_model_by_id(
+    project_id: int,
+    model_id: int,
+    user_id: int,
+    db: Session,
+) -> ModelDB:
+    model_db = fetch_model_db_by_id(
+        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+    )
+
+    # TODO: отправляем параметры и файлы модели в обучающий сервис
+    # получаем оттуда метрики и графики
+    # обновляем данные в БД
+
+    return model_db
 
 
 # router

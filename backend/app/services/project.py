@@ -33,12 +33,12 @@ def _delete_project_from_disk(project_id: int) -> None:
 def is_owner_of_project(project_id: int, user_id: int, db: Session) -> None:
     """Проверяет, является ли пользователь владельцем проекта"""
 
-    if (
-        db.query(ProjectDB)
-        .filter(ProjectDB.id == project_id, ProjectDB.user_id == user_id)
-        .first()
-        is None
-    ):
+    project_db = db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
+
+    if project_db is None:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    if project_db.user_id != user_id and not project_db.is_public:
         raise HTTPException(status_code=403, detail="Нет доступа к проекту")
 
 

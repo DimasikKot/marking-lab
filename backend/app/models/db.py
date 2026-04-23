@@ -115,7 +115,7 @@ class ModelDB(Base):
 
     project = relationship("ProjectDB", back_populates="models")
     experiments = relationship("ExperimentDB", back_populates="model")
-    files = relationship(
+    files: Mapped[list[FileDB]] = relationship(
         "FileDB", secondary=model_training_files_table, back_populates="models"
     )
 
@@ -141,6 +141,6 @@ class ExperimentDB(Base):
 
     project = relationship("ProjectDB", back_populates="experiments")
     model = relationship("ModelDB", back_populates="experiments")
-    test_files = relationship(
+    test_files: Mapped[list[FileDB]] = relationship(
         "FileDB", secondary=experiment_testing_files_table, back_populates="experiments"
     )

@@ -80,7 +80,7 @@ async def get(
     search: str | None = Query(None, description="Поиск по имени модели"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
-):
+) -> GetFilesResponse:
     files_db = fetch_files_db_by_project_id(
         project_id=project_id,
         user_id=user_id,

@@ -13,6 +13,8 @@ from app.services.model import (
     delete_model_by_id,
     fetch_model_db_by_id,
     fetch_models_db_by_project_id,
+    train_model_by_id,
+    update_model_db_by_id,
 )
 
 
@@ -23,7 +25,7 @@ class PostModelRequest(BaseModel):
     name: str
 
 
-class PostModelResponse(BaseModel):
+class ModelDbResponse(BaseModel):
     id: int
     name: str
     is_draft: bool
@@ -37,7 +39,7 @@ class PostModelResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("", response_model=PostModelResponse)
+@router.post("", response_model=ModelDbResponse)
 async def post(
     project_id: int,
     data: PostModelRequest,
@@ -54,11 +56,11 @@ async def post(
     return model_db
 
 
-class GetResponse(BaseModel):
-    data: list[PostModelResponse]
+class GetModelsResponse(BaseModel):
+    data: list[ModelDbResponse]
 
 
-@router.get("", response_model=GetResponse)
+@router.get("", response_model=GetModelsResponse)
 async def get(
     project_id: int,
     sort: SortType | None = Query(
@@ -68,17 +70,17 @@ async def get(
     search: str | None = Query(None, description="Поиск по имени файла"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
-):
+) -> GetModelsResponse:
     models_db = fetch_models_db_by_project_id(
         project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
     )
 
-    return GetResponse(
-        data=[PostModelResponse.model_validate(model_db) for model_db in models_db]
+    return GetModelsResponse(
+        data=[ModelDbResponse.model_validate(model_db) for model_db in models_db]
     )
 
 
-@router.get("/{model_id}", response_model=PostModelResponse)
+@router.get("/{model_id}", response_model=ModelDbResponse)
 async def get_by_id(
     project_id: int,
     model_id: int,
@@ -86,6 +88,47 @@ async def get_by_id(
     db: Session = Depends(get_db),
 ):
     model_db = fetch_model_db_by_id(
+        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+    )
+
+    return model_db
+
+
+class PatchModelDbRequest(BaseModel):
+    name: str | None = None
+    parameters: dict[str, Any] | None = None
+    files_ids: list[int] | None = None
+
+
+@router.patch("/{model_id}", response_model=ModelDbResponse)
+async def patch_by_id(
+    project_id: int,
+    model_id: int,
+    data: PatchModelDbRequest,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = update_model_db_by_id(
+        project_id=project_id,
+        model_id=model_id,
+        user_id=user_id,
+        db=db,
+        name=data.name,
+        parameters=data.parameters,
+        files_ids=data.files_ids,
+    )
+
+    return model_db
+
+
+@router.get("/{model_id}/train", response_model=ModelDbResponse)
+async def get_by_id_train(
+    project_id: int,
+    model_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = train_model_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
