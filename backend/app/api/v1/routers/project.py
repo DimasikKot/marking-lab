@@ -130,15 +130,3 @@ async def delete_by_id(
     delete_project_by_id(project_id=project_id, user_id=user_id, db=db)
 
     return DeleteProjectResponse(detail="Проект успешно удалён", success=True)
-
-
-from app.api.v1.routers import file
-from app.api.v1.routers import model
-from app.api.v1.routers import experiment
-
-
-router.include_router(file.router, prefix="/{project_id}/files", tags=["Files"])
-router.include_router(model.router, prefix="/{project_id}/models", tags=["Models"])
-router.include_router(
-    experiment.router, prefix="/{project_id}/experiments", tags=["Experiments"]
-)
