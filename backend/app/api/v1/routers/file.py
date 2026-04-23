@@ -21,7 +21,7 @@ from app.services.file import (
     create_file_by_project_id,
     delete_file_by_id,
     fetch_files_db_by_project_id,
-    read_page_by_id,
+    get_page_by_id,
     update_page_by_id,
     update_file_db_by_id,
 )
@@ -109,7 +109,7 @@ async def get_by_id(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    file_db, page_rows = read_page_by_id(
+    file_db, page_rows = get_page_by_id(
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,

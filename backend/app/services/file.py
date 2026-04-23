@@ -266,7 +266,7 @@ def update_file_db_by_id(
 
 
 # router
-def read_page_by_id(
+def get_page_by_id(
     project_id: int,
     file_id: int,
     user_id: int,

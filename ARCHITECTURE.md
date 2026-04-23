@@ -26,7 +26,7 @@ https://miro.com/app/board/uXjVG9dcEnU=/?moveToWidget=3458764664481149269&cot=14
 
 ### `/`
 
-Тут наши преимущества и две кнопки "список проектов".
+Тут наши преимущества и кнопка "список проектов".
 
 Также справа сверху должна быть кнопка "войти".
 
@@ -40,7 +40,7 @@ https://miro.com/app/board/uXjVG9dcEnU=/?moveToWidget=3458764664481149269&cot=14
 
 ### `/login`
 
-Страница входа, вводятся: `username` || `email`, `password`.
+Страница входа, вводятся: `login` (`username` || `email`), `password`.
 
 Получаем: `access_token`, `username` и сохраняем их в localstorage.
 
@@ -48,7 +48,7 @@ https://miro.com/app/board/uXjVG9dcEnU=/?moveToWidget=3458764664481149269&cot=14
 
 ### `/projects`
 
-Страница со всеми проектами, по порядку updated_at_asc.
+Страница со всеми проектами, по порядку `updated_at_desc`.
 
 ### `/projects/{project_id}`
 

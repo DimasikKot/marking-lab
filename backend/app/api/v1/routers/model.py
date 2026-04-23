@@ -10,7 +10,7 @@ from app.services.model import (
     SortType,
     create_model,
     delete_model_by_id,
-    fetch_models_by_project_id,
+    fetch_models_db_by_project_id,
 )
 
 
@@ -59,14 +59,14 @@ class GetResponse(BaseModel):
 async def get(
     project_id: int,
     sort: SortType | None = Query(
-        None,
+        "updated_at_desc",
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
     search: str | None = Query(None, description="Поиск по имени файла"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    models_db = fetch_models_by_project_id(
+    models_db = fetch_models_db_by_project_id(
         project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
     )
 
@@ -78,7 +78,6 @@ class DeleteModelResponse(BaseModel):
     success: bool
 
 
-# Нужно переделать
 @router.delete("/{model_id}", response_model=DeleteModelResponse)
 async def delete_by_id(
     project_id: int,

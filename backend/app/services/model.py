@@ -66,11 +66,11 @@ SortType = Literal[
 
 
 # router
-def fetch_models_by_project_id(
+def fetch_models_db_by_project_id(
     project_id: int,
     user_id: int,
     db: Session,
-    sort: SortType | None = None,
+    sort: SortType | None = "updated_at_desc",
     search: str | None = None,
 ) -> list[ModelDB]:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
