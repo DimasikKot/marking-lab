@@ -141,20 +141,22 @@ export function Files() {
                 hover:file:bg-blue-200 transition-colors"
           />
 
-          <div className="flex flex-row gap-4">
-            <ButtonUI
-              onClick={handleUpload}
-              disabled={!selectedFile || uploading}
-            >
-              {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
-            </ButtonUI>
+          {selectedFile && (
+            <div className="flex flex-row gap-4">
+              <ButtonUI
+                onClick={handleUpload}
+                disabled={!selectedFile || uploading}
+              >
+                {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
+              </ButtonUI>
 
-            <CheckboxUI
-              title="Уже размечен?"
-              selectedFileIsLabeled={selectedFileIsLabeled}
-              onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
-            />
-          </div>
+              <CheckboxUI
+                title="Уже размечен?"
+                selectedFileIsLabeled={selectedFileIsLabeled}
+                onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
+              />
+            </div>
+          )}
         </div>
       </div>
 
