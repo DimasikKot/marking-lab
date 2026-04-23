@@ -26,14 +26,26 @@ def is_owner_of_model(
         raise HTTPException(status_code=404, detail="Нет доступа к модели")
 
 
-def _get_model_path_by_id(project_id: int, model_id: int) -> Path:
+# def _get_model_path_by_id(project_id: int, model_id: int) -> Path:
+#     base_dir = Path(settings.STORAGE_PATH).resolve()
+#     model_path = base_dir / str(project_id) / "models" / f"{model_id}.txt"
+
+#     if not model_path.exists():
+#         raise HTTPException(status_code=404, detail="Файл не найден на диске")
+
+#     return model_path
+
+
+def _create_model_on_disk(project_id: int, model_id: int, content: str) -> None:
     base_dir = Path(settings.STORAGE_PATH).resolve()
     file_path = base_dir / str(project_id) / "models" / f"{model_id}.txt"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Файл не найден на диске")
-
-    return file_path
+    file_path.write_text(
+        content,
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 # router
@@ -256,11 +268,18 @@ async def train_model_by_id(
             # Содержимое результирующего файла (если нужно сохранить)
             # result_content = response.content
 
-            # TODO: Здесь обновляем model_db данными из metrics и сохраняем графики
             model_db.metrics = metrics
+            _create_model_on_disk(
+                project_id=model_db.project_id,
+                model_id=model_db.id,
+                content=response.content.decode("utf-8"),
+            )
             # model_db.accuracy = metrics.get("accuracy") # Пример
 
         finally:
+            for file_stream in opened_files:
+                file_stream.close()
+
             model_db.is_draft = False
 
             db.commit()
