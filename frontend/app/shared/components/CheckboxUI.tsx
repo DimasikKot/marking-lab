@@ -1,12 +1,12 @@
 import { TextUI } from "./TextUI";
 
 export const CheckboxUI = ({
-  selectedFileIsLabeled,
+  value,
   onClick,
   title,
   className,
 }: {
-  selectedFileIsLabeled: boolean;
+  value: boolean;
   onClick: () => void;
   title?: string;
   className?: string;
@@ -20,9 +20,9 @@ export const CheckboxUI = ({
     >
       {/* Иконка из библиотеки Material Icons */}
       <span
-        className={`material-icons select-none ${selectedFileIsLabeled ? "text-blue-600" : "text-gray-400"}`}
+        className={`material-icons select-none ${value ? "text-blue-600" : "text-gray-400"}`}
       >
-        {selectedFileIsLabeled ? "check_box" : "check_box_outline_blank"}
+        {value ? "check_box" : "check_box_outline_blank"}
       </span>
 
       {/* Текст кнопки */}

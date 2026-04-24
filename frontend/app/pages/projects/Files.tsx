@@ -152,7 +152,7 @@ export function Files() {
 
               <CheckboxUI
                 title="Уже размечен?"
-                selectedFileIsLabeled={selectedFileIsLabeled}
+                value={selectedFileIsLabeled}
                 onClick={() => setSelectedFileIsLabeled(!selectedFileIsLabeled)}
               />
             </div>
@@ -231,7 +231,7 @@ export function Files() {
 
               <CheckboxUI
                 title="Уже размечен?"
-                selectedFileIsLabeled={formData.is_labeled}
+                value={formData.is_labeled}
                 onClick={() =>
                   setFormData({ ...formData, is_labeled: !formData.is_labeled })
                 }

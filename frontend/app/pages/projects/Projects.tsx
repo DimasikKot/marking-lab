@@ -210,7 +210,7 @@ export function Projects() {
 
                   <CheckboxUI
                     title="Публичный?"
-                    selectedFileIsLabeled={formData.is_public}
+                    value={formData.is_public}
                     onClick={() =>
                       setFormData({
                         ...formData,
