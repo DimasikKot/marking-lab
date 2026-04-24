@@ -27,55 +27,58 @@ export const ProjectCard = ({
     <div
       onClick={onClick}
       className={`
-        bg-white border border-gray-300 rounded-2xl p-4
+        bg-white border border-gray-300 rounded-2xl p-4 gap-3
         hover:border-gray-400 hover:shadow-md transition-all duration-200
-        cursor-pointer flex flex-col
+        cursor-pointer flex flex-col justify-between
         ${className}
       `}
     >
-      <div className="flex-1">
-        <TextUI variant="title">{project.name}</TextUI>
+      <div className="flex flex-row h-full gap-4">
+        <div className="flex-1 -mt-1">
+          <TextUI variant="title">{project.name}</TextUI>
 
-        {project.description && (
-          <TextUI variant="desc" className="mt-2 line-clamp-2">
-            {project.description}
-          </TextUI>
-        )}
+          {project.description && (
+            <TextUI variant="desc" className="mt-2 line-clamp-2">
+              {project.description}
+            </TextUI>
+          )}
+        </div>
+
+        <div className="flex items-center justify-center select-none material-icons">
+          {project.is_public ? "public" : "lock"}
+        </div>
       </div>
 
-      <div className="mt-6 space-y-4">
-        <div className="flex justify-between items-center">
-          <TextUI variant="desc">
-            {project.is_public ? "Публичный" : "Приватный"}
-          </TextUI>
+      <div className="w-full border-b border-gray-300" />
 
-          <TextUI variant="desc" className="text-right">
-            {new Date(date).toLocaleDateString("ru-RU", {
-              month: "long",
-              day: "numeric",
-              hour: "numeric",
-              minute: "numeric",
-            })}
-          </TextUI>
-        </div>
+      <div className="flex justify-between -mb-1 gap-3">
+        <ButtonUI
+          onClick={onEditClick}
+          variant="secondary"
+          className="flex-max text-left text-blue-600 hover:text-blue-800"
+        >
+          <div className="select-none material-icons">edit</div>
+        </ButtonUI>
 
-        <div className="flex justify-between gap-3">
-          <ButtonUI
-            onClick={onEditClick}
-            variant="secondary"
-            className="text-blue-600 hover:text-blue-800"
-          >
-            Редактировать
-          </ButtonUI>
+        <TextUI
+          variant="desc"
+          className="flex-1 text-center justify-end items-end"
+        >
+          {new Date(date).toLocaleDateString("ru-RU", {
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+          })}
+        </TextUI>
 
-          <ButtonUI
-            onClick={onDeleteClick}
-            variant="secondary"
-            className="text-red-600 hover:text-red-800"
-          >
-            Удалить
-          </ButtonUI>
-        </div>
+        <ButtonUI
+          onClick={onDeleteClick}
+          variant="secondary"
+          className="flex-max text-right text-red-600 hover:text-red-800"
+        >
+          <div className="select-none material-icons">delete</div>
+        </ButtonUI>
       </div>
     </div>
   );
