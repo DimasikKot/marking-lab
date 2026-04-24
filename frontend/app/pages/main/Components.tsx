@@ -86,7 +86,7 @@ export function Components() {
     {
       id: 2,
       name: "Вторая модель",
-      is_draft: false,
+      is_draft: true,
       saved_in_memory: false,
       parameters: {
         model: "ner",
