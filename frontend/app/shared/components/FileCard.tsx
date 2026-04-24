@@ -1,11 +1,11 @@
 import toast from "react-hot-toast";
 
-import type { FileDbResponse as File } from "@/shared/api/file";
+import type { FileDbResponse } from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
 
 type FileCardProps = {
-  file: File;
+  file: FileDbResponse;
   onClick?: () => void;
   onEditClick?: () => void;
   onDeleteClick?: () => void;
@@ -33,10 +33,16 @@ export const FileCard = ({
         ${className}
       `}
     >
-      <div className="flex flex-row h-8 gap-4">
-        <TextUI variant="title" className="flex-1 -mt-2">
-          {file.name}
-        </TextUI>
+      <div className="flex flex-row gap-4">
+        <div className="flex-1 -mt-2">
+          <TextUI variant="title">{file.name}</TextUI>
+
+          {file.total_rows && (
+            <TextUI variant="desc" className="mt-2 line-clamp-2">
+              {file.total_rows} строк
+            </TextUI>
+          )}
+        </div>
 
         <div className="flex items-center justify-center select-none material-icons">
           {file.is_labeled ? "verified" : "not_interested"}

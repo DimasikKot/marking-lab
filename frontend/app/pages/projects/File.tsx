@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
@@ -13,7 +13,9 @@ import {
 import { ButtonPage } from "@/shared/components/ButtonPage";
 
 export function File() {
-  const { projectId = "0", fileId = "0", page = "1" } = useParams();
+  const { projectId = "0", fileId = "0" } = useParams();
+  const [searchParams] = useSearchParams();
+  const page = searchParams.get("page") || "1";
   const navigate = useNavigate();
 
   const [file, setFile] = useState<GetFilePageResponse | null>(null);
@@ -77,12 +79,12 @@ export function File() {
               totalPages={file?.total_pages}
               onBack={() =>
                 navigate(
-                  `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+                  `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}`,
                 )
               }
               onNext={() =>
                 navigate(
-                  `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+                  `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}`,
                 )
               }
             />
@@ -110,12 +112,12 @@ export function File() {
               totalPages={file?.total_pages}
               onBack={() =>
                 navigate(
-                  `/projects/${projectId}/files/${fileId}/${parseInt(page) - 1}`,
+                  `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}`,
                 )
               }
               onNext={() =>
                 navigate(
-                  `/projects/${projectId}/files/${fileId}/${parseInt(page) + 1}`,
+                  `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}`,
                 )
               }
             />

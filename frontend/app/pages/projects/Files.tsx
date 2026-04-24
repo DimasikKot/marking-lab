@@ -191,7 +191,7 @@ export function Files() {
               key={file.id}
               file={file}
               onClick={() =>
-                navigate(`/projects/${projectId}/files/${file.id}/1`)
+                navigate(`/projects/${projectId}/files/${file.id}?page=1`)
               }
               onEditClick={() => handleEditClick(file)}
               onDeleteClick={() => handleDeleteClick(file.id)}

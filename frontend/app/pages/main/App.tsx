@@ -38,7 +38,7 @@ export function App() {
               element={<File />}
             />
             <Route
-              path="/projects/:projectId/files/:fileId/:page"
+              path="/projects/:projectId/files/:fileId?page=:page"
               element={<File />}
             />
 
