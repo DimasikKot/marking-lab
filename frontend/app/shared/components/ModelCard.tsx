@@ -56,21 +56,21 @@ export const ModelCard = ({
           </div>
         </div>
 
-        <div className="w-full border-b border-gray-300" />
+        <div className="w-full flex-1 border-b border-gray-300" />
 
         <div className="flex justify-between -mb-1 gap-3">
           <div className="flex flex-max gap-3">
             <ButtonUI
               onClick={onEditClick}
               variant="secondary"
-              className="text-left text-blue-600 hover:text-blue-800"
+              className="text-left"
             >
               <div className="select-none material-icons">edit</div>
             </ButtonUI>
 
             {Object.keys(model.graphs).length != 0 && (
               <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
-                <div className="select-none material-icons">graphic_eq</div>
+                <div className="select-none material-icons">insert_chart</div>
               </ButtonUI>
             )}
           </div>

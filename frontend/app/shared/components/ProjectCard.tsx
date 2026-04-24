@@ -49,13 +49,13 @@ export const ProjectCard = ({
         </div>
       </div>
 
-      <div className="w-full border-b border-gray-300" />
+      <div className="w-full flex-1 border-b border-gray-300" />
 
       <div className="flex justify-between -mb-1 gap-3">
         <ButtonUI
           onClick={onEditClick}
           variant="secondary"
-          className="flex-max text-left text-blue-600 hover:text-blue-800"
+          className="flex-max text-left"
         >
           <div className="select-none material-icons">edit</div>
         </ButtonUI>

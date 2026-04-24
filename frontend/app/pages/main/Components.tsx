@@ -27,23 +27,43 @@ export function Components() {
   const [currentPage, setCurrentPage] = useState("1");
   const [checkboxValue, setCheckboxValue] = useState(false);
 
-  const project: ProjectDbResponse = {
-    id: 1,
-    name: "NER определитель",
-    description: "Самое крутое описание, чтобы не забыть, что за проект",
-    is_public: true,
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-03-20T15:30:00Z",
-  };
+  const projects: ProjectDbResponse[] = [
+    {
+      id: 1,
+      name: "NER определитель",
+      description: "Самое крутое описание, чтобы не забыть, что за проект",
+      is_public: true,
+      created_at: "2024-01-15T10:00:00Z",
+      updated_at: "2024-03-20T15:30:00Z",
+    },
+    {
+      id: 2,
+      name: "NER 2",
+      description: "Самое крутое",
+      is_public: false,
+      created_at: "2024-05-15T10:00:00Z",
+      updated_at: "2024-06-20T15:30:00Z",
+    },
+  ];
 
-  const file: FileDbResponse = {
-    id: 1,
-    name: "Собрание в Москве",
-    total_rows: 100,
-    is_labeled: true,
-    created_at: "2026-03-26T08:15:00.000Z",
-    updated_at: "2026-03-28T09:45:00.000Z",
-  };
+  const files: FileDbResponse[] = [
+    {
+      id: 1,
+      name: "Собрание в Москве",
+      total_rows: 100,
+      is_labeled: false,
+      created_at: "2026-03-26T08:15:00.000Z",
+      updated_at: "2026-03-28T09:45:00.000Z",
+    },
+    {
+      id: 2,
+      name: "Датасет 2003 года",
+      total_rows: 23150,
+      is_labeled: true,
+      created_at: "2026-05-26T08:15:00.000Z",
+      updated_at: "2026-06-28T09:45:00.000Z",
+    },
+  ];
 
   const models: ModelDbResponse[] = [
     {
@@ -93,6 +113,10 @@ export function Components() {
         epochs: 3,
         batch_size: 4,
         learning_rate: 0.001,
+        model2: "ner",
+        epochs2: 3,
+        batch_size2: 4,
+        learning_rate2: 0.001,
       },
       metrics: {
         model: "ner lia",
@@ -205,8 +229,8 @@ export function Components() {
               ProjectCard
             </TextUI>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <ProjectCard project={project} />
-              <ProjectCard project={project} dateIsCreatedAt={true} />
+              <ProjectCard project={projects[0]} />
+              <ProjectCard project={projects[1]} dateIsCreatedAt={true} />
             </div>
           </div>
 
@@ -216,8 +240,8 @@ export function Components() {
               FileCard
             </TextUI>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <FileCard file={file} />
-              <FileCard file={file} dateIsCreatedAt={true} />
+              <FileCard file={files[0]} />
+              <FileCard file={files[1]} dateIsCreatedAt={true} />
             </div>
           </div>
 
