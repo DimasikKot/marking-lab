@@ -1,9 +1,11 @@
 import io
 import json
+import base64
 from typing import Any
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 router: APIRouter = APIRouter()
 
@@ -15,24 +17,56 @@ async def post_train_ner(
     ),
     files: list[UploadFile] = File(...),
 ):
-    # парсим параметры (они придут строкой)
+    # парсим параметры
     params_dict: dict[str, Any] = json.loads(parameters)
 
+    # читаем файлы
     combined_content = ""
-
-    # объединяем содержимое файлов
     for file in files:
         content = await file.read()
         combined_content += content.decode("utf-8") + "\n"
 
-    # делаем "файл" из строки
+    # создаем "модель" (просто текстовый файл)
     result_file = io.BytesIO(combined_content.encode("utf-8"))
 
+    # Генерируем случайный график 1 (train loss)
+    fig1, ax1 = plt.subplots(figsize=(6, 4))
+    epochs = np.arange(1, params_dict.get("epochs", 3) + 1)
+    loss = np.random.uniform(0.5, 2.0, len(epochs)) * np.exp(-epochs * 0.5)
+    ax1.plot(epochs, loss, "b-o", linewidth=2, markersize=8)
+    ax1.set_title("Training Loss")
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Loss")
+    ax1.grid(True, alpha=0.3)
+
+    img1_buffer = io.BytesIO()
+    plt.savefig(img1_buffer, format="png", dpi=80, bbox_inches="tight")
+    img1_buffer.seek(0)
+    img1_base64 = base64.b64encode(img1_buffer.getvalue()).decode("utf-8")
+    plt.close()
+
+    # Генерируем график 2 (confusion matrix / heatmap)
+    fig2, ax2 = plt.subplots(figsize=(6, 5))
+    data = np.random.rand(5, 5)
+    im = ax2.imshow(data, cmap="hot", interpolation="nearest")
+    ax2.set_title("Confusion Matrix")
+    ax2.set_xlabel("Predicted")
+    ax2.set_ylabel("Actual")
+    plt.colorbar(im, ax=ax2)
+
+    img2_buffer = io.BytesIO()
+    plt.savefig(img2_buffer, format="png", dpi=80, bbox_inches="tight")
+    img2_buffer.seek(0)
+    img2_base64 = base64.b64encode(img2_buffer.getvalue()).decode("utf-8")
+    plt.close()
+
+    # Возвращаем модель с графиками в headers
     return StreamingResponse(
         result_file,
         media_type="text/plain",
         headers={
             "Content-Disposition": "attachment; filename=combined.txt",
             "X-Metrics": json.dumps(params_dict),
+            "X-Graphs": json.dumps({"train_loss": img1_base64, "heatmap": img2_base64}),
         },
     )

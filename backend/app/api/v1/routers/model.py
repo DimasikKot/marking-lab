@@ -28,6 +28,7 @@ class ModelDbResponse(BaseModel):
     saved_in_memory: bool
     parameters: dict[str, Any]
     metrics: dict[str, Any]
+    graphs: dict[str, Any]
     files_ids: list[int]
     created_at: datetime
     updated_at: datetime

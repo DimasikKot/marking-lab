@@ -207,6 +207,8 @@ async def train_model_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
+    model_db.is_draft = True  # TODO: убрать в проде
+
     if model_db.is_draft is False:
         raise HTTPException(
             status_code=400, detail="Нельзя обучать уже обученную модель"
@@ -225,14 +227,6 @@ async def train_model_by_id(
         for file_db in model_db.files
     }
 
-    # 1. Подготавливаем параметры для обучения
-    training_params: dict[str, Any] = {
-        "model": "ner",
-        "epochs": 5,
-        "batch_size": 8,
-        "learning_rate": 0.001,
-    }
-
     # 2. Формируем запрос к внешнему сервису
     # Мы используем context manager, чтобы гарантированно закрыть файлы
     async with httpx.AsyncClient() as client:
@@ -249,7 +243,7 @@ async def train_model_by_id(
             # Отправляем POST запрос
             response = await client.post(
                 settings.ML_URL + "/models/train",  # URL обучающего сервиса
-                data={"parameters": json.dumps(training_params)},
+                data={"parameters": json.dumps(model_db.parameters)},
                 files=files_to_send,
                 timeout=None,  # Обучение может длиться долго
             )
@@ -263,12 +257,15 @@ async def train_model_by_id(
             # 3. Обработка результата
             # Метрики забираем из заголовка (как реализовано в вашем эндпоинте)
             metrics_raw = response.headers.get("X-Metrics")
+            graphs_raw = response.headers.get("X-Graphs")
             metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
+            graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
 
             # Содержимое результирующего файла (если нужно сохранить)
             # result_content = response.content
 
             model_db.metrics = metrics
+            model_db.graphs = graphs
             _create_model_on_disk(
                 project_id=model_db.project_id,
                 model_id=model_db.id,
