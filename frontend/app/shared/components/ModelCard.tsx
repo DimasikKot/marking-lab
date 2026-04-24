@@ -41,9 +41,9 @@ export const ModelCard = ({
             <TextUI variant="title">{model.name}</TextUI>
 
             {Object.entries(model.parameters).map(([key, value]) => (
-              <div key={key}>
+              <TextUI variant="desc" key={key}>
                 <strong>{key}:</strong> {String(value)}
-              </div>
+              </TextUI>
             ))}
           </div>
 
