@@ -30,7 +30,7 @@ async def post_train_ner(
     result_file = io.BytesIO(combined_content.encode("utf-8"))
 
     # Генерируем случайный график 1 (train loss)
-    fig1, ax1 = plt.subplots(figsize=(6, 4))
+    _, ax1 = plt.subplots(figsize=(6, 4))
     epochs = np.arange(1, params_dict.get("epochs", 3) + 1)
     loss = np.random.uniform(0.5, 2.0, len(epochs)) * np.exp(-epochs * 0.5)
     ax1.plot(epochs, loss, "b-o", linewidth=2, markersize=8)
@@ -45,7 +45,7 @@ async def post_train_ner(
     plt.close()
 
     # Генерируем график 2 (confusion matrix / heatmap)
-    fig2, ax2 = plt.subplots(figsize=(6, 5))
+    _, ax2 = plt.subplots(figsize=(6, 5))
     data = np.random.rand(5, 5)
     im = ax2.imshow(data, cmap="hot", interpolation="nearest")
     ax2.set_title("Confusion Matrix")
