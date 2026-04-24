@@ -27,12 +27,14 @@ export const ModelCard = ({
     <div
       onClick={onClick}
       className={`
+        relative group
         bg-white border border-gray-300 rounded-2xl p-4 gap-3
         hover:border-gray-400 hover:shadow-md transition-all duration-200
         cursor-pointer flex flex-col justify-between
         ${className}
       `}
     >
+      {/* Основной контент */}
       <div className="flex flex-row gap-4">
         <div className="flex-1 -mt-2">
           <TextUI variant="title">{model.name}</TextUI>
@@ -85,12 +87,27 @@ export const ModelCard = ({
         </ButtonUI>
       </div>
 
-      {Object.entries(model.graphs).map(([key, value]) => (
-        <div key={key}>
-          <p>{key}</p>
-          <img src={value} alt={key} />
-        </div>
-      ))}
+      {/* ОВЕРЛЕЙ С ГРАФИКАМИ */}
+      <div
+        className="
+          absolute inset-0
+          bg-white/95 backdrop-blur-sm
+          rounded-2xl p-4
+          opacity-0 pointer-events-none
+          group-hover:opacity-100 group-hover:pointer-events-auto
+          transition-all duration-200
+          overflow-auto
+          z-10
+        "
+        onClick={(e) => e.stopPropagation()}
+      >
+        {Object.entries(model.graphs).map(([key, value]) => (
+          <div key={key} className="mb-4">
+            <p className="font-semibold mb-2">{key}</p>
+            <img src={value} alt={key} className="w-full rounded-lg border" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
