@@ -259,6 +259,7 @@ async def train_model_by_id(
             metrics_raw = response.headers.get("X-Metrics")
             graphs_raw = response.headers.get("X-Graphs")
             metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
+            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
             graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
 
             # Содержимое результирующего файла (если нужно сохранить)

@@ -41,7 +41,6 @@ async def post_train_ner(
 
     img1_buffer = io.BytesIO()
     plt.savefig(img1_buffer, format="png", dpi=80, bbox_inches="tight")
-    img1_buffer.seek(0)
     img1_base64 = base64.b64encode(img1_buffer.getvalue()).decode("utf-8")
     plt.close()
 
@@ -56,7 +55,6 @@ async def post_train_ner(
 
     img2_buffer = io.BytesIO()
     plt.savefig(img2_buffer, format="png", dpi=80, bbox_inches="tight")
-    img2_buffer.seek(0)
     img2_base64 = base64.b64encode(img2_buffer.getvalue()).decode("utf-8")
     plt.close()
 
@@ -67,6 +65,14 @@ async def post_train_ner(
         headers={
             "Content-Disposition": "attachment; filename=combined.txt",
             "X-Metrics": json.dumps(params_dict),
-            "X-Graphs": json.dumps({"train_loss": img1_base64, "heatmap": img2_base64}),
+            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
+            "X-Graphs": json.dumps(
+                {
+                    # Добавляем правильный префикс для PNG изображения
+                    # Именно с ним сайт-конвертер точно распознает данные
+                    "train_loss": f"data:image/png;base64,{img1_base64}",
+                    "heatmap": f"data:image/png;base64,{img2_base64}",
+                }
+            ),
         },
     )
