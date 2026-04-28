@@ -37,7 +37,7 @@ export const ModelCard = ({
       `}
       >
         <div className="flex flex-row gap-4">
-          <div className="flex-1 -mt-2">
+          <div className="flex-1 -mt-2 overflow-auto">
             <div className="flex flex-row gap-2">
               <TextUI variant="title">{model.name}</TextUI>
 
