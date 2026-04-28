@@ -133,8 +133,8 @@ const GraphsModal = ({
     >
       <div
         className="
-          bg-white rounded-2xl p-6
-          w-[90%] max-w-5xl max-h-[90vh]
+          bg-white rounded-2xl p-6 gap-4
+          w-[90%] max-w-6xl max-h-[90vh]
           overflow-auto
           shadow-xl
         "
@@ -155,6 +155,34 @@ const GraphsModal = ({
 
         {/* Графики */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Метрики */}
+          <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl animate-in fade-in slide-in-from-right-4 duration-500">
+            <TextUI variant="header" className="mb-4 text-emerald-500">
+              Результаты обучения
+            </TextUI>
+
+            <div className="space-y-2">
+              {Object.entries(model.metrics).length > 0 ? (
+                Object.entries(model.metrics).map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="flex justify-between py-1 border-b border-emerald-300"
+                  >
+                    <TextUI className="text-emerald-500" isSpan isSelectable>
+                      {k}
+                    </TextUI>
+
+                    <TextUI className="text-emerald-500" isSpan isSelectable>
+                      {String(v)}
+                    </TextUI>
+                  </div>
+                ))
+              ) : (
+                <TextUI>Метрики не найдены</TextUI>
+              )}
+            </div>
+          </div>
+
           {Object.entries(model.graphs).map(([key, value]) => (
             <div key={key} className="border rounded-xl p-3">
               <TextUI className="mb-2" isSelectable>
