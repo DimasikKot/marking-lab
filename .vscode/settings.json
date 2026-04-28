@@ -1,5 +1,10 @@
 {
   "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
     "**/.vscode": true,
     "backend/main.py": true,
     "backend/backend.Dockerfile": true,
@@ -18,12 +23,7 @@
     "frontend/tsconfig.node.json": true,
     "frontend/vite.config.ts": true,
     ".venv": true,
-    "**/__pycache__": true,
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/.DS_Store": true,
-    "**/Thumbs.db": true
+    "**/__pycache__": true
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
