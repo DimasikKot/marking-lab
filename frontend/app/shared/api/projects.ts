@@ -25,11 +25,17 @@ export interface GetProjectsResponse {
   data: ProjectDbResponse[];
 }
 
-export const fetchProjects = async (): Promise<
-  GetProjectsResponse | undefined
-> => {
+export const fetchProjects = async (
+  sort?: string,
+  search?: string,
+): Promise<GetProjectsResponse | undefined> => {
   try {
-    const response = await api.get<GetProjectsResponse>("/projects");
+    const response = await api.get<GetProjectsResponse>("/projects", {
+      params: {
+        sort,
+        search,
+      },
+    });
     return response.data;
   } catch (error: unknown) {
     errorValidate(error);

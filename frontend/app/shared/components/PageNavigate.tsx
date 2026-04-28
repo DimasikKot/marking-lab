@@ -20,7 +20,7 @@ export const PageNavigate = ({
 }) => (
   <div>
     {totalPages > 1 && (
-      <div className={`flex justify-center gap-3 mb-6 ${className}`}>
+      <div className={`flex justify-center gap-3 ${className}`}>
         <ButtonUI
           onClick={onBack}
           hidden={parseInt(currentPage) === 1}

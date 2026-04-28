@@ -120,7 +120,7 @@ export function Projects() {
     <div>
       <Header title="Проекты" />
 
-      <div className="max-w-6xl mx-auto m-2">
+      <div className="max-w-6xl mx-auto m-2 mb-80">
         <ButtonPage onClick={() => navigate("/")} isLoading={loading} />
 
         <div className="border border-gray-200 rounded-4xl p-6">
@@ -219,7 +219,7 @@ export function Projects() {
                     }
                   />
 
-                  <div className="flex justify-between items-center pl-4">
+                  <div className="flex justify-between items-center">
                     <ButtonUI
                       onClick={() => setIsFormOpen(false)}
                       variant="secondary"
@@ -228,7 +228,9 @@ export function Projects() {
                     </ButtonUI>
 
                     <ButtonUI onClick={handleSubmitClick}>
-                      {editingProject ? "Сохранить" : "Создать"}
+                      {editingProject
+                        ? "Сохранить изменения"
+                        : "Создать проект"}
                     </ButtonUI>
                   </div>
                 </div>

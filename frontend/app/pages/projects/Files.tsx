@@ -77,7 +77,7 @@ export function Files() {
   };
 
   const handleDeleteClick = async (file_id: number) => {
-    if (!window.confirm("Вы уверены, что хотите удалить проект?")) return;
+    if (!window.confirm("Вы уверены, что хотите удалить этот файл?")) return;
 
     setLoading(true);
     const response = await deleteFileById(projectId, file_id);
@@ -114,7 +114,7 @@ export function Files() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto m-2">
+    <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
         onClick={() => navigate("/projects")}
         isLoading={loading || uploading}
@@ -212,7 +212,7 @@ export function Files() {
 
             <div className="flex flex-col gap-4">
               <div>
-                <TextUI variant="label">Название файла</TextUI>
+                <TextUI variant="label">Имя файла</TextUI>
                 <TextField
                   value={formData.name}
                   onChange={(event) =>
@@ -237,7 +237,7 @@ export function Files() {
                 }
               />
 
-              <div className="flex justify-between items-center pt-4">
+              <div className="flex justify-between items-center">
                 <ButtonUI
                   onClick={() => {
                     setIsFormOpen(false);

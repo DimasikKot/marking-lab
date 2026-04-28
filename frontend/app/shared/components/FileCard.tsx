@@ -35,7 +35,13 @@ export const FileCard = ({
     >
       <div className="flex flex-row gap-4">
         <div className="flex-1 -mt-2">
-          <TextUI variant="title">{file.name}</TextUI>
+          <div className="flex flex-row gap-2">
+            <TextUI variant="title">{file.name}</TextUI>
+
+            <TextUI variant="desc" className="flex items-end mb-1">
+              (id: {file.id})
+            </TextUI>
+          </div>
 
           {file.total_rows && (
             <TextUI variant="desc" className="mt-2 line-clamp-2">

@@ -66,8 +66,8 @@ export function File() {
         />
 
         <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
-          <div className="flex justify-between items-start">
-            <TextUI variant="desc" className="mt-2">
+          <div className="flex justify-center">
+            <TextUI variant="desc" className="mb-4">
               Всего строк: {file?.total_rows} • Страница {page} из{" "}
               {file?.total_pages}
             </TextUI>
@@ -75,6 +75,7 @@ export function File() {
 
           {file && (
             <PageNavigate
+              className="mb-6"
               currentPage={page}
               totalPages={file?.total_pages}
               onBack={() =>
@@ -122,6 +123,13 @@ export function File() {
               }
             />
           )}
+
+          <div className="flex justify-center">
+            <TextUI variant="desc" className="mt-4">
+              Всего строк: {file?.total_rows} • Страница {page} из{" "}
+              {file?.total_pages}
+            </TextUI>
+          </div>
         </div>
       </div>
     </div>

@@ -41,10 +41,18 @@ export interface GetFilesResponse {
 
 export const fetchFiles = async (
   projectId: string | number,
+  sort?: string,
+  search?: string,
 ): Promise<GetFilesResponse | undefined> => {
   try {
     const response = await api.get<GetFilesResponse>(
       `/projects/${projectId}/files`,
+      {
+        params: {
+          sort,
+          search,
+        },
+      },
     );
     return response.data;
   } catch (error: unknown) {
@@ -76,11 +84,18 @@ export interface GetFilePageResponse {
 export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
-  page: string | number,
+  page?: string | number,
+  rows?: string | number,
 ): Promise<GetFilePageResponse | undefined> => {
   try {
     const response = await api.get<GetFilePageResponse>(
-      `/projects/${projectId}/files/${fileId}?page=${page}`,
+      `/projects/${projectId}/files/${fileId}`,
+      {
+        params: {
+          page,
+          rows,
+        },
+      },
     );
     return response.data;
   } catch (error: unknown) {
@@ -116,6 +131,34 @@ export const deleteFileById = async (
   try {
     const response = await api.delete<GetEchoResponse>(
       `/projects/${projectId}/files/${fileId}`,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    errorValidate(error);
+  }
+};
+
+export interface PatchFileContentRequest {
+  new_rows: Row[];
+}
+
+export const updateFileByIdContent = async (
+  projectId: string | number,
+  fileId: string | number,
+  data: PatchFileContentRequest,
+  page?: string | number,
+  rows?: string | number,
+): Promise<FileDbResponse | undefined> => {
+  try {
+    const response = await api.patch<FileDbResponse>(
+      `/projects/${projectId}/files/${fileId}/content`,
+      data,
+      {
+        params: {
+          page,
+          rows,
+        },
+      },
     );
     return response.data;
   } catch (error: unknown) {
