@@ -69,12 +69,12 @@ export function FileEdit({
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}&tab=edit`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) - 1}`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}&tab=edit`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) + 1}`,
               )
             }
           />
@@ -102,12 +102,12 @@ export function FileEdit({
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}&tab=edit`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) - 1}`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}&tab=edit`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) + 1}`,
               )
             }
           />

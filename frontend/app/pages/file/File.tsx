@@ -9,13 +9,16 @@ import { Header } from "@/shared/components/Header";
 import { fetchFileById, type GetFilePageResponse } from "@/shared/api/file";
 
 export function File() {
+  // Переменные URL
   const { projectId = "0", fileId = "0" } = useParams();
   const [searchParams] = useSearchParams();
   const page = searchParams.get("page") || "1";
   const tab = searchParams.get("tab") || "label";
 
-  const [tabIndex, setTabIndex] = useState(tab === "label" ? 1 : 0);
+  // Переменные вкладки
+  const [selectedIndex, setSelectedIndex] = useState(tab === "label" ? 1 : 0);
 
+  // Переменные страниц
   const [file, setFile] = useState<GetFilePageResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,16 +36,17 @@ export function File() {
 
   // Обработчик смены вкладки
   const handleSelect = (index: number) => {
-    setTabIndex(index);
+    setSelectedIndex(index);
+
     window.history.replaceState(
       null,
       "",
-      `/projects/${projectId}/files/${fileId}?page=${page}&tab=${index === 1 ? "label" : "edit"}`,
+      `/projects/${projectId}/files/${fileId}?tab=${index === 1 ? "label" : "edit"}&page=${page}`,
     );
   };
 
   return (
-    <Tabs selectedIndex={tabIndex} onSelect={handleSelect}>
+    <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
       <Header>
         <TabList className="h-full">
           <div className="flex h-full items-end gap-12">

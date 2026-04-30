@@ -34,24 +34,19 @@ export function App() {
           {/* Защищенные маршруты, пересылает на страницу `/login` */}
           <Route element={<PrivateRoute />}>
             <Route path="/projects" element={<Projects />} />
+
             <Route path="/projects/:projectId" element={<Project />} />
 
-            <Route path="/projects/:projectId/files" element={<Project />} />
             <Route
               path="/projects/:projectId/files/:fileId"
               element={<File />}
             />
 
-            <Route path="/projects/:projectId/models" element={<Project />} />
             <Route
               path="/projects/:projectId/models/:modelId"
               element={<Model />}
             />
 
-            <Route
-              path="/projects/:projectId/experiments"
-              element={<Project />}
-            />
             <Route
               path="/projects/:projectId/experiments/:experimentId"
               element={<Experiment />}

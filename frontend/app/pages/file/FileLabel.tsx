@@ -69,12 +69,12 @@ export function FileLabel({
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}&tab=label`,
+                `/projects/${projectId}/files/${fileId}?tab=label&page=${parseInt(page) - 1}`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}&tab=label`,
+                `/projects/${projectId}/files/${fileId}?tab=label&page=${parseInt(page) + 1}`,
               )
             }
           />
@@ -102,12 +102,12 @@ export function FileLabel({
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}&tab=label`,
+                `/projects/${projectId}/files/${fileId}?tab=label&page=${parseInt(page) - 1}`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}&tab=label`,
+                `/projects/${projectId}/files/${fileId}?tab=label&page=${parseInt(page) + 1}`,
               )
             }
           />
