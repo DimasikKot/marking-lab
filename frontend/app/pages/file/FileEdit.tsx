@@ -18,7 +18,7 @@ export function FileEdit({
 }: {
   projectId: string | number;
   fileId: string | number;
-  page: string;
+  page: number;
   file: GetFilePageResponse | null;
   loading: boolean;
 }) {
@@ -65,16 +65,16 @@ export function FileEdit({
         {file && (
           <PageNavigate
             className="mb-6"
-            currentPage={parseInt(page)}
+            currentPage={page}
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) - 1}`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) + 1}`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
               )
             }
           />
@@ -98,16 +98,16 @@ export function FileEdit({
         {file && (
           <PageNavigate
             className="mt-6"
-            currentPage={parseInt(page)}
+            currentPage={page}
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) - 1}`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?tab=edit&page=${parseInt(page) + 1}`,
+                `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
               )
             }
           />

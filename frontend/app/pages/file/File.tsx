@@ -77,7 +77,7 @@ export function File() {
         <FileEdit
           projectId={projectId}
           fileId={fileId}
-          page={page}
+          page={parseInt(page)}
           file={file}
           loading={loading}
         />
@@ -87,7 +87,7 @@ export function File() {
         <FileLabel
           projectId={projectId}
           fileId={fileId}
-          page={page}
+          page={parseInt(page)}
           file={file}
           loading={loading}
         />
