@@ -27,7 +27,6 @@ from app.services.file import (
     update_file_db_by_id,
 )
 
-
 router = APIRouter()
 
 
@@ -172,7 +171,7 @@ async def patch_by_id_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
     page: int = Query(1, description="Номер страницы"),
-    rows: int = Query(40, description="Количество строк на странице"),
+    count: int = Query(40, description="Количество строк на странице"),
     data: PatchFilePageRequest = Body(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
@@ -183,7 +182,7 @@ async def patch_by_id_content(
         user_id=user_id,
         db=db,
         page=page,
-        rows=rows,
+        count=count,
         new_rows=data.new_rows,
     )
 

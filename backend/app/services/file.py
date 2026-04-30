@@ -107,9 +107,9 @@ def _get_file_rows(file_path: Path, page: int, rows: int) -> Generator[Row, Any,
             yield Row(words=words)
 
 
-def _write_new_rows(file_path: Path, page: int, rows: int, new_rows: list[Row]) -> int:
-    start_idx = (page - 1) * rows
-    end_idx = start_idx + rows
+def _write_new_rows(file_path: Path, page: int, count: int, new_rows: list[Row]) -> int:
+    start_idx = (page - 1) * count
+    end_idx = start_idx + count
     tmp = file_path.with_suffix(".tmp")
 
     new_total_rows = 0
@@ -297,7 +297,7 @@ def update_page_by_id(
     user_id: int,
     db: Session,
     page: int,
-    rows: int,
+    count: int,
     new_rows: list[Row],
 ) -> FileDB:
     file_db = _fetch_file_db_by_id(
@@ -309,7 +309,7 @@ def update_page_by_id(
     new_total_rows = _write_new_rows(
         file_path=file_path,
         page=page,
-        rows=rows,
+        count=count,
         new_rows=new_rows,
     )
 

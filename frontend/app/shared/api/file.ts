@@ -85,7 +85,7 @@ export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
   page?: string | number,
-  rows?: string | number,
+  count?: string | number,
 ): Promise<GetFilePageResponse | undefined> => {
   try {
     const response = await api.get<GetFilePageResponse>(
@@ -93,7 +93,7 @@ export const fetchFileById = async (
       {
         params: {
           page,
-          rows,
+          count,
         },
       },
     );
