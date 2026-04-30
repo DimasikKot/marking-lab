@@ -74,23 +74,27 @@ export function File() {
       </Header>
 
       <TabPanel>
-        <FileEdit
-          projectId={projectId}
-          fileId={fileId}
-          page={parseInt(page)}
-          file={file}
-          loading={loading}
-        />
+        {file && (
+          <FileEdit
+            projectId={projectId}
+            fileId={fileId}
+            page={parseInt(page)}
+            file={file}
+            loading={loading}
+          />
+        )}
       </TabPanel>
 
       <TabPanel>
-        <FileLabel
-          projectId={projectId}
-          fileId={fileId}
-          page={parseInt(page)}
-          file={file}
-          loading={loading}
-        />
+        {file && (
+          <FileLabel
+            projectId={projectId}
+            fileId={fileId}
+            page={parseInt(page)}
+            file={file}
+            loading={loading}
+          />
+        )}
       </TabPanel>
     </Tabs>
   );

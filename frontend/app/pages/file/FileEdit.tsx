@@ -20,11 +20,11 @@ export function FileEdit({
   projectId: string | number;
   fileId: string | number;
   page: number;
-  file: GetFilePageResponse | null;
+  file: GetFilePageResponse;
   loading: boolean;
 }) {
   const navigate = useNavigate();
-  const [localRows, setLocalRows] = useState<Row[]>(file?.rows || []);
+  const [localRows, setLocalRows] = useState<Row[]>(file.rows);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleTokenChange = (
