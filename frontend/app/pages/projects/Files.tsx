@@ -188,7 +188,7 @@ export function Files({
               file={file}
               onClick={() =>
                 navigate(
-                  `/projects/${projectId}/files/${file.id}?page=1&tab=label`,
+                  `/projects/${projectId}/files/${file.id}?tab=label&page=1`,
                 )
               }
               onEditClick={() => handleEditClick(file)}
