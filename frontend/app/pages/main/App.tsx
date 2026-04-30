@@ -13,7 +13,7 @@ import { Register } from "@/pages/auth/Register.tsx";
 
 import { Project } from "@/pages/projects/Project.tsx";
 import { Projects } from "@/pages/projects/Projects.tsx";
-import { File } from "@/pages/projects/File.tsx";
+import { File } from "@/pages/file/File.tsx";
 import { Model } from "@/pages/projects/Model.tsx";
 import { Experiment } from "@/pages/projects/Experiment.tsx";
 

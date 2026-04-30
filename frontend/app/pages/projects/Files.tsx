@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import {
@@ -17,9 +17,7 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 import type { PatchFileDbRequest } from "@/shared/api/file";
 
-export function Files() {
-  const { projectId = "0" } = useParams<{ projectId: string }>();
-
+export function Files({ projectId }: { projectId: string | number }) {
   const navigate = useNavigate();
   const [files, setFiles] = useState<FileDbResponse[]>([]);
   const [loading, setLoading] = useState(true);

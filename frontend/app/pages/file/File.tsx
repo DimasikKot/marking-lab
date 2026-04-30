@@ -1,75 +1,73 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { Header } from "@/shared/components/Header";
-import { Files } from "./Files";
-import { Experiments } from "./Experiments";
-import { Models } from "./Models";
+import { FileEdit } from "./FileEdit";
+import { FileLabel } from "./FileLabel";
 
-export function Project() {
+export function File() {
+  const { projectId = "0", fileId = "0" } = useParams();
+  const [searchParams] = useSearchParams();
+  const page = searchParams.get("page") || "1";
+
   const navigate = useNavigate();
-  const { projectId = "0" } = useParams<{ projectId: string }>();
   const location = useLocation();
 
   // Определяем активную вкладку по текущему pathname
   const pathname = location.pathname;
 
-  // Определяем индекс активной вкладки по пути
-  let selectedIndex = 0; // по умолчанию — Файлы
+  let selectedTab = 1;
 
-  if (pathname.startsWith(`/projects/${projectId}/models`)) {
-    selectedIndex = 1;
-  } else if (pathname.startsWith(`/projects/${projectId}/experiments`)) {
-    selectedIndex = 2;
+  if (
+    pathname.startsWith(
+      `/projects/${projectId}/files/${fileId}?page=${page}&tab=edit`,
+    )
+  ) {
+    selectedTab = 0;
   }
 
   // Обработчик смены вкладки — меняем URL
   const handleSelect = (index: number) => {
-    let newPath = `/projects/${projectId}/files`;
+    let newTab = "edit";
 
-    if (index === 1) newPath = `/projects/${projectId}/models`;
-    else if (index === 2) newPath = `/projects/${projectId}/experiments`;
+    if (index === 1) newTab = "mark";
 
-    navigate(newPath);
+    navigate(
+      `/projects/${projectId}/files/${fileId}?page=${page}&tab=${newTab}`,
+    );
   };
 
   return (
     <div>
-      <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
+      <Tabs selectedIndex={selectedTab} onSelect={handleSelect}>
         <Header>
           <TabList className="h-full">
             <div className="flex h-full items-end gap-12">
-              {/* Файлы */}
+              {/* Текст */}
               <Tab
                 selectedClassName="active"
                 className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
               >
                 <TextUI variant="normal" className="w-32 text-center">
-                  Файлы
+                  Текст
                 </TextUI>
                 <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-discrete duration-300 group-[.active]:w-full" />
               </Tab>
 
-              {/* Модели */}
+              {/* Разметка */}
               <Tab
                 selectedClassName="active"
                 className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
               >
                 <TextUI variant="normal" className="w-32 text-center">
-                  Модели
-                </TextUI>
-                <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
-              </Tab>
-
-              {/* Эксперименты */}
-              <Tab
-                selectedClassName="active"
-                className="group relative px-8 pb-2 text-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
-              >
-                <TextUI variant="normal" className="w-32 text-center">
-                  Эксперименты
+                  Разметка
                 </TextUI>
                 <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
               </Tab>
@@ -78,15 +76,11 @@ export function Project() {
         </Header>
 
         <TabPanel>
-          <Files projectId={projectId} />
+          <FileEdit projectId={projectId} fileId={fileId} page={page} />
         </TabPanel>
 
         <TabPanel>
-          <Models projectId={projectId} />
-        </TabPanel>
-
-        <TabPanel>
-          <Experiments projectId={projectId} />
+          <FileLabel projectId={projectId} fileId={fileId} page={page} />
         </TabPanel>
       </Tabs>
     </div>

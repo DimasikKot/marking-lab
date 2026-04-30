@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { ButtonUI } from "@/shared/components/ButtonUI";
@@ -16,8 +16,7 @@ import {
   deleteModelById,
 } from "@/shared/api/model";
 
-export function Models() {
-  const { projectId = "0" } = useParams<{ projectId: string }>();
+export function Models({ projectId }: { projectId: string | number }) {
   const navigate = useNavigate();
 
   const [models, setModels] = useState<ModelDbResponse[]>([]);
