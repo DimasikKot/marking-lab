@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import {
@@ -17,12 +17,20 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 import type { PatchFileDbRequest } from "@/shared/api/file";
 
-export function Files() {
-  const { projectId = "0" } = useParams<{ projectId: string }>();
-
+export function Files({
+  projectId,
+  files,
+  setFiles,
+  loading,
+  setLoading,
+}: {
+  projectId: string | number;
+  files: FileDbResponse[];
+  setFiles: (files: FileDbResponse[]) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}) {
   const navigate = useNavigate();
-  const [files, setFiles] = useState<FileDbResponse[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileIsLabeled, setSelectedFileIsLabeled] = useState(false);
@@ -43,18 +51,6 @@ export function Files() {
     if (response === undefined) return;
     setFiles(response.data);
   };
-
-  useEffect(() => {
-    const loadFiles = async () => {
-      setLoading(true);
-      const response = await fetchFiles(projectId);
-      setLoading(false);
-      if (response === undefined) return;
-      setFiles(response.data);
-    };
-
-    loadFiles();
-  }, [projectId]);
 
   // Загрузка нового файла на сервер
   const handleUpload = async () => {
@@ -191,7 +187,9 @@ export function Files() {
               key={file.id}
               file={file}
               onClick={() =>
-                navigate(`/projects/${projectId}/files/${file.id}?page=1`)
+                navigate(
+                  `/projects/${projectId}/files/${file.id}?page=1&tab=label`,
+                )
               }
               onEditClick={() => handleEditClick(file)}
               onDeleteClick={() => handleDeleteClick(file.id)}

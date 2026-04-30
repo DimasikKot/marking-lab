@@ -161,7 +161,7 @@ export function Projects() {
                   project={project}
                   onDeleteClick={() => handleDeleteClick(project.id)}
                   onEditClick={() => handleEditClick(project)}
-                  onClick={() => navigate(`/projects/${project.id}`)}
+                  onClick={() => navigate(`/projects/${project.id}?tab=files`)}
                 />
               ))}
             </div>

@@ -1,13 +1,6 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
-import { ButtonUI } from "@/shared/components/ButtonUI";
-import { TextUI } from "@/shared/components/TextUI";
-import { TextField } from "@/shared/components/TextField";
-import { ButtonPage } from "@/shared/components/ButtonPage";
-import { ModelCard } from "@/shared/components/ModelCard";
-import type { ModelDbResponse } from "@/shared/api/model";
 
 import {
   fetchModels,
@@ -15,13 +8,27 @@ import {
   updateModelById,
   deleteModelById,
 } from "@/shared/api/model";
+import { ButtonUI } from "@/shared/components/ButtonUI";
+import { TextUI } from "@/shared/components/TextUI";
+import { TextField } from "@/shared/components/TextField";
+import { ButtonPage } from "@/shared/components/ButtonPage";
+import { ModelCard } from "@/shared/components/ModelCard";
+import type { ModelDbResponse } from "@/shared/api/model";
 
-export function Models() {
-  const { projectId = "0" } = useParams<{ projectId: string }>();
+export function Models({
+  projectId,
+  models,
+  setModels,
+  loading,
+  setLoading,
+}: {
+  projectId: string | number;
+  models: ModelDbResponse[];
+  setModels: (models: ModelDbResponse[]) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}) {
   const navigate = useNavigate();
-
-  const [models, setModels] = useState<ModelDbResponse[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Состояния для создания модели
   const [newModelName, setNewModelName] = useState("");
@@ -44,18 +51,6 @@ export function Models() {
     if (response === undefined) return;
     setModels(response.data);
   };
-
-  useEffect(() => {
-    const loadModels = async () => {
-      setLoading(true);
-      const response = await fetchModels(projectId);
-      setLoading(false);
-      if (response === undefined) return;
-      setModels(response.data);
-    };
-
-    loadModels();
-  }, [projectId]);
 
   // Создание новой модели
   const handleCreate = async () => {

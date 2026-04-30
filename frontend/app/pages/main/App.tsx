@@ -13,7 +13,7 @@ import { Register } from "@/pages/auth/Register.tsx";
 
 import { Project } from "@/pages/projects/Project.tsx";
 import { Projects } from "@/pages/projects/Projects.tsx";
-import { File } from "@/pages/projects/File.tsx";
+import { File } from "@/pages/file/File.tsx";
 import { Model } from "@/pages/projects/Model.tsx";
 import { Experiment } from "@/pages/projects/Experiment.tsx";
 
@@ -34,28 +34,19 @@ export function App() {
           {/* Защищенные маршруты, пересылает на страницу `/login` */}
           <Route element={<PrivateRoute />}>
             <Route path="/projects" element={<Projects />} />
+
             <Route path="/projects/:projectId" element={<Project />} />
 
-            <Route path="/projects/:projectId/files" element={<Project />} />
             <Route
               path="/projects/:projectId/files/:fileId"
               element={<File />}
             />
-            <Route
-              path="/projects/:projectId/files/:fileId?page=:page"
-              element={<File />}
-            />
 
-            <Route path="/projects/:projectId/models" element={<Project />} />
             <Route
               path="/projects/:projectId/models/:modelId"
               element={<Model />}
             />
 
-            <Route
-              path="/projects/:projectId/experiments"
-              element={<Project />}
-            />
             <Route
               path="/projects/:projectId/experiments/:experimentId"
               element={<Experiment />}
