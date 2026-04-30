@@ -128,7 +128,7 @@ export function Model() {
 
       <div className="max-w-6xl mx-auto m-2">
         <ButtonPage
-          onClick={() => navigate(`/projects/${projectId}/models`)}
+          onClick={() => navigate(`/projects/${projectId}?tab=models`)}
           isLoading={loading}
         />
 

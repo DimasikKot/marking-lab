@@ -12,11 +12,9 @@ export function File() {
   // Переменные URL
   const { projectId = "0", fileId = "0" } = useParams();
   const [searchParams] = useSearchParams();
-  const page = searchParams.get("page") || "1";
   const tab = searchParams.get("tab") || "label";
-
-  // Переменные вкладки
   const [selectedIndex, setSelectedIndex] = useState(tab === "label" ? 1 : 0);
+  const page = searchParams.get("page") || "1";
 
   // Переменные страниц
   const [file, setFile] = useState<GetFilePageResponse | null>(null);
@@ -34,14 +32,14 @@ export function File() {
     loadPage();
   }, [fileId, page, projectId]);
 
-  // Обработчик смены вкладки
+  // Обработчик смены вкладки - меняем URL
   const handleSelect = (index: number) => {
     setSelectedIndex(index);
 
     window.history.replaceState(
       null,
       "",
-      `/projects/${projectId}/files/${fileId}?tab=${index === 1 ? "label" : "edit"}&page=${page}`,
+      `/projects/${projectId}/files/${fileId}?tab=${index === 0 ? "edit" : "label"}&page=${page}`,
     );
   };
 

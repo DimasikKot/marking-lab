@@ -48,9 +48,9 @@ export function FileLabel({
   };
 
   return (
-    <div className="max-w-6xl mx-auto m-2">
+    <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
-        onClick={() => navigate(`/projects/${projectId}/files`)}
+        onClick={() => navigate(`/projects/${projectId}?tab=files`)}
         isLoading={loading}
       />
 

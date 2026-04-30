@@ -17,7 +17,6 @@ import { InfoCardBig } from "@/shared/components/InfoCardBig";
 import { TextField } from "@/shared/components/TextField";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { LoginRegisterCard } from "@/shared/components/LoginRegisterCard";
-import { ToasterUI } from "@/shared/components/ToasterUI";
 import { ModelCard } from "@/shared/components/ModelCard";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
@@ -132,13 +131,13 @@ export function Components() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <Header title="Компоненты" />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto m-2 mb-80">
         <ButtonPage onClick={() => navigate("/")} />
 
-        <div className="mt-8 space-y-16">
+        <div className="flex flex-col gap-16">
           {/* TextUI */}
           <div>
             <TextUI variant="header" className="mb-6">
@@ -337,7 +336,7 @@ export function Components() {
               PageNavigate
             </TextUI>
             <PageNavigate
-              currentPage={currentPage}
+              currentPage={parseInt(currentPage)}
               totalPages={5}
               onBack={() =>
                 setCurrentPage((prev) =>
@@ -380,8 +379,6 @@ export function Components() {
           </div>
         </div>
       </div>
-
-      <ToasterUI />
     </div>
   );
 }

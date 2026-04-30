@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -17,10 +17,20 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 import type { PatchFileDbRequest } from "@/shared/api/file";
 
-export function Files({ projectId }: { projectId: string | number }) {
+export function Files({
+  projectId,
+  files,
+  setFiles,
+  loading,
+  setLoading,
+}: {
+  projectId: string | number;
+  files: FileDbResponse[];
+  setFiles: (files: FileDbResponse[]) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}) {
   const navigate = useNavigate();
-  const [files, setFiles] = useState<FileDbResponse[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileIsLabeled, setSelectedFileIsLabeled] = useState(false);
@@ -41,18 +51,6 @@ export function Files({ projectId }: { projectId: string | number }) {
     if (response === undefined) return;
     setFiles(response.data);
   };
-
-  useEffect(() => {
-    const loadFiles = async () => {
-      setLoading(true);
-      const response = await fetchFiles(projectId);
-      setLoading(false);
-      if (response === undefined) return;
-      setFiles(response.data);
-    };
-
-    loadFiles();
-  }, [projectId]);
 
   // Загрузка нового файла на сервер
   const handleUpload = async () => {

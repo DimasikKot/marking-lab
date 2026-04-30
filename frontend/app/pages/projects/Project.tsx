@@ -1,38 +1,62 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import "react-tabs/style/react-tabs.css";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-import { TextUI } from "@/shared/components/TextUI";
-import { Header } from "@/shared/components/Header";
 import { Files } from "./Files";
-import { Experiments } from "./Experiments";
 import { Models } from "./Models";
+import { Experiments } from "./Experiments";
+import { Header } from "@/shared/components/Header";
+import { TextUI } from "@/shared/components/TextUI";
+import { fetchFiles, type FileDbResponse } from "@/shared/api/file";
+import { fetchModels, type ModelDbResponse } from "@/shared/api/model";
 
 export function Project() {
-  const navigate = useNavigate();
+  // Переменные URL
   const { projectId = "0" } = useParams<{ projectId: string }>();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "files";
+  const [selectedIndex, setSelectedIndex] = useState(
+    tab === "files" ? 0 : tab === "models" ? 1 : 2,
+  );
+  // const page = searchParams.get("page") || "1";
 
-  // Определяем активную вкладку по текущему pathname
-  const pathname = location.pathname;
+  // Переменные страниц
+  const [files, setFiles] = useState<FileDbResponse[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(true);
 
-  // Определяем индекс активной вкладки по пути
-  let selectedIndex = 0; // по умолчанию - Файлы
+  const [models, setModels] = useState<ModelDbResponse[]>([]);
+  const [loadingModels, setLoadingModels] = useState(true);
 
-  if (pathname.startsWith(`/projects/${projectId}/models`)) {
-    selectedIndex = 1;
-  } else if (pathname.startsWith(`/projects/${projectId}/experiments`)) {
-    selectedIndex = 2;
-  }
+  useEffect(() => {
+    const loadFiles = async () => {
+      setLoadingFiles(true);
+      const response = await fetchFiles(projectId);
+      setLoadingFiles(false);
+      if (response === undefined) return;
+      setFiles(response.data);
+    };
+
+    const loadModels = async () => {
+      setLoadingModels(true);
+      const response = await fetchModels(projectId);
+      setLoadingModels(false);
+      if (response === undefined) return;
+      setModels(response.data);
+    };
+
+    loadFiles();
+    loadModels();
+  }, [selectedIndex, projectId]);
 
   // Обработчик смены вкладки - меняем URL
   const handleSelect = (index: number) => {
-    let newPath = `/projects/${projectId}/files`;
+    setSelectedIndex(index);
 
-    if (index === 1) newPath = `/projects/${projectId}/models`;
-    else if (index === 2) newPath = `/projects/${projectId}/experiments`;
-
-    navigate(newPath);
+    window.history.replaceState(
+      null,
+      "",
+      `/projects/${projectId}?tab=${index === 0 ? "files" : index === 1 ? "models" : "experiments"}`,
+    );
   };
 
   return (
@@ -77,11 +101,23 @@ export function Project() {
       </Header>
 
       <TabPanel>
-        <Files projectId={projectId} />
+        <Files
+          projectId={projectId}
+          files={files}
+          setFiles={setFiles}
+          loading={loadingFiles}
+          setLoading={setLoadingFiles}
+        />
       </TabPanel>
 
       <TabPanel>
-        <Models projectId={projectId} />
+        <Models
+          projectId={projectId}
+          models={models}
+          setModels={setModels}
+          loading={loadingModels}
+          setLoading={setLoadingModels}
+        />
       </TabPanel>
 
       <TabPanel>
