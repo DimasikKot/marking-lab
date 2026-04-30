@@ -189,7 +189,9 @@ export function Files({ projectId }: { projectId: string | number }) {
               key={file.id}
               file={file}
               onClick={() =>
-                navigate(`/projects/${projectId}/files/${file.id}?page=1`)
+                navigate(
+                  `/projects/${projectId}/files/${file.id}?page=1&tab=label`,
+                )
               }
               onEditClick={() => handleEditClick(file)}
               onDeleteClick={() => handleDeleteClick(file.id)}

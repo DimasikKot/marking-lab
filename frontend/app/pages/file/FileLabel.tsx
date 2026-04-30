@@ -1,41 +1,28 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
+import { ButtonPage } from "@/shared/components/ButtonPage";
 import {
-  fetchFileById,
   type GetFilePageResponse,
   type Row,
   type Word,
 } from "@/shared/api/file";
-import { ButtonPage } from "@/shared/components/ButtonPage";
 
 export function FileLabel({
   projectId,
   fileId,
   page,
+  file,
+  loading,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: string;
+  file: GetFilePageResponse | null;
+  loading: boolean;
 }) {
   const navigate = useNavigate();
-
-  const [file, setFile] = useState<GetFilePageResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadPage = async () => {
-      setLoading(true);
-      const response = await fetchFileById(projectId, fileId, page);
-      setLoading(false);
-      if (response === undefined) return;
-      setFile(response);
-    };
-
-    loadPage();
-  }, [fileId, page, projectId]);
 
   const WordElement = ({ word }: { word: Word }) => {
     const isO = word.label === "O";
@@ -59,6 +46,7 @@ export function FileLabel({
       </span>
     );
   };
+
   return (
     <div className="max-w-6xl mx-auto m-2">
       <ButtonPage
@@ -81,12 +69,12 @@ export function FileLabel({
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}`,
+                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}&tab=label`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}`,
+                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}&tab=label`,
               )
             }
           />
@@ -114,12 +102,12 @@ export function FileLabel({
             totalPages={file?.total_pages}
             onBack={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}`,
+                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) - 1}&tab=label`,
               )
             }
             onNext={() =>
               navigate(
-                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}`,
+                `/projects/${projectId}/files/${fileId}?page=${parseInt(page) + 1}&tab=label`,
               )
             }
           />

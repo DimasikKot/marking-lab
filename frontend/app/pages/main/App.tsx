@@ -41,10 +41,6 @@ export function App() {
               path="/projects/:projectId/files/:fileId"
               element={<File />}
             />
-            <Route
-              path="/projects/:projectId/files/:fileId?page=:page"
-              element={<File />}
-            />
 
             <Route path="/projects/:projectId/models" element={<Project />} />
             <Route

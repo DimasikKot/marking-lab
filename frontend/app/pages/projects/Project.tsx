@@ -17,7 +17,7 @@ export function Project() {
   const pathname = location.pathname;
 
   // Определяем индекс активной вкладки по пути
-  let selectedIndex = 0; // по умолчанию — Файлы
+  let selectedIndex = 0; // по умолчанию - Файлы
 
   if (pathname.startsWith(`/projects/${projectId}/models`)) {
     selectedIndex = 1;
@@ -25,7 +25,7 @@ export function Project() {
     selectedIndex = 2;
   }
 
-  // Обработчик смены вкладки — меняем URL
+  // Обработчик смены вкладки - меняем URL
   const handleSelect = (index: number) => {
     let newPath = `/projects/${projectId}/files`;
 
@@ -36,59 +36,57 @@ export function Project() {
   };
 
   return (
-    <div>
-      <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
-        <Header>
-          <TabList className="h-full">
-            <div className="flex h-full items-end gap-12">
-              {/* Файлы */}
-              <Tab
-                selectedClassName="active"
-                className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
-              >
-                <TextUI variant="normal" className="w-32 text-center">
-                  Файлы
-                </TextUI>
-                <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-discrete duration-300 group-[.active]:w-full" />
-              </Tab>
+    <Tabs selectedIndex={selectedIndex} onSelect={handleSelect}>
+      <Header>
+        <TabList className="h-full">
+          <div className="flex h-full items-end gap-12">
+            {/* Файлы */}
+            <Tab
+              selectedClassName="active"
+              className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
+            >
+              <TextUI variant="normal" className="w-32 text-center">
+                Файлы
+              </TextUI>
+              <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-discrete duration-300 group-[.active]:w-full" />
+            </Tab>
 
-              {/* Модели */}
-              <Tab
-                selectedClassName="active"
-                className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
-              >
-                <TextUI variant="normal" className="w-32 text-center">
-                  Модели
-                </TextUI>
-                <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
-              </Tab>
+            {/* Модели */}
+            <Tab
+              selectedClassName="active"
+              className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
+            >
+              <TextUI variant="normal" className="w-32 text-center">
+                Модели
+              </TextUI>
+              <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
+            </Tab>
 
-              {/* Эксперименты */}
-              <Tab
-                selectedClassName="active"
-                className="group relative px-8 pb-2 text-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
-              >
-                <TextUI variant="normal" className="w-32 text-center">
-                  Эксперименты
-                </TextUI>
-                <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
-              </Tab>
-            </div>
-          </TabList>
-        </Header>
+            {/* Эксперименты */}
+            <Tab
+              selectedClassName="active"
+              className="group relative px-8 pb-2 text-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
+            >
+              <TextUI variant="normal" className="w-32 text-center">
+                Эксперименты
+              </TextUI>
+              <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
+            </Tab>
+          </div>
+        </TabList>
+      </Header>
 
-        <TabPanel>
-          <Files projectId={projectId} />
-        </TabPanel>
+      <TabPanel>
+        <Files projectId={projectId} />
+      </TabPanel>
 
-        <TabPanel>
-          <Models projectId={projectId} />
-        </TabPanel>
+      <TabPanel>
+        <Models projectId={projectId} />
+      </TabPanel>
 
-        <TabPanel>
-          <Experiments projectId={projectId} />
-        </TabPanel>
-      </Tabs>
-    </div>
+      <TabPanel>
+        <Experiments projectId={projectId} />
+      </TabPanel>
+    </Tabs>
   );
 }
