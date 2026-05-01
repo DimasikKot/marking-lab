@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import toast from "react-hot-toast";                    // ← добавили
 
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
@@ -46,8 +47,11 @@ export function FileEdit({
       page,
     );
     setIsSaving(false);
+
     if (result) {
-      alert("Изменения текста сохранены!");
+      toast.success("Изменения текста успешно сохранены!");   // ← красивое уведомление
+    } else {
+      toast.error("Ошибка при сохранении изменений");
     }
   };
 
