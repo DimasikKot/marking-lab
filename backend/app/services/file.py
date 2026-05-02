@@ -138,7 +138,7 @@ def _write_new_rows(file_path: Path, page: int, count: int, new_rows: list[Row])
                     writer.writerow(
                         [
                             " ".join(
-                                word.token.strip().split()[0] for word in new_row.words
+                                (word.token or "").strip() for word in new_row.words
                             ),
                             " ".join(word.label for word in new_row.words),
                         ]

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import toast from "react-hot-toast";                    // ← добавили
+import { useState, useRef } from "react";
+import toast from "react-hot-toast";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
@@ -28,14 +28,37 @@ export function FileEdit({
   const [localRows, setLocalRows] = useState<Row[]>(file.rows);
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleTokenChange = (
-    lineIdx: number,
-    wordIdx: number,
-    newToken: string,
-  ) => {
+  const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
+
+  const handleTokenChange = (lineIdx: number, wordIdx: number, newToken: string) => {
     const updatedRows = [...localRows];
     updatedRows[lineIdx].words[wordIdx].token = newToken;
     setLocalRows(updatedRows);
+  };
+
+  const handleKeyDown = (lineIdx: number, wordIdx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " ") {
+      e.preventDefault(); // предотвращаем обычный пробел
+
+      const currentText = e.currentTarget.value.trim();
+      if (!currentText) return;
+
+      const updatedRows = [...localRows];
+
+      // Добавляем новое слово после текущего
+      updatedRows[lineIdx].words.splice(wordIdx + 1, 0, { token: "", label: "O" });
+
+      setLocalRows(updatedRows);
+
+      // Фокус на новое поле
+      setTimeout(() => {
+        inputRefs.current[lineIdx]?.[wordIdx + 1]?.focus();
+      }, 10);
+    }
+
+    if (e.key === "Enter") {
+      handleSave();
+    }
   };
 
   const handleSave = async () => {
@@ -49,19 +72,16 @@ export function FileEdit({
     setIsSaving(false);
 
     if (result) {
-      toast.success("Изменения текста успешно сохранены!");   // ← красивое уведомление
+      toast.success("Изменения текста успешно сохранены!");
     } else {
-      toast.error("Ошибка при сохранении изменений");
+      toast.error("Ошибка при сохранении");
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto m-2 mb-80">
       <div className="flex justify-between items-center mb-4">
-        <ButtonPage
-          onClick={() => navigate(`/projects/${projectId}?tab=files`)}
-          isLoading={loading}
-        />
+        <ButtonPage onClick={() => navigate(`/projects/${projectId}?tab=files`)} isLoading={loading} />
         <button
           onClick={handleSave}
           disabled={isSaving || loading}
@@ -88,12 +108,15 @@ export function FileEdit({
                 {line.words.map((word, wordIdx) => (
                   <input
                     key={wordIdx}
+                    ref={(el) => {
+                      if (!inputRefs.current[lineIdx]) inputRefs.current[lineIdx] = [];
+                      inputRefs.current[lineIdx][wordIdx] = el;
+                    }}
                     value={word.token}
-                    onChange={(e) =>
-                      handleTokenChange(lineIdx, wordIdx, e.target.value)
-                    }
-                    className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none min-w-7.5 font-medium text-gray-900 transition-colors"
-                    style={{ width: `${word.token.length + 1}ch` }}
+                    onChange={(e) => handleTokenChange(lineIdx, wordIdx, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
+                    className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none min-w-8 font-medium text-gray-900 transition-colors"
+                    style={{ width: `${Math.max(word.token.length + 1, 4)}ch` }}
                   />
                 ))}
               </div>
@@ -101,23 +124,13 @@ export function FileEdit({
           </div>
         </div>
 
-        {file && (
-          <PageNavigate
-            className="mt-6"
-            currentPage={page}
-            totalPages={file?.total_pages}
-            onBack={() =>
-              navigate(
-                `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
-              )
-            }
-            onNext={() =>
-              navigate(
-                `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
-              )
-            }
-          />
-        )}
+        <PageNavigate
+          className="mt-6"
+          currentPage={page}
+          totalPages={file?.total_pages}
+          onBack={() => navigate(`/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`)}
+          onNext={() => navigate(`/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`)}
+        />
       </div>
     </div>
   );
