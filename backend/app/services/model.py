@@ -36,16 +36,15 @@ def is_owner_of_model(
 #     return model_path
 
 
-def _create_model_on_disk(project_id: int, model_id: int, content: str) -> None:
+def _create_model_on_disk(project_id: int, model_id: int, content: bytes) -> None:
     base_dir = Path(settings.STORAGE_PATH).resolve()
-    file_path = base_dir / str(project_id) / "models" / f"{model_id}.txt"
+    # Сохраняем модель как ZIP-архив, а не .txt
+    file_path = base_dir / str(project_id) / "models" / f"{model_id}.zip"
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    file_path.write_text(
-        content,
-        encoding="utf-8",
-        newline="\n",
-    )
+    # Пишем бинарные данные
+    with open(file_path, "wb") as f:
+        f.write(content)
 
 
 # router
@@ -270,7 +269,7 @@ async def train_model_by_id(
             _create_model_on_disk(
                 project_id=model_db.project_id,
                 model_id=model_db.id,
-                content=response.content.decode("utf-8"),
+                content=response.content # content=response.content.decode("utf-8"),
             )
             # model_db.accuracy = metrics.get("accuracy") # Пример
 

@@ -1,8 +1,10 @@
-import os
-import json
+import csv
+import io
+import logging
+from typing import List, Dict, Any
+
 import torch
 import numpy as np
-from typing import List, Dict
 from transformers import (
     AutoTokenizer,
     AutoModelForTokenClassification,
@@ -11,28 +13,25 @@ from transformers import (
     DataCollatorForTokenClassification,
     EarlyStoppingCallback,
 )
-from datasets import Dataset
-from seqeval.metrics import classification_report, f1_score, accuracy_score
-from seqeval.scheme import IOB2
+from datasets import Dataset # type: ignore
+from seqeval.metrics import classification_report, f1_score, accuracy_score # type: ignore
+from seqeval.scheme import IOB2 # type: ignore
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------------------
-# Конфигурация
+# Константы по умолчанию
 # -------------------------------------------------------------------
 MODEL_NAME = "distilbert-base-uncased"
 MAX_LENGTH = 128
-BATCH_SIZE = 16
-LEARNING_RATE = 2e-5
-EPOCHS = 5
-OUTPUT_DIR = "./ner_model"
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-
 
 # -------------------------------------------------------------------
-# 1. Чтение CoNLL
+# 1. Чтение данных из файлов
 # -------------------------------------------------------------------
-def read_conll(file_path: str) -> List[List[Dict]]:
+def read_conll(file_path: str) -> List[List[Dict[Any, Any]]]:
+    """Чтение классического CoNLL (токен<TAB>метка). Оставлено для совместимости."""
     sentences = []
     with open(file_path, "r", encoding="utf-8") as f:
         sentence = []
@@ -51,16 +50,46 @@ def read_conll(file_path: str) -> List[List[Dict]]:
             sentences.append(sentence)
     return sentences
 
+def parse_csv_from_text(text: str) -> List[List[Dict[Any, Any]]]:
+    """
+    Парсит содержимое CSV-файла с колонками text и labels.
+    Строки могут быть в кавычках, разделитель – запятая.
+    Пример строки:
+      "Thousands of demonstrators have marched...",O O O O O O B-geo ...
+    Возвращает список предложений, где каждое предложение – список словарей {token, label}.
+    """
+    sentences = []
+    reader = csv.reader(io.StringIO(text), skipinitialspace=True)
+    next(reader, None)  # пропускаем заголовок, если он есть (text,labels)
+    for row in reader:
+        if len(row) < 2:
+            continue
+        text_part = row[0].strip()
+        labels_part = row[1].strip()
+        if not text_part or not labels_part:
+            continue
+        tokens = text_part.split()
+        labels = labels_part.split()
+        if len(tokens) != len(labels):
+            logger.warning(
+                f"Несовпадение длины токенов ({len(tokens)}) и меток ({len(labels)}). "
+                f"Строка пропущена: {text_part[:100]}..."
+            )
+            continue
+        sentence = [{"token": t, "label": l} for t, l in zip(tokens, labels)]
+        sentences.append(sentence)
+    return sentences
+
 # -------------------------------------------------------------------
 # 2. Токенизация с выравниванием меток
 # -------------------------------------------------------------------
-def tokenize_and_align_labels(examples, tokenizer, label2id):
+def tokenize_and_align_labels(examples, tokenizer, label2id, max_length=MAX_LENGTH):
     tokenized_inputs = tokenizer(
         examples["tokens"],
         truncation=True,
         padding=False,
         is_split_into_words=True,
-        max_length=MAX_LENGTH,
+        max_length=max_length,
     )
     labels = []
     for i, label_seq in enumerate(examples["ner_tags"]):
@@ -82,14 +111,12 @@ def tokenize_and_align_labels(examples, tokenizer, label2id):
 # -------------------------------------------------------------------
 # 3. Подготовка датасета
 # -------------------------------------------------------------------
-def prepare_dataset(file_path: str, tokenizer, label2id):
-    sentences = read_conll(file_path)
+def prepare_dataset(sentences: List[List[Dict]], tokenizer, label2id, max_length=MAX_LENGTH):
     tokens_list = [[item["token"] for item in sent] for sent in sentences]
     tags_list = [[item["label"] for item in sent] for sent in sentences]
-    
     dataset = Dataset.from_dict({"tokens": tokens_list, "ner_tags": tags_list})
     tokenized_dataset = dataset.map(
-        lambda x: tokenize_and_align_labels(x, tokenizer, label2id),
+        lambda x: tokenize_and_align_labels(x, tokenizer, label2id, max_length),
         batched=True,
         remove_columns=dataset.column_names,
     )
@@ -130,7 +157,7 @@ class NERModel:
         self.label_list = label_list
         self.label2id = {l: i for i, l in enumerate(label_list)}
         self.id2label = {i: l for l, i in self.label2id.items()}
-        
+
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
         self.model = AutoModelForTokenClassification.from_pretrained(
             model_name,
@@ -140,20 +167,24 @@ class NERModel:
         ).to(device)
         self.data_collator = DataCollatorForTokenClassification(self.tokenizer, padding="longest")
 
-    def train(self, train_file: str, eval_file: str = None, output_dir: str = OUTPUT_DIR):
-        train_dataset = prepare_dataset(train_file, self.tokenizer, self.label2id)
-        eval_dataset = None
-        if eval_file and os.path.exists(eval_file):
-            eval_dataset = prepare_dataset(eval_file, self.tokenizer, self.label2id)
-
+    def train(
+        self,
+        train_dataset,
+        eval_dataset=None,
+        output_dir: str = "./ner_model",
+        epochs: int = 5,
+        batch_size: int = 16,
+        learning_rate: float = 2e-5,
+        max_length: int = MAX_LENGTH,
+    ) -> dict:
         training_args = TrainingArguments(
             output_dir=output_dir,
             eval_strategy="epoch" if eval_dataset else "no",
             save_strategy="epoch",
-            learning_rate=LEARNING_RATE,
-            per_device_train_batch_size=BATCH_SIZE,
-            per_device_eval_batch_size=BATCH_SIZE,
-            num_train_epochs=EPOCHS,
+            learning_rate=learning_rate,
+            per_device_train_batch_size=batch_size,
+            per_device_eval_batch_size=batch_size,
+            num_train_epochs=epochs,
             weight_decay=0.01,
             logging_steps=50,
             load_best_model_at_end=True if eval_dataset else False,
@@ -163,8 +194,9 @@ class NERModel:
             report_to="none",
             fp16=torch.cuda.is_available(),
             dataloader_num_workers=2,
+            save_total_limit=1,
         )
-        
+
         trainer = Trainer(
             model=self.model,
             args=training_args,
@@ -172,13 +204,29 @@ class NERModel:
             eval_dataset=eval_dataset,
             data_collator=self.data_collator,
             compute_metrics=lambda p: compute_metrics(p, self.label_list) if eval_dataset else None,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=2)] if eval_dataset else None,
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=2)] if eval_dataset else [],
         )
-        
+        print(device)
+
         trainer.train()
+
         trainer.save_model(output_dir)
         self.tokenizer.save_pretrained(output_dir)
-        print(f"Model saved to {output_dir}")
+
+        log_history = trainer.state.log_history
+        train_loss = []
+        eval_metrics = {}
+        for entry in log_history:
+            if "loss" in entry and "epoch" in entry:
+                train_loss.append((entry["epoch"], entry["loss"]))
+            if "eval_f1" in entry:
+                eval_metrics = entry
+
+        return {
+            "train_loss": train_loss,
+            "eval_metrics": eval_metrics,
+            "model_dir": output_dir,
+        }
 
     def load(self, model_dir: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
@@ -186,87 +234,58 @@ class NERModel:
         self.label_list = list(self.model.config.id2label.values())
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label
-        print(f"Model loaded from {model_dir}")
 
-    def predict(self, text: str, return_entities: bool = True) -> List[Dict]:
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=MAX_LENGTH).to(device)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-        logits = outputs.logits
-        probabilities = torch.softmax(logits, dim=-1)
-        predictions = torch.argmax(logits, dim=-1)
-        
-        tokens = self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
-        word_ids = inputs.word_ids()
-        
-        result = []
-        prev_word_id = None
-        for i, (token, pred, prob) in enumerate(zip(tokens, predictions[0], probabilities[0])):
-            word_id = word_ids[i]
-            if word_id is None:
-                continue
-            if word_id != prev_word_id:
-                label = self.id2label[pred.item()]
-                score = prob[pred].item()
-                token_text = token.replace("##", "") if self.model_name.startswith("bert") else token
-                result.append({"word": token_text, "entity": label, "score": score})
-            prev_word_id = word_id
-        
-        if return_entities:
-            entities = []
-            current_entity = None
-            for item in result:
-                label = item["entity"]
-                if label == "O":
-                    if current_entity:
-                        entities.append(current_entity)
-                        current_entity = None
-                elif label.startswith("B-"):
-                    if current_entity:
-                        entities.append(current_entity)
-                    current_entity = {"type": label[2:], "text": item["word"], "score": item["score"]}
-                elif label.startswith("I-"):
-                    if current_entity and current_entity["type"] == label[2:]:
-                        current_entity["text"] += " " + item["word"]
-                        current_entity["score"] = min(current_entity["score"], item["score"])
-                    else:
-                        if current_entity:
-                            entities.append(current_entity)
-                        current_entity = {"type": label[2:], "text": item["word"], "score": item["score"]}
-            if current_entity:
-                entities.append(current_entity)
-            return entities
-        else:
-            return result
 
 # -------------------------------------------------------------------
-# 6. Запуск
+# Вспомогательные функции
 # -------------------------------------------------------------------
-if __name__ == "__main__":
-    TRAIN_FILE = "2.tsv"
-    VALID_FILE = "1.tsv"
-    
-    # Собираем все метки из train и valid файлов
+def extract_labels_from_sentences(sentences: List[List[Dict]]) -> List[str]:
     all_labels = set()
-    for file_path in [TRAIN_FILE, VALID_FILE]:
-        with open(file_path, "r", encoding="utf-8") as f:
-            for line in f:
-                parts = line.strip().split()
-                if len(parts) >= 2:
-                    label = parts[-1]
-                    if label != "O":
-                        all_labels.add(label)
-    # Добавляем 'O' и сортируем для воспроизводимости
-    LABEL_LIST = sorted(list(all_labels)) + ["O"]
-    print("Detected labels:", LABEL_LIST)
-    
-    # Создаём модель с актуальным списком меток
-    ner = NERModel(model_name=MODEL_NAME, label_list=LABEL_LIST)
-    
-    # Обучение (если данных много и CPU медленный — уменьшите MAX_LENGTH и BATCH_SIZE)
-    ner.train(train_file=TRAIN_FILE, eval_file=VALID_FILE, output_dir=OUTPUT_DIR)
-    
-    # Предсказание
-    text = "Apple Inc. is looking at buying U.K. startup for $1 billion."
-    entities = ner.predict(text)
-    print("Entities:", json.dumps(entities, indent=2, ensure_ascii=False))
+    for sent in sentences:
+        for item in sent:
+            if item["label"] != "O":
+                all_labels.add(item["label"])
+    labels = sorted(list(all_labels)) + ["O"]
+    return labels
+
+def build_zip_model(model_dir: str) -> bytes:
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for file_path in Path(model_dir).glob("**/*"):
+            if file_path.is_file():
+                zf.write(file_path, arcname=file_path.relative_to(model_dir))
+    return zip_buffer.getvalue()
+
+def plot_loss(train_loss: list) -> str:
+    fig, ax = plt.subplots(figsize=(6, 4))
+    if train_loss:
+        epochs = [item[0] for item in train_loss if item[0] is not None]
+        losses = [item[1] for item in train_loss if item[0] is not None]
+        if epochs:
+            ax.plot(epochs, losses, "b-o", linewidth=2, markersize=8)
+    ax.set_title("Training Loss")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.grid(True, alpha=0.3)
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+def plot_confusion_matrix(label_list: List[str]) -> str:
+    fig, ax = plt.subplots(figsize=(8, 6))
+    labels = [l for l in label_list if l != "O"]
+    size = len(labels)
+    data = np.random.rand(size, size)  # заглушка, замените на реальную матрицу
+    if size > 0:
+        im = ax.imshow(data, cmap="hot", interpolation="nearest")
+        ax.set_xticks(range(size))
+        ax.set_yticks(range(size))
+        ax.set_xticklabels(labels, rotation=45)
+        ax.set_yticklabels(labels)
+        plt.colorbar(im, ax=ax)
+    ax.set_title("Confusion Matrix (example)")
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")

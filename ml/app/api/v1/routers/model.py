@@ -1,78 +1,114 @@
 import io
 import json
+import zipfile
 import base64
-from typing import Any
+import tempfile
+import logging
+from pathlib import Path
+from typing import List, Dict
+
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
 import matplotlib.pyplot as plt
 import numpy as np
 
-router: APIRouter = APIRouter()
+from app.services.model import (
+    NERModel,
+    build_zip_model,
+    extract_labels_from_sentences,
+    parse_csv_from_text,
+    plot_confusion_matrix,
+    plot_loss,   # <-- переименованная функция
+    prepare_dataset,
+    MAX_LENGTH,
+    MODEL_NAME,
+)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
 
 
 @router.post("/train")
-async def post_train_ner(
-    parameters: str = Form(
-        {"model": "ner", "epochs": 3, "batch_size": 4, "learning_rate": 0.001}
-    ),
+async def train_ner(
+    parameters: str = Form(...),
     files: list[UploadFile] = File(...),
 ):
-    # парсим параметры
-    params_dict: dict[str, Any] = json.loads(parameters)
+    params = json.loads(parameters)
+    logger.info(f"Training parameters: {params}")
 
-    # читаем файлы
-    combined_content = ""
+    # Собираем все предложения из загруженных CSV-файлов
+    all_sentences = []
     for file in files:
         content = await file.read()
-        combined_content += content.decode("utf-8") + "\n"
+        text = content.decode("utf-8")
+        # Теперь используем правильный парсер
+        all_sentences.extend(parse_csv_from_text(text))
 
-    # создаем "модель" (просто текстовый файл)
-    result_file = io.BytesIO(combined_content.encode("utf-8"))
+    if not all_sentences:
+        return StreamingResponse(
+            io.BytesIO(b"no data"),
+            media_type="text/plain",
+            status_code=400,
+        )
 
-    # Генерируем случайный график 1 (train loss)
-    _, ax1 = plt.subplots(figsize=(6, 4))
-    epochs = np.arange(1, params_dict.get("epochs", 3) + 1)
-    loss = np.random.uniform(0.5, 2.0, len(epochs)) * np.exp(-epochs * 0.5)
-    ax1.plot(epochs, loss, "b-o", linewidth=2, markersize=8)
-    ax1.set_title("Training Loss")
-    ax1.set_xlabel("Epoch")
-    ax1.set_ylabel("Loss")
-    ax1.grid(True, alpha=0.3)
+    label_list = extract_labels_from_sentences(all_sentences)
 
-    img1_buffer = io.BytesIO()
-    plt.savefig(img1_buffer, format="png", dpi=80, bbox_inches="tight")
-    img1_base64 = base64.b64encode(img1_buffer.getvalue()).decode("utf-8")
-    plt.close()
+    # Разбиение train/validation (80/20)
+    split_idx = int(len(all_sentences) * 0.8)
+    train_sentences = all_sentences[:split_idx]
+    eval_sentences = all_sentences[split_idx:]
 
-    # Генерируем график 2 (confusion matrix / heatmap)
-    _, ax2 = plt.subplots(figsize=(6, 5))
-    data = np.random.rand(5, 5)
-    im = ax2.imshow(data, cmap="hot", interpolation="nearest")
-    ax2.set_title("Confusion Matrix")
-    ax2.set_xlabel("Predicted")
-    ax2.set_ylabel("Actual")
-    plt.colorbar(im, ax=ax2)
+    epochs = int(params.get("epochs", 5))
+    batch_size = int(params.get("batch_size", 16))
+    learning_rate = float(params.get("learning_rate", 2e-5))
 
-    img2_buffer = io.BytesIO()
-    plt.savefig(img2_buffer, format="png", dpi=80, bbox_inches="tight")
-    img2_base64 = base64.b64encode(img2_buffer.getvalue()).decode("utf-8")
-    plt.close()
+    ner = NERModel(MODEL_NAME, label_list)
+    tokenizer = ner.tokenizer
+    label2id = ner.label2id
 
-    # Возвращаем модель с графиками в headers
+    train_dataset = prepare_dataset(train_sentences, tokenizer, label2id, MAX_LENGTH)
+    eval_dataset = prepare_dataset(eval_sentences, tokenizer, label2id, MAX_LENGTH) if eval_sentences else None
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = ner.train(
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            output_dir=tmpdir,
+            epochs=epochs,
+            batch_size=batch_size,
+            learning_rate=learning_rate,
+        )
+
+        eval_metrics = result["eval_metrics"]
+        metrics = {
+            "epochs": epochs,
+            "batch_size": batch_size,
+            "learning_rate": learning_rate,
+        }
+        if eval_metrics:
+            metrics.update({
+                "accuracy": eval_metrics.get("eval_accuracy"),
+                "f1": eval_metrics.get("eval_f1"),
+                "precision": eval_metrics.get("eval_precision"),
+                "recall": eval_metrics.get("eval_recall"),
+            })
+
+        loss_plot = plot_loss(result["train_loss"])
+        cm_plot = plot_confusion_matrix(label_list)
+
+        zip_data = build_zip_model(tmpdir)
+
     return StreamingResponse(
-        result_file,
-        media_type="text/plain",
+        io.BytesIO(zip_data),
+        media_type="application/zip",
         headers={
-            "Content-Disposition": "attachment; filename=combined.txt",
-            "X-Metrics": json.dumps(params_dict),
-            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
-            "X-Graphs": json.dumps(
-                {
-                    # Добавляем правильный префикс для PNG изображения
-                    # Именно с ним сайт-конвертер точно распознает данные
-                    "train_loss": f"data:image/png;base64,{img1_base64}",
-                    "heatmap": f"data:image/png;base64,{img2_base64}",
-                }
-            ),
+            "Content-Disposition": "attachment; filename=ner_model.zip",
+            "X-Metrics": json.dumps(metrics),
+            "X-Graphs": json.dumps({
+                "train_loss": f"data:image/png;base64,{loss_plot}",
+                "heatmap": f"data:image/png;base64,{cm_plot}",
+            }),
         },
     )

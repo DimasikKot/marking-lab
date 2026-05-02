@@ -1,23 +1,20 @@
-FROM python:3.12-slim
+FROM nvidia/cuda:12.6.1-runtime-ubuntu24.04
+
+RUN apt-get update && apt-get install -y \
+    python3.12 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Показываем порт (необязательно)
-EXPOSE 8001
-
-# Установка системных зависимостей для тяжелых либ
-# RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ && rm -rf /var/lib/apt/lists/*
-
-# Отключение буферизации команды print()
-# ENV PYTHONUNBUFFERED=1
+# Флаг --break-system-packages отключает защиту
+RUN pip install --break-system-packages torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 COPY requirements.txt .
-
-# RUN pip install --no-cache-dir torch tensorflow --extra-index-url https://download.pytorch.org
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Запуск воркера (просто скрипт-слушатель)
+EXPOSE 8001
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]

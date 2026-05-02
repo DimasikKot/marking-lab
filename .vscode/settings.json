@@ -9,7 +9,7 @@
     "backend/main.py": true,
     "backend/backend.Dockerfile": true,
     "ml/main.py": true,
-    "ml/ml.Dockerfile": true,
+    "ml/ml.Dockerfile": false,
     "frontend/main.tsx": true,
     "frontend/index.html": true,
     "frontend/frontend.Dockerfile": true,
