@@ -72,5 +72,5 @@
     "rgba(79,236,236,0.02)"
   ],
   "python.analysis.typeCheckingMode": "strict",
-  "python-envs.defaultEnvManager": "ms-python.python:venv"
+  "python-envs.defaultEnvManager": "ms-python.python:system"
 }
