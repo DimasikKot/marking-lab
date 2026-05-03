@@ -1,7 +1,11 @@
+import base64
 import csv
 import io
 import logging
-from typing import List, Dict, Any
+from typing import Any, List, Dict, cast
+from pathlib import Path
+import zipfile
+import matplotlib.pyplot as plt
 
 import torch
 import numpy as np
@@ -13,9 +17,9 @@ from transformers import (
     DataCollatorForTokenClassification,
     EarlyStoppingCallback,
 )
-from datasets import Dataset # type: ignore
-from seqeval.metrics import classification_report, f1_score, accuracy_score # type: ignore
-from seqeval.scheme import IOB2 # type: ignore
+from datasets import Dataset
+from seqeval.metrics import classification_report, f1_score, accuracy_score
+from seqeval.scheme import IOB2
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,10 +31,11 @@ MODEL_NAME = "distilbert-base-uncased"
 MAX_LENGTH = 128
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 # -------------------------------------------------------------------
 # 1. Чтение данных из файлов
 # -------------------------------------------------------------------
-def read_conll(file_path: str) -> List[List[Dict[Any, Any]]]:
+def read_conll(file_path: str):
     """Чтение классического CoNLL (токен<TAB>метка). Оставлено для совместимости."""
     sentences = []
     with open(file_path, "r", encoding="utf-8") as f:
@@ -50,15 +55,16 @@ def read_conll(file_path: str) -> List[List[Dict[Any, Any]]]:
             sentences.append(sentence)
     return sentences
 
-def parse_csv_from_text(text: str) -> List[List[Dict[Any, Any]]]:
+
+def parse_csv_from_text(text: str):
     """
     Парсит содержимое CSV-файла с колонками text и labels.
     Строки могут быть в кавычках, разделитель – запятая.
     Пример строки:
-      "Thousands of demonstrators have marched...",O O O O O O B-geo ...
+    "Thousands of demonstrators have marched...",O O O O O O B-geo ...
     Возвращает список предложений, где каждое предложение – список словарей {token, label}.
     """
-    sentences = []
+    sentences: List[List[Dict[str, str]]] = []
     reader = csv.reader(io.StringIO(text), skipinitialspace=True)
     next(reader, None)  # пропускаем заголовок, если он есть (text,labels)
     for row in reader:
@@ -79,6 +85,7 @@ def parse_csv_from_text(text: str) -> List[List[Dict[Any, Any]]]:
         sentence = [{"token": t, "label": l} for t, l in zip(tokens, labels)]
         sentences.append(sentence)
     return sentences
+
 
 # -------------------------------------------------------------------
 # 2. Токенизация с выравниванием меток
@@ -108,10 +115,13 @@ def tokenize_and_align_labels(examples, tokenizer, label2id, max_length=MAX_LENG
     tokenized_inputs["labels"] = labels
     return tokenized_inputs
 
+
 # -------------------------------------------------------------------
 # 3. Подготовка датасета
 # -------------------------------------------------------------------
-def prepare_dataset(sentences: List[List[Dict]], tokenizer, label2id, max_length=MAX_LENGTH):
+def prepare_dataset(
+    sentences: List[List[Dict]], tokenizer, label2id, max_length=MAX_LENGTH
+):
     tokens_list = [[item["token"] for item in sent] for sent in sentences]
     tags_list = [[item["label"] for item in sent] for sent in sentences]
     dataset = Dataset.from_dict({"tokens": tokens_list, "ner_tags": tags_list})
@@ -121,6 +131,7 @@ def prepare_dataset(sentences: List[List[Dict]], tokenizer, label2id, max_length
         remove_columns=dataset.column_names,
     )
     return tokenized_dataset
+
 
 # -------------------------------------------------------------------
 # 4. Метрики
@@ -138,15 +149,19 @@ def compute_metrics(p, label_list):
         for prediction, label in zip(predictions, labels)
     ]
 
-    report = classification_report(true_labels, true_predictions, scheme=IOB2, output_dict=True)
+    report = classification_report(
+        true_labels, true_predictions, scheme=IOB2, output_dict=True
+    )
+    report_dict = cast(Dict[str, Any], report)
     f1 = f1_score(true_labels, true_predictions, scheme=IOB2)
     acc = accuracy_score(true_labels, true_predictions)
     return {
         "accuracy": acc,
         "f1": f1,
-        "precision": report["micro avg"]["precision"],
-        "recall": report["micro avg"]["recall"],
+        "precision": report_dict["micro avg"]["precision"],
+        "recall": report_dict["micro avg"]["recall"],
     }
+
 
 # -------------------------------------------------------------------
 # 5. Класс NER модели
@@ -165,7 +180,9 @@ class NERModel:
             id2label=self.id2label,
             label2id=self.label2id,
         ).to(device)
-        self.data_collator = DataCollatorForTokenClassification(self.tokenizer, padding="longest")
+        self.data_collator = DataCollatorForTokenClassification(
+            self.tokenizer, padding="longest"
+        )
 
     def train(
         self,
@@ -203,8 +220,12 @@ class NERModel:
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
             data_collator=self.data_collator,
-            compute_metrics=lambda p: compute_metrics(p, self.label_list) if eval_dataset else None,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=2)] if eval_dataset else [],
+            compute_metrics=(lambda p: compute_metrics(p, self.label_list)) if eval_dataset else None,
+            callbacks=(
+                [EarlyStoppingCallback(early_stopping_patience=2)]
+                if eval_dataset
+                else []
+            ),
         )
         print(device)
 
@@ -230,7 +251,9 @@ class NERModel:
 
     def load(self, model_dir: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.model = AutoModelForTokenClassification.from_pretrained(model_dir).to(device)
+        self.model = AutoModelForTokenClassification.from_pretrained(model_dir).to(
+            device
+        )
         self.label_list = list(self.model.config.id2label.values())
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label
@@ -248,6 +271,7 @@ def extract_labels_from_sentences(sentences: List[List[Dict]]) -> List[str]:
     labels = sorted(list(all_labels)) + ["O"]
     return labels
 
+
 def build_zip_model(model_dir: str) -> bytes:
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -255,6 +279,7 @@ def build_zip_model(model_dir: str) -> bytes:
             if file_path.is_file():
                 zf.write(file_path, arcname=file_path.relative_to(model_dir))
     return zip_buffer.getvalue()
+
 
 def plot_loss(train_loss: list) -> str:
     fig, ax = plt.subplots(figsize=(6, 4))
@@ -271,6 +296,7 @@ def plot_loss(train_loss: list) -> str:
     plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
     plt.close(fig)
     return base64.b64encode(buf.getvalue()).decode("utf-8")
+
 
 def plot_confusion_matrix(label_list: List[str]) -> str:
     fig, ax = plt.subplots(figsize=(8, 6))
