@@ -9,8 +9,6 @@ from typing import List, Dict
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
-import matplotlib.pyplot as plt
-import numpy as np
 
 from app.services.model import (
     NERModel,
@@ -60,9 +58,9 @@ async def train_ner(
     train_sentences = all_sentences[:split_idx]
     eval_sentences = all_sentences[split_idx:]
 
-    epochs = int(params.get("epochs", 5))
-    batch_size = int(params.get("batch_size", 16))
-    learning_rate = float(params.get("learning_rate", 2e-5))
+    epochs = int(params.get("epochs", 3))
+    batch_size = int(params.get("batch_size", 4))
+    learning_rate = float(params.get("learning_rate", 2e-4))
 
     ner = NERModel(MODEL_NAME, label_list)
     tokenizer = ner.tokenizer

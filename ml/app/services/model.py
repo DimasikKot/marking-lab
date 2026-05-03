@@ -35,27 +35,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # -------------------------------------------------------------------
 # 1. Чтение данных из файлов
 # -------------------------------------------------------------------
-def read_conll(file_path: str):
-    """Чтение классического CoNLL (токен<TAB>метка). Оставлено для совместимости."""
-    sentences = []
-    with open(file_path, "r", encoding="utf-8") as f:
-        sentence = []
-        for line in f:
-            line = line.strip()
-            if line == "":
-                if sentence:
-                    sentences.append(sentence)
-                    sentence = []
-            else:
-                parts = line.split()
-                if len(parts) >= 2:
-                    token, label = parts[0], parts[-1]
-                    sentence.append({"token": token, "label": label})
-        if sentence:
-            sentences.append(sentence)
-    return sentences
-
-
 def parse_csv_from_text(text: str):
     """
     Парсит содержимое CSV-файла с колонками text и labels.
@@ -188,7 +167,7 @@ class NERModel:
         self,
         train_dataset,
         eval_dataset=None,
-        output_dir: str = "./ner_model",
+        output_dir: str = "./models",
         epochs: int = 5,
         batch_size: int = 16,
         learning_rate: float = 2e-5,
