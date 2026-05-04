@@ -231,14 +231,14 @@ async def train_model_by_id(
     async with httpx.AsyncClient() as client:
         files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
         opened_files: list[io.BufferedReader] = []
-
+        print(1)
         try:
             for path in files_paths:
                 file_stream: io.BufferedReader = open(path, "rb")
                 opened_files.append(file_stream)
                 # Формат: (название_поля, (имя_файла, объект_файла, content_type))
                 files_to_send.append(("files", (path.name, file_stream, "text/plain")))
-
+            print(2)
             # Отправляем POST запрос
             response = await client.post(
                 settings.ML_URL + "/models/train",  # URL обучающего сервиса
@@ -246,10 +246,11 @@ async def train_model_by_id(
                 files=files_to_send,
                 timeout=None,  # Обучение может длиться долго
             )
+            print(3)
 
             for file_stream in opened_files:
                 file_stream.close()
-
+            print(4)
             if response.status_code != 200:
                 raise HTTPException(status_code=500, detail="Ошибка обучающего сервиса")
 
@@ -260,7 +261,7 @@ async def train_model_by_id(
             metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
             # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
             graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
-
+            print(5)
             # Содержимое результирующего файла (если нужно сохранить)
             # result_content = response.content
 
@@ -271,6 +272,7 @@ async def train_model_by_id(
                 model_id=model_db.id,
                 content=response.content # content=response.content.decode("utf-8"),
             )
+            print(6)
             # model_db.accuracy = metrics.get("accuracy") # Пример
 
         finally:

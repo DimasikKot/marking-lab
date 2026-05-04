@@ -22,7 +22,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G # Ограничиваем ОЗУ
+          memory: 1G # Ограничиваем ОЗУ
 
     # Это публикует порт на хост, поэтому любой может открыть
     ports:
@@ -66,7 +66,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 1G
 
   ml:
     build:
@@ -85,7 +85,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 2G
         reservations:
           devices:
             - driver: nvidia

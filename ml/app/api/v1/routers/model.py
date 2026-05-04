@@ -42,24 +42,24 @@ async def train_ner(
         content = await file.read()
         text = content.decode("utf-8")
         # Теперь используем правильный парсер
-        all_sentences.extend(parse_csv_from_text(text))
+        all_sentences.extend(parse_csv_from_text(text)) # список предложений
 
-    if not all_sentences:
+    if not all_sentences: # если предложений нет
         return StreamingResponse(
             io.BytesIO(b"no data"),
             media_type="text/plain",
             status_code=400,
         )
 
-    label_list = extract_labels_from_sentences(all_sentences)
+    label_list = extract_labels_from_sentences(all_sentences) # список уникальных меток
 
     # Разбиение train/validation (80/20)
-    split_idx = int(len(all_sentences) * 0.8)
+    split_idx = int(len(all_sentences) * 0.7)
     train_sentences = all_sentences[:split_idx]
     eval_sentences = all_sentences[split_idx:]
 
     epochs = int(params.get("epochs", 3))
-    batch_size = int(params.get("batch_size", 4))
+    batch_size = int(params.get("batch_size", 16))
     learning_rate = float(params.get("learning_rate", 2e-4))
 
     ner = NERModel(MODEL_NAME, label_list)

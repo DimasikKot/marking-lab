@@ -116,20 +116,23 @@ def prepare_dataset(
 # 4. Метрики
 # -------------------------------------------------------------------
 def compute_metrics(p, label_list):
-    predictions, labels = p
-    predictions = np.argmax(predictions, axis=2)
+    predictions, labels = p # предсказанные метки и истинные метки
+    predictions = np.argmax(predictions, axis=2) # для каждого токена определяем индекс метки, по вероятности пренадлежности к классу
 
-    true_predictions = [
+    true_predictions = [ # буквально X для модели
         [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
-    ]
-    true_labels = [
+    ] # убираем элементы со значениями -100, преобразуем индексы меток в предсказанные метки
+    true_labels = [ # буквально Y для модели
         [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
-    ]
-
+    ] # убираем элементы со значениями -100, преобразуем индексы меток в истинные метки
+    # true_predictions (X) -> true_labels (Y)
     report = classification_report(
-        true_labels, true_predictions, scheme=IOB2, output_dict=True
+        true_labels, # истинные метки
+        true_predictions, # предсказанные метки
+        scheme=IOB2, # схема разметки
+        output_dict=True # вернуть словарём
     )
     report_dict = cast(Dict[str, Any], report)
     f1 = f1_score(true_labels, true_predictions, scheme=IOB2)
@@ -148,20 +151,20 @@ def compute_metrics(p, label_list):
 class NERModel:
     def __init__(self, model_name: str, label_list: List[str]):
         self.model_name = model_name
-        self.label_list = label_list
-        self.label2id = {l: i for i, l in enumerate(label_list)}
-        self.id2label = {i: l for l, i in self.label2id.items()}
+        self.label_list = label_list # список уникальных меток
+        self.label2id = {l: i for i, l in enumerate(label_list)} # преобразование метки в число
+        self.id2label = {i: l for l, i in self.label2id.items()} # преобразование числа в метку
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-        self.model = AutoModelForTokenClassification.from_pretrained(
-            model_name,
-            num_labels=len(label_list),
-            id2label=self.id2label,
-            label2id=self.label2id,
-        ).to(device)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True) # преобразование текста в числа 
+        self.model = AutoModelForTokenClassification.from_pretrained( # инициализируем предобученную модель
+            model_name, # название модели
+            num_labels=len(label_list), # сколько всего типов меток
+            id2label=self.id2label, # словарь число-метка
+            label2id=self.label2id, # cловарь метка-число
+        ).to(device) # используем GPU
         self.data_collator = DataCollatorForTokenClassification(
             self.tokenizer, padding="longest"
-        )
+        ) # собирает примеры в батчи, выравнивает метки по самому длинному примеру батча
 
     def train(
         self,
@@ -173,45 +176,45 @@ class NERModel:
         learning_rate: float = 2e-5,
         max_length: int = MAX_LENGTH,
     ) -> dict:
-        training_args = TrainingArguments(
+        training_args = TrainingArguments( # параметры выбираемые для обучения модели
             output_dir=output_dir,
-            eval_strategy="epoch" if eval_dataset else "no",
+            eval_strategy="epoch" if eval_dataset else "no", # оценка модели в конце каждой эпохи
             save_strategy="epoch",
-            learning_rate=learning_rate,
-            per_device_train_batch_size=batch_size,
-            per_device_eval_batch_size=batch_size,
-            num_train_epochs=epochs,
-            weight_decay=0.01,
-            logging_steps=50,
-            load_best_model_at_end=True if eval_dataset else False,
-            metric_for_best_model="f1",
-            greater_is_better=True,
-            push_to_hub=False,
-            report_to="none",
-            fp16=torch.cuda.is_available(),
-            dataloader_num_workers=2,
-            save_total_limit=1,
+            learning_rate=learning_rate, # скорость обучения
+            per_device_train_batch_size=batch_size, # размер батча для тренировочной выборки
+            per_device_eval_batch_size=batch_size, # размер батча для валидационной выборки
+            num_train_epochs=epochs, # кол-во эпох
+            weight_decay=0.01, # штраф за большие веса чтобы модель не переобучалась
+            logging_steps=50, # каждый 50 шагов логируем метрики
+            load_best_model_at_end=True if eval_dataset else False, # выбирает лучшую модель по метрике
+            metric_for_best_model="f1", # метрика для выбора лучшей модели
+            greater_is_better=True, # лучшая модель - модель с максимальным значением метрики
+            push_to_hub=False, # Запись модели в HGhub, если нужна - True
+            report_to="none", # куда отправляются логи метрик
+            fp16=torch.cuda.is_available(), # При использовании GPU использовать 16-битные числа
+            dataloader_num_workers=2, # распараллеливание загрузки данных
+            save_total_limit=1, # хранить только лучшую модель на диске
         )
 
         trainer = Trainer(
-            model=self.model,
-            args=training_args,
-            train_dataset=train_dataset,
-            eval_dataset=eval_dataset,
-            data_collator=self.data_collator,
-            compute_metrics=(lambda p: compute_metrics(p, self.label_list)) if eval_dataset else None,
+            model=self.model, # предобученная модель
+            args=training_args, # признаки обучения, которые мы создали выше
+            train_dataset=train_dataset, # тренировочная выборка
+            eval_dataset=eval_dataset, # валидационная выборка
+            data_collator=self.data_collator, # выравнивает примеры в батчи
+            compute_metrics=(lambda p: compute_metrics(p, self.label_list)) if eval_dataset else None, # функция для расчёта метрик
             callbacks=(
-                [EarlyStoppingCallback(early_stopping_patience=2)]
+                [EarlyStoppingCallback(early_stopping_patience=2)] # кол-во эпох для остановки
                 if eval_dataset
                 else []
-            ),
+            ), # ранняя остановка обучения модели при достижении определенного кол-ва эпох без улучшения метрики
         )
         print(device)
 
-        trainer.train()
+        trainer.train() # обучаем модель
 
-        trainer.save_model(output_dir)
-        self.tokenizer.save_pretrained(output_dir)
+        trainer.save_model(output_dir) # сохраняем обученную модель
+        self.tokenizer.save_pretrained(output_dir) # сохраняем токенизатор
 
         log_history = trainer.state.log_history
         train_loss = []
