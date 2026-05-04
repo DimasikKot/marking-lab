@@ -242,6 +242,57 @@ class NERModel:
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label
 
+    def predict(self, text: str, return_entities: bool = True) -> List[Dict]:
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=MAX_LENGTH).to(device)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+        logits = outputs.logits
+        probabilities = torch.softmax(logits, dim=-1)
+        predictions = torch.argmax(logits, dim=-1)
+        
+        tokens = self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+        word_ids = inputs.word_ids()
+        
+        result = []
+        prev_word_id = None
+        for i, (token, pred, prob) in enumerate(zip(tokens, predictions[0], probabilities[0])):
+            word_id = word_ids[i]
+            if word_id is None:
+                continue
+            if word_id != prev_word_id:
+                label = self.id2label[pred.item()] # type: ignore
+                score = prob[pred].item()
+                token_text = token.replace("##", "") if self.model_name.startswith("bert") else token
+                result.append({"word": token_text, "entity": label, "score": score})
+            prev_word_id = word_id
+        
+        if return_entities:
+            entities = []
+            current_entity = None
+            for item in result:
+                label = item["entity"]
+                if label == "O":
+                    if current_entity:
+                        entities.append(current_entity)
+                        current_entity = None
+                elif label.startswith("B-"):
+                    if current_entity:
+                        entities.append(current_entity)
+                    current_entity = {"type": label[2:], "text": item["word"], "score": item["score"]}
+                elif label.startswith("I-"):
+                    if current_entity and current_entity["type"] == label[2:]:
+                        current_entity["text"] += " " + item["word"]
+                        current_entity["score"] = min(current_entity["score"], item["score"])
+                    else:
+                        if current_entity:
+                            entities.append(current_entity)
+                        current_entity = {"type": label[2:], "text": item["word"], "score": item["score"]}
+            if current_entity:
+                entities.append(current_entity)
+            return entities
+        else:
+            return result
+
 
 # -------------------------------------------------------------------
 # Вспомогательные функции

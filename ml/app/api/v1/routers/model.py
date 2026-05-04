@@ -9,8 +9,11 @@ from typing import List, Dict
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
+import numpy as np
 
 from app.services.model import (
+    Trainer,
+    TrainingArguments,
     NERModel,
     build_zip_model,
     extract_labels_from_sentences,
@@ -54,13 +57,13 @@ async def train_ner(
     label_list = extract_labels_from_sentences(all_sentences) # список уникальных меток
 
     # Разбиение train/validation (80/20)
-    split_idx = int(len(all_sentences) * 0.7)
+    split_idx = int(len(all_sentences) * 0.8)
     train_sentences = all_sentences[:split_idx]
     eval_sentences = all_sentences[split_idx:]
 
     epochs = int(params.get("epochs", 3))
     batch_size = int(params.get("batch_size", 16))
-    learning_rate = float(params.get("learning_rate", 2e-4))
+    learning_rate = float(params.get("learning_rate", 2e-5))
 
     ner = NERModel(MODEL_NAME, label_list)
     tokenizer = ner.tokenizer
@@ -93,7 +96,143 @@ async def train_ner(
                 "precision": eval_metrics.get("eval_precision"),
                 "recall": eval_metrics.get("eval_recall"),
             })
+                # ========== ВЫВОД ПРЕДСКАЗАНИЙ ==========
+        predictions_output = []
+        
+        if eval_dataset and len(eval_sentences) > 0:
+            logger.info("Generating predictions on validation set...")
+            
+            # Получаем предсказания модели
+            trainer = Trainer(
+                model=ner.model,
+                args=TrainingArguments(
+                    output_dir=tmpdir,
+                    per_device_eval_batch_size=batch_size,
+                    report_to="none",
+                ),
+                data_collator=ner.data_collator,
+            )
+            
+            predictions = trainer.predict(eval_dataset) # type: ignore
+            preds = np.argmax(predictions.predictions, axis=2)
+            
+            # Декодируем предсказания для каждого примера
+            for idx, (sentence, true_labels_original) in enumerate(zip(eval_sentences, predictions.label_ids)): # type: ignore
+                # Получаем исходные токены
+                tokens = [item["token"] for item in sentence]
+                true_labels = [item["label"] for item in sentence]
+                
+                # Получаем предсказанные метки для этого предложения
+                # Нужно сопоставить с исходными токенами, учитывая субтокенизацию
+                pred_labels_aligned = []
+                
+                # Токенизируем предложение с выравниванием
+                tokenized = tokenizer(
+                    tokens,
+                    truncation=True,
+                    is_split_into_words=True,
+                    max_length=MAX_LENGTH,
+                    return_tensors="pt"
+                )
+                
+                word_ids = tokenized.word_ids()
+                pred_ids_for_sentence = preds[idx]
+                
+                # Выбираем только первые предсказания для каждого слова
+                prev_word_idx = None
+                for word_idx in word_ids:
+                    if word_idx is not None and word_idx != prev_word_idx:
+                        if word_idx < len(pred_ids_for_sentence):
+                            pred_label = label_list[pred_ids_for_sentence[word_idx]]
+                            pred_labels_aligned.append(pred_label)
+                        prev_word_idx = word_idx
+                
+                # Обрезаем до длины исходного предложения
+                pred_labels_aligned = pred_labels_aligned[:len(tokens)]
+                
+                # Собираем результаты для этого предложения
+                sentence_predictions = {
+                    "sentence_id": idx,
+                    "tokens": tokens,
+                    "true_labels": true_labels,
+                    "predicted_labels": pred_labels_aligned
+                }
+                
+                # Подсчет правильных/неправильных для этого предложения
+                correct_count = sum(1 for t, p in zip(true_labels, pred_labels_aligned) if t == p)
+                total_count = len(tokens)
+                sentence_predictions["accuracy"] = correct_count / total_count if total_count > 0 else 0
+                
+                # Находим ошибки
+                errors = []
+                for token_idx, (token, true, pred) in enumerate(zip(tokens, true_labels, pred_labels_aligned)):
+                    if true != pred:
+                        errors.append({
+                            "position": token_idx,
+                            "token": token,
+                            "true_label": true,
+                            "predicted_label": pred
+                        })
+                sentence_predictions["errors"] = errors
+                
+                predictions_output.append(sentence_predictions)
+                
+                # Логируем первые 5 предложений для проверки
+                if idx < 5:
+                    logger.info(f"\n=== Пример {idx} ===")
+                    logger.info(f"Tokens: {tokens[:20]}")
+                    logger.info(f"True: {true_labels[:20]}")
+                    logger.info(f"Pred: {pred_labels_aligned[:20]}")
+                    logger.info(f"Errors: {len(errors)}/{len(tokens)}")
+            
+            # Общая статистика по предсказаниям
+            total_correct = sum(p["accuracy"] * len(p["tokens"]) for p in predictions_output)
+            total_tokens = sum(len(p["tokens"]) for p in predictions_output)
+            overall_accuracy = total_correct / total_tokens if total_tokens > 0 else 0
+            
+            # Статистика по каждой метке
+            label_stats = {}
+            for pred_info in predictions_output:
+                for true, pred in zip(pred_info["true_labels"], pred_info["predicted_labels"]):
+                    if true not in label_stats:
+                        label_stats[true] = {"total": 0, "correct": 0}
+                    label_stats[true]["total"] += 1
+                    if true == pred:
+                        label_stats[true]["correct"] += 1
+            
+            # Добавляем статистику в метрики
+            metrics["predictions_stats"] = {
+                "overall_token_accuracy": overall_accuracy,
+                "total_sentences": len(predictions_output),
+                "total_tokens": total_tokens,
+                "label_wise_accuracy": {
+                    label: stats["correct"] / stats["total"] if stats["total"] > 0 else 0
+                    for label, stats in label_stats.items()
+                },
+                "first_5_examples": predictions_output[:5]  # Только первые 5 примеров для ответа
+            }
+            
+            # Сохраняем полные предсказания в файл
+            predictions_file = io.BytesIO()
+            predictions_json = json.dumps(predictions_output, indent=2, ensure_ascii=False)
+            predictions_file.write(predictions_json.encode('utf-8'))
+            predictions_file.seek(0)
+            
+            logger.info(f"Predictions generated for {len(predictions_output)} sentences")
+            logger.info(f"Overall token accuracy: {overall_accuracy:.4f}")
+        
+        loss_plot = plot_loss(result["train_loss"])
+        cm_plot = plot_confusion_matrix(label_list)
 
+        zip_data = build_zip_model(tmpdir)
+        
+        # Если есть предсказания, добавляем их в zip архив
+        if predictions_output:
+            import zipfile
+            zip_buffer = io.BytesIO(zip_data)
+            with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr('predictions.json', predictions_json)
+            zip_data = zip_buffer.getvalue()
         loss_plot = plot_loss(result["train_loss"])
         cm_plot = plot_confusion_matrix(label_list)
 
