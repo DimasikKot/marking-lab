@@ -251,30 +251,30 @@ async def train_model_by_id(
                 settings.ML_URL + "/models/train",
                 data={"parameters": json.dumps(model_db.parameters)},
                 files=files_to_send,
-                timeout=None
+                timeout=None,
             ) as response:
-                
+
                 print(f"Status: {response.status_code}")
                 print(f"Headers: {dict(response.headers)}")  # Отладка
-                
+
                 if response.status_code == 200:
                     # Читаем заголовки ДО тела ответа
                     metrics = json.loads(response.headers.get("X-Metrics", "{}"))
                     graphs = json.loads(response.headers.get("X-Graphs", "{}"))
-                    
+
                     content_length = response.headers.get("Content-Length")
                     print(f"Expected size: {content_length} bytes")
-                    
+
                     # Сохраняем файл
                     downloaded = 0
                     with open("ner_model.zip", "wb") as f:
-                        async for chunk in response.aiter_bytes(chunk_size=65536):
+                        async for chunk in response.aiter_bytes(chunk_size=1048576):
                             f.write(chunk)
                             downloaded += len(chunk)
                             if content_length:
                                 progress = (downloaded / int(content_length)) * 100
                                 print(f"\rProgress: {progress:.1f}%", end="")
-                    
+
                     print(f"\nDownloaded: {downloaded} bytes")
             print(3)
 
@@ -300,7 +300,7 @@ async def train_model_by_id(
             _create_model_on_disk(
                 project_id=model_db.project_id,
                 model_id=model_db.id,
-                content=response.content # content=response.content.decode("utf-8"),
+                content=response.content,  # content=response.content.decode("utf-8"),
             )
             print(6)
             # model_db.accuracy = metrics.get("accuracy") # Пример
