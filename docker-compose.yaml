@@ -80,7 +80,7 @@ services:
 
     volumes:
       - ./ml:/app
-      - /app/data:/data # Общая папка для датасетов
+      # - /app/data:/data # Общая папка для датасетов
 
     deploy:
       resources:
