@@ -240,12 +240,42 @@ async def train_model_by_id(
                 files_to_send.append(("files", (path.name, file_stream, "text/plain")))
             print(2)
             # Отправляем POST запрос
-            response = await client.post(
-                settings.ML_URL + "/models/train",  # URL обучающего сервиса
+            # response = await client.post(
+            #     settings.ML_URL + "/models/train",  # URL обучающего сервиса
+            #     data={"parameters": json.dumps(model_db.parameters)},
+            #     files=files_to_send,
+            #     timeout=None,  # Обучение может длиться долго
+            # )
+            async with client.stream(
+                "POST",
+                settings.ML_URL + "/models/train",
                 data={"parameters": json.dumps(model_db.parameters)},
                 files=files_to_send,
-                timeout=None,  # Обучение может длиться долго
-            )
+                timeout=None
+            ) as response:
+                
+                print(f"Status: {response.status_code}")
+                print(f"Headers: {dict(response.headers)}")  # Отладка
+                
+                if response.status_code == 200:
+                    # Читаем заголовки ДО тела ответа
+                    metrics = json.loads(response.headers.get("X-Metrics", "{}"))
+                    graphs = json.loads(response.headers.get("X-Graphs", "{}"))
+                    
+                    content_length = response.headers.get("Content-Length")
+                    print(f"Expected size: {content_length} bytes")
+                    
+                    # Сохраняем файл
+                    downloaded = 0
+                    with open("ner_model.zip", "wb") as f:
+                        async for chunk in response.aiter_bytes(chunk_size=65536):
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if content_length:
+                                progress = (downloaded / int(content_length)) * 100
+                                print(f"\rProgress: {progress:.1f}%", end="")
+                    
+                    print(f"\nDownloaded: {downloaded} bytes")
             print(3)
 
             for file_stream in opened_files:

@@ -225,6 +225,8 @@ class NERModel:
             if "eval_f1" in entry:
                 eval_metrics = entry
 
+        print(eval_metrics)
+        print(log_history[-5:])
         return {
             "train_loss": train_loss,
             "eval_metrics": eval_metrics,

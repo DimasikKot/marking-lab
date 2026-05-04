@@ -80,6 +80,7 @@ async def train_ner(
         )
 
         eval_metrics = result["eval_metrics"]
+        print(eval_metrics)
         metrics = {
             "epochs": epochs,
             "batch_size": batch_size,
@@ -97,16 +98,21 @@ async def train_ner(
         cm_plot = plot_confusion_matrix(label_list)
 
         zip_data = build_zip_model(tmpdir)
+        zip_data = io.BytesIO(zip_data)  # если zip_data это bytes
+        zip_data.seek(0, 2)  # в конец
+        file_size = zip_data.tell()
+        zip_data.seek(0)  # обратно в начало
 
-    return StreamingResponse(
-        io.BytesIO(zip_data),
-        media_type="application/zip",
-        headers={
-            "Content-Disposition": "attachment; filename=ner_model.zip",
-            "X-Metrics": json.dumps(metrics),
-            "X-Graphs": json.dumps({
-                "train_loss": f"data:image/png;base64,{loss_plot}",
-                "heatmap": f"data:image/png;base64,{cm_plot}",
-            }),
-        },
-    )
+    # return StreamingResponse(
+    #     zip_data,
+    #     media_type="application/zip",
+    #     headers={
+    #         "Content-Length": str(file_size),
+    #         "Content-Disposition": "attachment; filename=ner_model.zip",
+    #         "X-Metrics": json.dumps(metrics),
+    #         "X-Graphs": json.dumps({
+    #             "train_loss": f"data:image/png;base64,{loss_plot}",
+    #             "heatmap": f"data:image/png;base64,{cm_plot}",
+    #         }),
+    #     },
+    # )
