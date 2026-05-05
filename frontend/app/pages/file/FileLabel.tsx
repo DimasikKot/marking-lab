@@ -123,7 +123,7 @@ export function FileLabel({
   };
 
   const handleSave = async () => {
-    if (!hasUnsavedChanges.current) return;
+    if (!hasUnsavedChanges) return;
 
     setIsSaving(true);
     try {
