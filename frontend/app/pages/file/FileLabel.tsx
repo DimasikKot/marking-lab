@@ -1,16 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import toast from "react-hot-toast";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
-import {
-  type GetFilePageResponse,
-  type Row,
-  updateFileByIdContent,
-} from "@/shared/api/file";
+import { type GetFilePageResponse, type Row } from "@/shared/api/file";
 import { TAG_BG_COLORS, type BioTag } from "@/shared/constants/tags";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
@@ -21,26 +16,31 @@ export function FileLabel({
   fileId,
   page,
   file,
-  loading,
+  localRows,
+  setLocalRows,
+  isLoading,
+  isSaving,
+  handleSave,
   hasUnsavedChanges,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: number;
-  file: GetFilePageResponse;
-  loading: boolean;
+  file: GetFilePageResponse | null;
+  localRows: Row[];
+  setLocalRows: (rows: Row[]) => void;
+  isLoading: boolean;
+  isSaving: boolean;
+  handleSave: () => void;
   hasUnsavedChanges: React.RefObject<boolean>;
 }) {
   const navigate = useNavigate();
-  const [localRows, setLocalRows] = useState<Row[]>(file.rows);
-  const [isSaving, setIsSaving] = useState(false);
 
   const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([]);
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    setLocalRows(file.rows);
     setSelectedWords([]);
     setShowTagMenu(false);
   }, [file]);
@@ -121,26 +121,6 @@ export function FileLabel({
     hasUnsavedChanges.current = true;
   };
 
-  const handleSave = async () => {
-    if (!hasUnsavedChanges.current) return;
-
-    setIsSaving(true);
-    try {
-      await updateFileByIdContent(
-        projectId,
-        fileId,
-        { new_rows: localRows },
-        page,
-      );
-      hasUnsavedChanges.current = false;
-      toast.success("Разметка успешно сохранена!");
-    } catch {
-      toast.error("Ошибка при сохранении разметки");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   useEffect(() => {
     const handleClickOutside = () => {
       if (showTagMenu) {
@@ -157,14 +137,15 @@ export function FileLabel({
     <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
         onClick={() => navigate(`/projects/${projectId}?tab=files`)}
-        isLoading={isSaving || loading}
+        isLoading={isSaving || isLoading}
       />
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
+        {/* Header */}
         <div className="flex justify-end">
           <ButtonUI
             onClick={handleSave}
-            disabled={isSaving || loading || !hasUnsavedChanges.current}
+            disabled={isSaving || isLoading || !hasUnsavedChanges.current}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}
@@ -191,6 +172,7 @@ export function FileLabel({
           }
         />
 
+        {/* Разметка текста */}
         <div
           className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
           onContextMenu={(e) => e.preventDefault()}
@@ -212,7 +194,7 @@ export function FileLabel({
                       onMouseDown={(e) =>
                         handleWordMouseDown(lineIdx, wordIdx, e)
                       }
-                      className={`flex flex-col items-center gap-1 px-1 py-0.5 rounded cursor-pointer transition-all
+                      className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
                         ${TAG_BG_COLORS[word.label] ?? ""}
                         ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
                       `}
@@ -228,6 +210,7 @@ export function FileLabel({
           </div>
         </div>
 
+        {/* Bottom */}
         <TextUI variant="desc" className="flex justify-center mt-4">
           Страница {page} из {file?.total_pages}
         </TextUI>

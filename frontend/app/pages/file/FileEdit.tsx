@@ -1,15 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import toast from "react-hot-toast";
+import { useRef } from "react";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
-import {
-  type GetFilePageResponse,
-  type Row,
-  updateFileByIdContent,
-} from "@/shared/api/file";
+import { type GetFilePageResponse, type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
 export function FileEdit({
@@ -17,25 +12,27 @@ export function FileEdit({
   fileId,
   page,
   file,
-  loading,
+  localRows,
+  setLocalRows,
+  isLoading,
+  isSaving,
+  handleSave,
   hasUnsavedChanges,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: number;
-  file: GetFilePageResponse;
-  loading: boolean;
+  file: GetFilePageResponse | null;
+  localRows: Row[];
+  setLocalRows: (rows: Row[]) => void;
+  isLoading: boolean;
+  isSaving: boolean;
+  handleSave: () => void;
   hasUnsavedChanges: React.RefObject<boolean>;
 }) {
   const navigate = useNavigate();
-  const [localRows, setLocalRows] = useState<Row[]>(file.rows);
-  const [isSaving, setIsSaving] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
-
-  useEffect(() => {
-    setLocalRows(file.rows);
-  }, [file]);
 
   const handleTokenChange = (
     lineIdx: number,
@@ -52,49 +49,154 @@ export function FileEdit({
     wordIdx: number,
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
+    const input = e.currentTarget;
+    const cursorPos = input.selectionStart ?? 0;
+    const text = input.value;
+
+    // ================= SPACE =================
     if (e.key === " ") {
-      e.preventDefault(); // предотвращаем обычный пробел
+      e.preventDefault();
 
-      const currentText = e.currentTarget.value.trim();
-      if (!currentText) return;
+      const left = text.slice(0, cursorPos);
+      const right = text.slice(cursorPos);
 
-      const updatedRows = [...localRows];
+      setLocalRows((prev) => {
+        hasUnsavedChanges.current = true;
 
-      // Добавляем новое слово после текущего
-      updatedRows[lineIdx].words.splice(wordIdx + 1, 0, {
-        token: "",
-        label: "O",
+        return prev.map((line, li) => {
+          if (li !== lineIdx) return line;
+
+          const newWords = [...line.words];
+
+          newWords[wordIdx] = {
+            ...newWords[wordIdx],
+            token: left,
+          };
+
+          newWords.splice(wordIdx + 1, 0, {
+            token: right,
+            label: "O",
+          });
+
+          return { ...line, words: newWords };
+        });
       });
 
-      setLocalRows(updatedRows);
-
-      // Фокус на новое поле
       setTimeout(() => {
         inputRefs.current[lineIdx]?.[wordIdx + 1]?.focus();
-      }, 10);
+      }, 0);
     }
 
+    // ================= ENTER =================
     if (e.key === "Enter") {
-      handleSave();
+      e.preventDefault();
+
+      const left = text.slice(0, cursorPos);
+      const right = text.slice(cursorPos);
+
+      setLocalRows((prev) => {
+        hasUnsavedChanges.current = true;
+
+        const newRows = [...prev];
+        const currentLine = prev[lineIdx];
+
+        const before = currentLine.words.slice(0, wordIdx);
+        const after = currentLine.words.slice(wordIdx + 1);
+
+        const newCurrentLine = {
+          ...currentLine,
+          words: [
+            ...before,
+            {
+              ...currentLine.words[wordIdx],
+              token: left,
+            },
+          ],
+        };
+
+        const newNextLine = {
+          words: [
+            {
+              token: right,
+              label: "O",
+            },
+            ...after,
+          ],
+        };
+
+        newRows[lineIdx] = newCurrentLine;
+        newRows.splice(lineIdx + 1, 0, newNextLine);
+
+        return newRows;
+      });
+
+      setTimeout(() => {
+        inputRefs.current[lineIdx + 1]?.[0]?.focus();
+      }, 0);
     }
-  };
 
-  const handleSave = async () => {
-    if (!hasUnsavedChanges) return;
+    // ================= BACKSPACE =================
+    if (e.key === "Backspace" && cursorPos === 0) {
+      const line = localRows[lineIdx];
+      const prevWord = line.words[wordIdx - 1];
 
-    setIsSaving(true);
-    const result = await updateFileByIdContent(
-      projectId,
-      fileId,
-      { new_rows: localRows },
-      page,
-    );
-    setIsSaving(false);
+      if (prevWord) {
+        e.preventDefault();
 
-    if (result) {
-      toast.success("Изменения текста успешно сохранены!");
-    } else {
-      toast.error("Ошибка при сохранении");
+        setLocalRows((prev) => {
+          hasUnsavedChanges.current = true;
+
+          const newRows = [...prev];
+          const newWords = [...line.words];
+
+          const merged = prevWord.token + text;
+
+          newWords[wordIdx - 1] = {
+            ...prevWord,
+            token: merged,
+          };
+
+          newWords.splice(wordIdx, 1);
+
+          newRows[lineIdx] = { ...line, words: newWords };
+
+          return newRows;
+        });
+
+        setTimeout(() => {
+          const prevInput = inputRefs.current[lineIdx]?.[wordIdx - 1];
+          prevInput?.focus();
+
+          const len = prevInput?.value.length ?? 0;
+          prevInput?.setSelectionRange(len, len);
+        }, 0);
+      }
+    }
+
+    // ================= ARROW RIGHT =================
+    if (e.key === "ArrowRight") {
+      if (cursorPos === text.length) {
+        const nextInput = inputRefs.current[lineIdx]?.[wordIdx + 1];
+        if (nextInput) {
+          e.preventDefault();
+          nextInput.focus();
+          nextInput.setSelectionRange(0, 0);
+        }
+      }
+    }
+
+    // ================= ARROW LEFT =================
+    if (e.key === "ArrowLeft") {
+      if (cursorPos === 0) {
+        const prevInput = inputRefs.current[lineIdx]?.[wordIdx - 1];
+        if (prevInput) {
+          e.preventDefault();
+          prevInput.focus();
+
+          const len = prevInput.value.length;
+          prevInput.setSelectionRange(len, len);
+        }
+      }
     }
   };
 
@@ -102,14 +204,15 @@ export function FileEdit({
     <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
         onClick={() => navigate(`/projects/${projectId}?tab=files`)}
-        isLoading={isSaving || loading}
+        isLoading={isLoading}
       />
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
+        {/* Header */}
         <div className="flex justify-end">
           <ButtonUI
             onClick={handleSave}
-            disabled={isSaving || loading || !hasUnsavedChanges.current}
+            disabled={isSaving || isLoading || !hasUnsavedChanges.current}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}
@@ -136,12 +239,13 @@ export function FileEdit({
           }
         />
 
+        {/* Редактор */}
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
-          <div className="space-y-10">
+          <div className="space-y-6">
             {localRows.map((line, lineIdx) => (
               <div
                 key={lineIdx}
-                className="pb-8 border-b border-gray-100 last:border-none flex flex-wrap gap-2"
+                className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
               >
                 {line.words.map((word, wordIdx) => (
                   <input
@@ -156,8 +260,9 @@ export function FileEdit({
                       handleTokenChange(lineIdx, wordIdx, e.target.value)
                     }
                     onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
-                    className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none min-w-8 font-medium text-gray-900 transition-colors"
-                    style={{ width: `${Math.max(word.token.length + 1, 4)}ch` }}
+                    className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none
+                    min-w-8 font-medium text-xl py-0.5 text-gray-900 transition-colors"
+                    style={{ width: `${Math.max(word.token.length + 1, 3)}ch` }}
                   />
                 ))}
               </div>
@@ -165,6 +270,7 @@ export function FileEdit({
           </div>
         </div>
 
+        {/* Bottom */}
         <TextUI variant="desc" className="flex justify-center mt-4">
           Страница {page} из {file?.total_pages}
         </TextUI>

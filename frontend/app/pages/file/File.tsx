@@ -1,12 +1,18 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import { FileEdit } from "./FileEdit";
 import { FileLabel } from "./FileLabel";
 import { TextUI } from "@/shared/components/TextUI";
 import { Header } from "@/shared/components/Header";
-import { fetchFileById, type GetFilePageResponse } from "@/shared/api/file";
+import {
+  fetchFileById,
+  updateFileByIdContent,
+  type GetFilePageResponse,
+  type Row,
+} from "@/shared/api/file";
 
 export function File() {
   // Переменные URL
@@ -18,7 +24,9 @@ export function File() {
 
   // Переменные страниц
   const [file, setFile] = useState<GetFilePageResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [localRows, setLocalRows] = useState<Row[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const hasUnsavedChanges = useRef(false);
 
@@ -27,13 +35,44 @@ export function File() {
       setLoading(true);
       const response = await fetchFileById(projectId, fileId, page);
       setLoading(false);
+
       if (response === undefined) return;
       setFile(response);
+      setLocalRows(response.rows);
       hasUnsavedChanges.current = false;
     };
 
     loadPage();
   }, [fileId, page, projectId]);
+
+  const handleSave = async () => {
+    if (!hasUnsavedChanges.current) return;
+
+    setIsSaving(true);
+    const response = await updateFileByIdContent(
+      projectId,
+      fileId,
+      { new_rows: localRows },
+      page,
+    );
+    setIsSaving(false);
+
+    if (response === undefined) return;
+    toast.success("Изменения текста успешно сохранены!");
+
+    const loadPage = async () => {
+      setLoading(true);
+      const response = await fetchFileById(projectId, fileId, page);
+      setLoading(false);
+
+      if (response === undefined) return;
+      setFile(response);
+      setLocalRows(response.rows);
+      hasUnsavedChanges.current = false;
+    };
+
+    loadPage();
+  };
 
   // Обработчик смены вкладки - меняем URL
   const handleSelect = (index: number) => {
@@ -57,7 +96,7 @@ export function File() {
               className="group relative px-8 pb-2 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
             >
               <TextUI variant="normal" className="w-32 text-center">
-                Текст
+                Редактор
               </TextUI>
               <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-discrete duration-300 group-[.active]:w-full" />
             </Tab>
@@ -77,29 +116,33 @@ export function File() {
       </Header>
 
       <TabPanel>
-        {file && (
-          <FileEdit
-            projectId={projectId}
-            fileId={fileId}
-            page={parseInt(page)}
-            file={file}
-            loading={loading}
-            hasUnsavedChanges={hasUnsavedChanges}
-          />
-        )}
+        <FileEdit
+          projectId={projectId}
+          fileId={fileId}
+          page={parseInt(page)}
+          file={file}
+          localRows={localRows}
+          setLocalRows={setLocalRows}
+          isLoading={isLoading}
+          isSaving={isSaving}
+          handleSave={handleSave}
+          hasUnsavedChanges={hasUnsavedChanges}
+        />
       </TabPanel>
 
       <TabPanel>
-        {file && (
-          <FileLabel
-            projectId={projectId}
-            fileId={fileId}
-            page={parseInt(page)}
-            file={file}
-            loading={loading}
-            hasUnsavedChanges={hasUnsavedChanges}
-          />
-        )}
+        <FileLabel
+          projectId={projectId}
+          fileId={fileId}
+          page={parseInt(page)}
+          file={file}
+          localRows={localRows}
+          setLocalRows={setLocalRows}
+          isLoading={isLoading}
+          isSaving={isSaving}
+          handleSave={handleSave}
+          hasUnsavedChanges={hasUnsavedChanges}
+        />
       </TabPanel>
     </Tabs>
   );
