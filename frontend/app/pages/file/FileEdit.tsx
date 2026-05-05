@@ -139,31 +139,30 @@ export function FileEdit({
 
     // ================= BACKSPACE =================
     if (e.key === "Backspace" && cursorPos === 0) {
-      const line = localRows[lineIdx];
-      const prevWord = line.words[wordIdx - 1];
+      e.preventDefault();
 
-      if (prevWord) {
-        e.preventDefault();
+      setLocalRows((prev) => {
+        setHasUnsavedChanges(true);
 
-        setLocalRows((prev: Row[]) => {
-          setHasUnsavedChanges(true);
+        const newRows = [...prev];
 
-          const newRows = [...prev];
-          const newWords = [...line.words];
+        const line = newRows[lineIdx]; // 🔥 FIX: брать из prev
+        const prevWord = line.words[wordIdx - 1];
 
-          const merged = prevWord.token + text;
+        if (!prevWord) return prev;
 
-          newWords[wordIdx - 1] = {
-            ...prevWord,
-            token: merged,
-          };
+        const newWords = [...line.words];
 
-          newWords.splice(wordIdx, 1);
+        const merged = prevWord.token + text;
 
-          newRows[lineIdx] = { ...line, words: newWords };
+        newWords[wordIdx - 1] = {
+          ...prevWord,
+          token: merged,
+        };
 
-          return newRows;
-        });
+        newWords.splice(wordIdx, 1);
+
+        newRows[lineIdx] = { ...line, words: newWords };
 
         setTimeout(() => {
           const prevInput = inputRefs.current[lineIdx]?.[wordIdx - 1];
@@ -172,6 +171,50 @@ export function FileEdit({
           const len = prevInput?.value.length ?? 0;
           prevInput?.setSelectionRange(len, len);
         }, 0);
+
+        return newRows;
+      });
+    }
+
+    // ================= DELETE =================
+    if (e.key === "Delete") {
+      const isEnd = cursorPos === text.length;
+
+      if (isEnd) {
+        setLocalRows((prev) => {
+          setHasUnsavedChanges(true);
+
+          const newRows = [...prev];
+
+          const line = newRows[lineIdx];
+          const nextLine = newRows[lineIdx + 1];
+
+          if (!nextLine) return prev;
+
+          const currentWords = [...line.words];
+          const nextWords = [...nextLine.words];
+
+          const last = currentWords[currentWords.length - 1];
+
+          const merged = last.token + nextWords[0].token;
+
+          currentWords[currentWords.length - 1] = {
+            ...last,
+            token: merged,
+          };
+
+          newRows[lineIdx] = {
+            ...line,
+            words: [...currentWords, ...nextWords.slice(1)],
+          };
+
+          newRows.splice(lineIdx + 1, 1);
+
+          return newRows;
+        });
+
+        e.preventDefault();
+        return;
       }
     }
 
@@ -299,7 +342,7 @@ export function FileEdit({
                       }
                       onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
                       className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none
-                    min-w-1 font-medium text-xl mx-2 text-gray-900 transition-colors"
+                    min-w-1 font-medium text-xl mx-1 text-gray-900 transition-colors"
                       style={{
                         width: `${word.token.length + 1}ch`,
                       }}
