@@ -11,9 +11,10 @@ import {
   type Row,
   updateFileByIdContent,
 } from "@/shared/api/file";
-import { TAG_COLORS, type BioTag } from "@/shared/constants/tags";
+import { TAG_BG_COLORS, type BioTag } from "@/shared/constants/tags";
+import { ButtonUI } from "@/shared/components/ButtonUI";
 
-type SelectedWord = [number, number]; // [lineIdx, wordIdx]
+type SelectedWord = [number, number];
 
 export function FileLabel({
   projectId,
@@ -148,42 +149,42 @@ export function FileLabel({
         setSelectedWords([]);
       }
     };
+    document.addEventListener("scroll", handleClickOutside);
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [showTagMenu]);
 
   return (
     <div className="max-w-6xl mx-auto m-2 mb-80">
-      <div className="flex justify-between items-center mb-4">
-        <ButtonPage
-          onClick={() => navigate(`/projects/${projectId}?tab=files`)}
-          isLoading={loading}
-        />
-        <button
-          onClick={handleSave}
-          disabled={isSaving || loading || !hasUnsavedChanges.current}
-          className="bg-emerald-600 text-white px-6 py-2 rounded-xl hover:bg-emerald-700 disabled:bg-gray-400 transition-colors"
-        >
-          {isSaving ? "Сохранение..." : "Сохранить разметку"}
-        </button>
-      </div>
+      <ButtonPage
+        onClick={() => navigate(`/projects/${projectId}?tab=files`)}
+        isLoading={isSaving || loading}
+      />
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
-        <div className="flex justify-center mb-4">
-          <TextUI variant="desc">
-            Режим разметки • Страница {page} из {file?.total_pages}
-          </TextUI>
+        <div className="flex justify-end">
+          <ButtonUI
+            onClick={handleSave}
+            disabled={isSaving || loading || !hasUnsavedChanges}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {isSaving ? "Сохранение..." : "Сохранить разметку"}
+          </ButtonUI>
         </div>
+
+        <TextUI variant="desc" className="flex justify-center mb-4">
+          Страница {page} из {file?.total_pages}
+        </TextUI>
 
         <div
           className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
           onContextMenu={(e) => e.preventDefault()}
         >
-          <div className="space-y-10">
+          <div className="space-y-6">
             {localRows.map((line, lineIdx) => (
               <div
                 key={lineIdx}
-                className="pb-8 border-b border-gray-100 last:border-none flex flex-wrap gap-3"
+                className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
               >
                 {line.words.map((word, wordIdx) => {
                   const isSelected = selectedWords.some(
@@ -196,23 +197,14 @@ export function FileLabel({
                       onMouseDown={(e) =>
                         handleWordMouseDown(lineIdx, wordIdx, e)
                       }
-                      className={`flex flex-col items-center gap-1 px-2 py-1 rounded cursor-pointer transition-all hover:bg-gray-100 ${
-                        isSelected ? "bg-blue-100 ring-2 ring-blue-500" : ""
-                      }`}
+                      className={`flex flex-col items-center gap-1 px-1 py-0.5 rounded cursor-pointer transition-all
+                        ${TAG_BG_COLORS[word.label] ?? ""}
+                        ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
+                      `}
                     >
-                      <span className="font-medium text-gray-900 select-none">
+                      <span className="font-medium text-xl text-gray-900 select-none">
                         {word.token}
                       </span>
-                      {word.label != "O" && (
-                        <span
-                          className={`text-[10px] font-mono px-2 py-0.5 rounded border text-center min-w-15 ${
-                            TAG_COLORS[word.label] ??
-                            "bg-gray-100 border-gray-300 text-gray-600"
-                          }`}
-                        >
-                          {word.label}
-                        </span>
-                      )}
                     </div>
                   );
                 })}

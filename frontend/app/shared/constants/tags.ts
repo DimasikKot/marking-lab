@@ -66,4 +66,32 @@ export const TAG_COLORS: Record<string, string> = {
   "I-nat": "bg-teal-50 border-teal-300 text-teal-700",
 };
 
+export const TAG_BG_COLORS: Record<string, string> = {
+  O: "",
+
+  "B-per": "bg-pink-300",
+  "I-per": "bg-pink-200",
+
+  "B-org": "bg-purple-300",
+  "I-org": "bg-purple-200",
+
+  "B-geo": "bg-green-300",
+  "I-geo": "bg-green-200",
+
+  "B-gpe": "bg-emerald-400",
+  "I-gpe": "bg-emerald-300",
+
+  "B-tim": "bg-blue-300",
+  "I-tim": "bg-blue-200",
+
+  "B-art": "bg-yellow-300",
+  "I-art": "bg-yellow-200",
+
+  "B-eve": "bg-orange-300",
+  "I-eve": "bg-orange-200",
+
+  "B-nat": "bg-teal-300",
+  "I-nat": "bg-teal-200",
+};
+
 export type BioTag = (typeof BIO_TAGS)[number]["value"];
