@@ -11,7 +11,7 @@ import {
   type Row,
   updateFileByIdContent,
 } from "@/shared/api/file";
-import { type BioTag } from "@/shared/constants/tags";
+import { TAG_COLORS, type BioTag } from "@/shared/constants/tags";
 
 type SelectedWord = [number, number]; // [lineIdx, wordIdx]
 
@@ -205,9 +205,10 @@ export function FileLabel({
                       </span>
                       {word.label != "O" && (
                         <span
-                          className={
-                            "text-[10px] font-mono px-2 py-0.5 rounded border text-center min-w-15 bg-blue-50 border-blue-200 text-blue-600"
-                          }
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded border text-center min-w-15 ${
+                            TAG_COLORS[word.label] ??
+                            "bg-gray-100 border-gray-300 text-gray-600"
+                          }`}
                         >
                           {word.label}
                         </span>

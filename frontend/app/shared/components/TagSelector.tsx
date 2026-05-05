@@ -1,4 +1,4 @@
-import { BIO_TAGS, type BioTag } from "@/shared/constants/tags";
+import { BIO_TAGS, TAG_COLORS, type BioTag } from "@/shared/constants/tags";
 import { TextUI } from "./TextUI";
 
 type Props = {
@@ -16,6 +16,7 @@ export function TagSelector({ onSelect, onClose, position }: Props) {
         top: position?.y ?? 0,
       }}
       onClick={(e) => e.stopPropagation()}
+      onScroll={(e) => e.stopPropagation()}
     >
       <div className="py-2 w-80 max-h-96 overflow-auto">
         {BIO_TAGS.map((tag) => (
@@ -25,9 +26,13 @@ export function TagSelector({ onSelect, onClose, position }: Props) {
               onSelect(tag.value as BioTag);
               onClose();
             }}
-            className="w-full px-6 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+            className="w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
           >
-            <span className="font-mono text-sm font-medium text-blue-600 w-16">
+            <span
+              className={`font-mono text-sm font-medium px-1 py-0.5 h-min rounded border ${
+                TAG_COLORS[tag.value]
+              }`}
+            >
               {tag.value}
             </span>
             <TextUI variant="normal" className="text-gray-700">
