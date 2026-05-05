@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 import { TextUI } from "@/shared/components/TextUI";
@@ -22,12 +22,14 @@ export function FileLabel({
   page,
   file,
   loading,
+  hasUnsavedChanges,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: number;
   file: GetFilePageResponse;
   loading: boolean;
+  hasUnsavedChanges: React.RefObject<boolean>;
 }) {
   const navigate = useNavigate();
   const [localRows, setLocalRows] = useState<Row[]>(file.rows);
@@ -37,13 +39,10 @@ export function FileLabel({
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
-  const hasUnsavedChanges = useRef(false);
-
   useEffect(() => {
     setLocalRows(file.rows);
     setSelectedWords([]);
     setShowTagMenu(false);
-    hasUnsavedChanges.current = false;
   }, [file]);
 
   const handleWordMouseDown = (
@@ -123,7 +122,7 @@ export function FileLabel({
   };
 
   const handleSave = async () => {
-    if (!hasUnsavedChanges) return;
+    if (!hasUnsavedChanges.current) return;
 
     setIsSaving(true);
     try {
@@ -165,16 +164,32 @@ export function FileLabel({
         <div className="flex justify-end">
           <ButtonUI
             onClick={handleSave}
-            disabled={isSaving || loading || !hasUnsavedChanges}
+            disabled={isSaving || loading || !hasUnsavedChanges.current}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}
           </ButtonUI>
         </div>
 
-        <TextUI variant="desc" className="flex justify-center mb-4">
+        <TextUI variant="desc" className="flex justify-center mb-2">
           Страница {page} из {file?.total_pages}
         </TextUI>
+
+        <PageNavigate
+          className="mb-4"
+          currentPage={page}
+          totalPages={file?.total_pages || 1}
+          onBack={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}?tab=label&page=${page - 1}`,
+            )
+          }
+          onNext={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}?tab=label&page=${page + 1}`,
+            )
+          }
+        />
 
         <div
           className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
@@ -213,8 +228,12 @@ export function FileLabel({
           </div>
         </div>
 
+        <TextUI variant="desc" className="flex justify-center mt-4">
+          Страница {page} из {file?.total_pages}
+        </TextUI>
+
         <PageNavigate
-          className="mt-6"
+          className="mt-2"
           currentPage={page}
           totalPages={file?.total_pages || 1}
           onBack={() =>

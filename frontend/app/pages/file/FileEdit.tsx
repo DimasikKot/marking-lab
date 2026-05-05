@@ -18,20 +18,20 @@ export function FileEdit({
   page,
   file,
   loading,
+  hasUnsavedChanges,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: number;
   file: GetFilePageResponse;
   loading: boolean;
+  hasUnsavedChanges: React.RefObject<boolean>;
 }) {
   const navigate = useNavigate();
   const [localRows, setLocalRows] = useState<Row[]>(file.rows);
   const [isSaving, setIsSaving] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
-
-  const hasUnsavedChanges = false;
 
   useEffect(() => {
     setLocalRows(file.rows);
@@ -80,6 +80,8 @@ export function FileEdit({
   };
 
   const handleSave = async () => {
+    if (!hasUnsavedChanges) return;
+
     setIsSaving(true);
     const result = await updateFileByIdContent(
       projectId,
@@ -107,16 +109,32 @@ export function FileEdit({
         <div className="flex justify-end">
           <ButtonUI
             onClick={handleSave}
-            disabled={isSaving || loading || !hasUnsavedChanges}
+            disabled={isSaving || loading || !hasUnsavedChanges.current}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}
           </ButtonUI>
         </div>
 
-        <TextUI variant="desc" className="flex justify-center mb-4">
+        <TextUI variant="desc" className="flex justify-center mb-2">
           Страница {page} из {file?.total_pages}
         </TextUI>
+
+        <PageNavigate
+          className="mb-4"
+          currentPage={page}
+          totalPages={file?.total_pages || 1}
+          onBack={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
+            )
+          }
+          onNext={() =>
+            navigate(
+              `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
+            )
+          }
+        />
 
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
           <div className="space-y-10">
@@ -147,10 +165,14 @@ export function FileEdit({
           </div>
         </div>
 
+        <TextUI variant="desc" className="flex justify-center mt-4">
+          Страница {page} из {file?.total_pages}
+        </TextUI>
+
         <PageNavigate
-          className="mt-6"
+          className="mt-2"
           currentPage={page}
-          totalPages={file?.total_pages}
+          totalPages={file?.total_pages || 1}
           onBack={() =>
             navigate(
               `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,

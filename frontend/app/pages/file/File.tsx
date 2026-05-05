@@ -1,5 +1,5 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 import { FileEdit } from "./FileEdit";
@@ -20,6 +20,8 @@ export function File() {
   const [file, setFile] = useState<GetFilePageResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const hasUnsavedChanges = useRef(false);
+
   useEffect(() => {
     const loadPage = async () => {
       setLoading(true);
@@ -27,6 +29,7 @@ export function File() {
       setLoading(false);
       if (response === undefined) return;
       setFile(response);
+      hasUnsavedChanges.current = false;
     };
 
     loadPage();
@@ -81,6 +84,7 @@ export function File() {
             page={parseInt(page)}
             file={file}
             loading={loading}
+            hasUnsavedChanges={hasUnsavedChanges}
           />
         )}
       </TabPanel>
@@ -93,6 +97,7 @@ export function File() {
             page={parseInt(page)}
             file={file}
             loading={loading}
+            hasUnsavedChanges={hasUnsavedChanges}
           />
         )}
       </TabPanel>
