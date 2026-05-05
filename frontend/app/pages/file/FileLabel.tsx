@@ -6,7 +6,12 @@ import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
 import { type GetFilePageResponse, type Row } from "@/shared/api/file";
-import { TAG_BG_COLORS, type BioTag } from "@/shared/constants/tags";
+import {
+  BIO_TAGS,
+  TAG_COLORS,
+  type BioTag,
+  type NextBioTag,
+} from "@/shared/constants/tags";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
 type SelectedWord = [number, number];
@@ -92,7 +97,7 @@ export function FileLabel({
     }
   };
 
-  const assignTag = (baseTag: BioTag) => {
+  const assignTag = (baseTag: BioTag | NextBioTag) => {
     if (selectedWords.length === 0) return;
 
     const updatedRows = [...localRows];
@@ -100,7 +105,7 @@ export function FileLabel({
     selectedWords.forEach(([lineIdx, wordIdx], index) => {
       if (!updatedRows[lineIdx]?.words[wordIdx]) return;
 
-      let newLabel: BioTag = baseTag;
+      let newLabel: BioTag | NextBioTag = baseTag;
 
       if (baseTag !== "O" && selectedWords.length > 1) {
         newLabel = (
@@ -131,7 +136,7 @@ export function FileLabel({
   }, [showTagMenu]);
 
   return (
-    <div className="max-w-6xl mx-auto m-2 mb-80">
+    <div className="relative max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
         onClick={() => navigate(`/projects/${projectId}?tab=files`)}
         isLoading={isSaving || isLoading}
@@ -192,7 +197,7 @@ export function FileLabel({
                         handleWordMouseDown(lineIdx, wordIdx, e)
                       }
                       className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
-                        ${TAG_BG_COLORS[word.label] ?? ""}
+                        ${TAG_COLORS[word.label] ?? ""}
                         ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
                       `}
                     >
@@ -227,6 +232,43 @@ export function FileLabel({
             )
           }
         />
+      </div>
+
+      <div className="fixed right-4 top-18 max-h-11/12 w-80">
+        <div
+          className="bg-white shadow-2xl border border-gray-300 rounded-2xl z-50 w-80 h-full overflow-clip"
+          onClick={(e) => e.stopPropagation()}
+          onScroll={(e) => e.stopPropagation()}
+        >
+          <div className="py-2 w-80 h-full overflow-auto">
+            {BIO_TAGS.map((tag) => (
+              <button
+                key={tag.value}
+                className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+              >
+                <span
+                  className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${
+                    TAG_COLORS[tag.value]
+                  }`}
+                >
+                  {tag.value}
+                </span>
+
+                {tag.value_next && (
+                  <span
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${
+                      TAG_COLORS[tag.value_next]
+                    }`}
+                  >
+                    {tag.value_next}
+                  </span>
+                )}
+
+                <TextUI variant="normal">{tag.label}</TextUI>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {showTagMenu && (

@@ -19,54 +19,18 @@
 // ] as const;
 
 export const BIO_TAGS = [
-  { value: "O", label: "Не сущность" },
-  { value: "B-per", label: "Человек" },
-  { value: "B-org", label: "Организация" },
-  { value: "B-geo", label: "Географическое место" },
-  { value: "B-gpe", label: "Страна/город (полит.)" },
-  { value: "B-tim", label: "Дата/время" },
-  { value: "B-art", label: "Артефакт" },
-  { value: "B-eve", label: "Событие" },
-  { value: "B-nat", label: "Природное явление" },
-  { value: "I-per", label: "Продолжение человека" },
-  { value: "I-org", label: "Продолжение организации" },
-  { value: "I-geo", label: "Продолжение места" },
-  { value: "I-gpe", label: "Продолжение города" },
-  { value: "I-tim", label: "Продолжение времени" },
-  { value: "I-art", label: "Продолжение артефакта" },
-  { value: "I-eve", label: "Продолжение события" },
-  { value: "I-nat", label: "Продолжение природы" },
+  { value: "O", value_next: "", label: "Не сущность" },
+  { value: "B-per", value_next: "I-per", label: "Человек" },
+  { value: "B-org", value_next: "I-org", label: "Организация" },
+  { value: "B-geo", value_next: "I-geo", label: "Географическое место" },
+  { value: "B-gpe", value_next: "I-gpe", label: "Страна/город (полит.)" },
+  { value: "B-tim", value_next: "I-tim", label: "Дата/время" },
+  { value: "B-art", value_next: "I-art", label: "Артефакт" },
+  { value: "B-eve", value_next: "I-eve", label: "Событие" },
+  { value: "B-nat", value_next: "I-nat", label: "Природное явление" },
 ] as const;
 
 export const TAG_COLORS: Record<string, string> = {
-  O: "bg-gray-100 border-gray-300 text-gray-500",
-
-  "B-per": "bg-pink-50 border-pink-300 text-pink-700",
-  "I-per": "bg-pink-50 border-pink-300 text-pink-700",
-
-  "B-org": "bg-purple-50 border-purple-300 text-purple-700",
-  "I-org": "bg-purple-50 border-purple-300 text-purple-700",
-
-  "B-geo": "bg-green-50 border-green-300 text-green-700",
-  "I-geo": "bg-green-50 border-green-300 text-green-700",
-
-  "B-gpe": "bg-emerald-50 border-emerald-300 text-emerald-700",
-  "I-gpe": "bg-emerald-50 border-emerald-300 text-emerald-700",
-
-  "B-tim": "bg-blue-50 border-blue-300 text-blue-700",
-  "I-tim": "bg-blue-50 border-blue-300 text-blue-700",
-
-  "B-art": "bg-yellow-50 border-yellow-300 text-yellow-700",
-  "I-art": "bg-yellow-50 border-yellow-300 text-yellow-700",
-
-  "B-eve": "bg-orange-50 border-orange-300 text-orange-700",
-  "I-eve": "bg-orange-50 border-orange-300 text-orange-700",
-
-  "B-nat": "bg-teal-50 border-teal-300 text-teal-700",
-  "I-nat": "bg-teal-50 border-teal-300 text-teal-700",
-};
-
-export const TAG_BG_COLORS: Record<string, string> = {
   O: "",
 
   "B-per": "bg-pink-300",
@@ -95,3 +59,4 @@ export const TAG_BG_COLORS: Record<string, string> = {
 };
 
 export type BioTag = (typeof BIO_TAGS)[number]["value"];
+export type NextBioTag = (typeof BIO_TAGS)[number]["value_next"];
