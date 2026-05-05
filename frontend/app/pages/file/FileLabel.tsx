@@ -45,15 +45,21 @@ export function FileLabel({
     hasUnsavedChanges.current = false;
   }, [file]);
 
-  const handleWordMouseDown = (lineIdx: number, wordIdx: number, e: React.MouseEvent) => {
+  const handleWordMouseDown = (
+    lineIdx: number,
+    wordIdx: number,
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation();
 
     if (e.button === 2) {
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      setMenuPosition({ x: rect.right + 8, y: rect.top - 10 });
+      setMenuPosition({ x: rect.left - 330, y: rect.top + 40 });
       setShowTagMenu(true);
 
-      const isAlreadyInSelection = selectedWords.some(([l, w]) => l === lineIdx && w === wordIdx);
+      const isAlreadyInSelection = selectedWords.some(
+        ([l, w]) => l === lineIdx && w === wordIdx,
+      );
       if (!isAlreadyInSelection || selectedWords.length === 0) {
         setSelectedWords([[lineIdx, wordIdx]]);
       }
@@ -61,17 +67,22 @@ export function FileLabel({
     }
 
     const newSelection: SelectedWord = [lineIdx, wordIdx];
-    const isAlreadySelected = selectedWords.some(([l, w]) => l === lineIdx && w === wordIdx);
+    const isAlreadySelected = selectedWords.some(
+      ([l, w]) => l === lineIdx && w === wordIdx,
+    );
 
     if (e.shiftKey && selectedWords.length > 0) {
-      const last = selectedWords[selectedWords.length - 1];
-      const startLine = Math.min(last[0], lineIdx);
-      const endLine = Math.max(last[0], lineIdx);
+      const first = selectedWords[0];
+      const startLine = Math.min(first[0], lineIdx);
+      const endLine = Math.max(first[0], lineIdx);
       const newSel: SelectedWord[] = [];
 
       for (let l = startLine; l <= endLine; l++) {
-        const startW = l === startLine ? Math.min(last[1], wordIdx) : 0;
-        const endW = l === endLine ? Math.max(last[1], wordIdx) : localRows[l].words.length - 1;
+        const startW = l === startLine ? Math.min(first[1], wordIdx) : 0;
+        const endW =
+          l === endLine
+            ? Math.max(first[1], wordIdx)
+            : localRows[l].words.length - 1;
         for (let w = startW; w <= endW; w++) {
           newSel.push([l, w]);
         }
@@ -95,7 +106,9 @@ export function FileLabel({
       let newLabel: BioTag = baseTag;
 
       if (baseTag !== "O" && selectedWords.length > 1) {
-        newLabel = (index === 0 ? `B${baseTag.slice(1)}` : `I${baseTag.slice(1)}`) as BioTag;
+        newLabel = (
+          index === 0 ? `B${baseTag.slice(1)}` : `I${baseTag.slice(1)}`
+        ) as BioTag;
       }
 
       updatedRows[lineIdx].words[wordIdx].label = newLabel;
@@ -113,7 +126,12 @@ export function FileLabel({
 
     setIsSaving(true);
     try {
-      await updateFileByIdContent(projectId, fileId, { new_rows: localRows }, page);
+      await updateFileByIdContent(
+        projectId,
+        fileId,
+        { new_rows: localRows },
+        page,
+      );
       hasUnsavedChanges.current = false;
       toast.success("Разметка успешно сохранена!");
     } catch {
@@ -157,7 +175,7 @@ export function FileLabel({
           </TextUI>
         </div>
 
-        <div 
+        <div
           className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -168,12 +186,16 @@ export function FileLabel({
                 className="pb-8 border-b border-gray-100 last:border-none flex flex-wrap gap-3"
               >
                 {line.words.map((word, wordIdx) => {
-                  const isSelected = selectedWords.some(([l, w]) => l === lineIdx && w === wordIdx);
+                  const isSelected = selectedWords.some(
+                    ([l, w]) => l === lineIdx && w === wordIdx,
+                  );
 
                   return (
                     <div
                       key={wordIdx}
-                      onMouseDown={(e) => handleWordMouseDown(lineIdx, wordIdx, e)}
+                      onMouseDown={(e) =>
+                        handleWordMouseDown(lineIdx, wordIdx, e)
+                      }
                       className={`flex flex-col items-center gap-1 px-2 py-1 rounded cursor-pointer transition-all hover:bg-gray-100 ${
                         isSelected ? "bg-blue-100 ring-2 ring-blue-500" : ""
                       }`}
@@ -203,10 +225,14 @@ export function FileLabel({
           currentPage={page}
           totalPages={file?.total_pages || 1}
           onBack={() =>
-            navigate(`/projects/${projectId}/files/${fileId}?tab=label&page=${page - 1}`)
+            navigate(
+              `/projects/${projectId}/files/${fileId}?tab=label&page=${page - 1}`,
+            )
           }
           onNext={() =>
-            navigate(`/projects/${projectId}/files/${fileId}?tab=label&page=${page + 1}`)
+            navigate(
+              `/projects/${projectId}/files/${fileId}?tab=label&page=${page + 1}`,
+            )
           }
         />
       </div>
