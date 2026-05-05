@@ -27,9 +27,12 @@ export const ButtonUI = ({
       className={`h-min w-max transition duration-200 select-none
       ${
         {
-          primary: `${!disabled ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600"} text-white py-2 px-4 rounded-full shadow-lg font-medium`,
-          secondary: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600"} font-medium`,
-          link: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600"} text-sm font-medium`,
+          primary: `${!disabled ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 hover:bg-gray-600"}
+          text-white py-2 px-4 rounded-full shadow-lg font-medium`,
+          secondary: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600 hover:text-gray-600"}
+          font-medium`,
+          link: `${!disabled ? "text-blue-600 hover:text-blue-700" : "text-gray-600 hover:text-gray-600"}
+          text-sm font-medium`,
         }[variant]
       } ${!disabled ? "cursor-pointer" : ""} ${className}`}
     >
