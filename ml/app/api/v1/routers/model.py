@@ -15,7 +15,7 @@ from app.services.model import (
     extract_labels_from_sentences,
     parse_csv_from_text,
     plot_confusion_matrix,
-    plot_loss,  # <-- переименованная функция
+    plot_loss,
     prepare_dataset,
     MAX_LENGTH,
     MODEL_NAME,
@@ -71,6 +71,7 @@ async def train_ner(
         if eval_sentences
         else None
     )
+    print(eval_dataset[:5])
 
     with tempfile.TemporaryDirectory() as tmpdir:
         result = ner.train(
@@ -137,21 +138,22 @@ async def train_ner(
                     return_tensors="pt",
                 )
 
-                word_ids = tokenized.word_ids()
-                pred_ids_for_sentence = preds[idx]
-
-                # Выбираем только первые предсказания для каждого слова
+                word_ids = tokenized.word_ids()  # список индексов слов для каждой позиции
+                pred_ids_for_sentence = preds[idx]  # предсказания для каждой позиции (включая субтокены)
+                # Выравниваем предсказания
                 prev_word_idx = None
-                for word_idx in word_ids:
-                    if word_idx is not None and word_idx != prev_word_idx:
-                        if word_idx < len(pred_ids_for_sentence):
-                            pred_label = label_list[pred_ids_for_sentence[word_idx]]
+                pred_labels_aligned = []
+                for i, word_idx in enumerate(word_ids):
+                    if word_idx is None:
+                        continue  # пропускаем [CLS] и [SEP]  
+                    if word_idx != prev_word_idx:
+                        # Берем предсказание для ТЕКУЩЕЙ позиции i (первый субтокен)
+                        if i < len(pred_ids_for_sentence):
+                            pred_label = label_list[pred_ids_for_sentence[i]]
                             pred_labels_aligned.append(pred_label)
                         prev_word_idx = word_idx
-
-                # Обрезаем до длины исходного предложения
-                pred_labels_aligned = pred_labels_aligned[: len(tokens)]
-
+                # Обрезаем до длины исходного предложения (на всякий случай)
+                pred_labels_aligned = pred_labels_aligned[:len(tokens)]
                 # Собираем результаты для этого предложения
                 sentence_predictions = {
                     "sentence_id": idx,
