@@ -18,17 +18,19 @@ export function FileEdit({
   isSaving,
   handleSave,
   hasUnsavedChanges,
+  setHasUnsavedChanges,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: number;
   file: GetFilePageResponse | null;
   localRows: Row[];
-  setLocalRows: (rows: Row[]) => void;
+  setLocalRows: React.Dispatch<React.SetStateAction<Row[]>>;
   isLoading: boolean;
   isSaving: boolean;
   handleSave: () => void;
-  hasUnsavedChanges: React.RefObject<boolean>;
+  hasUnsavedChanges: boolean;
+  setHasUnsavedChanges: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const navigate = useNavigate();
 
@@ -60,8 +62,8 @@ export function FileEdit({
       const left = text.slice(0, cursorPos);
       const right = text.slice(cursorPos);
 
-      setLocalRows((prev) => {
-        hasUnsavedChanges.current = true;
+      setLocalRows((prev: Row[]) => {
+        setHasUnsavedChanges(true);
 
         return prev.map((line, li) => {
           if (li !== lineIdx) return line;
@@ -94,8 +96,8 @@ export function FileEdit({
       const left = text.slice(0, cursorPos);
       const right = text.slice(cursorPos);
 
-      setLocalRows((prev) => {
-        hasUnsavedChanges.current = true;
+      setLocalRows((prev: Row[]) => {
+        setHasUnsavedChanges(true);
 
         const newRows = [...prev];
         const currentLine = prev[lineIdx];
@@ -143,8 +145,8 @@ export function FileEdit({
       if (prevWord) {
         e.preventDefault();
 
-        setLocalRows((prev) => {
-          hasUnsavedChanges.current = true;
+        setLocalRows((prev: Row[]) => {
+          setHasUnsavedChanges(true);
 
           const newRows = [...prev];
           const newWords = [...line.words];
@@ -173,29 +175,64 @@ export function FileEdit({
       }
     }
 
-    // ================= ARROW RIGHT =================
+    // ================= ARROWS =================
+
     if (e.key === "ArrowRight") {
       if (cursorPos === text.length) {
-        const nextInput = inputRefs.current[lineIdx]?.[wordIdx + 1];
-        if (nextInput) {
+        const next = inputRefs.current[lineIdx]?.[wordIdx + 1];
+
+        if (next) {
           e.preventDefault();
-          nextInput.focus();
-          nextInput.setSelectionRange(0, 0);
+          next.focus();
+          next.setSelectionRange(0, 0);
+        } else {
+          const nextLine = inputRefs.current[lineIdx + 1]?.[0];
+          if (nextLine) {
+            e.preventDefault();
+            nextLine.focus();
+            nextLine.setSelectionRange(0, 0);
+          }
         }
       }
     }
 
-    // ================= ARROW LEFT =================
     if (e.key === "ArrowLeft") {
       if (cursorPos === 0) {
-        const prevInput = inputRefs.current[lineIdx]?.[wordIdx - 1];
-        if (prevInput) {
-          e.preventDefault();
-          prevInput.focus();
+        const prev = inputRefs.current[lineIdx]?.[wordIdx - 1];
 
-          const len = prevInput.value.length;
-          prevInput.setSelectionRange(len, len);
+        if (prev) {
+          e.preventDefault();
+          prev.focus();
+          prev.setSelectionRange(prev.value.length, prev.value.length);
+        } else {
+          const prevLine = inputRefs.current[lineIdx - 1];
+          if (prevLine) {
+            const lastIdx = prevLine.length - 1;
+            const last = prevLine[lastIdx];
+
+            if (last) {
+              e.preventDefault();
+              last.focus();
+              last.setSelectionRange(last.value.length, last.value.length);
+            }
+          }
         }
+      }
+    }
+
+    if (e.key === "ArrowDown") {
+      const next = inputRefs.current[lineIdx + 1]?.[0];
+      if (next) {
+        e.preventDefault();
+        next.focus();
+      }
+    }
+
+    if (e.key === "ArrowUp") {
+      const prev = inputRefs.current[lineIdx - 1]?.[0];
+      if (prev) {
+        e.preventDefault();
+        prev.focus();
       }
     }
   };
@@ -212,7 +249,7 @@ export function FileEdit({
         <div className="flex justify-end">
           <ButtonUI
             onClick={handleSave}
-            disabled={isSaving || isLoading || !hasUnsavedChanges.current}
+            disabled={isSaving || isLoading || !hasUnsavedChanges}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}
@@ -248,22 +285,26 @@ export function FileEdit({
                 className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
               >
                 {line.words.map((word, wordIdx) => (
-                  <input
-                    key={wordIdx}
-                    ref={(el) => {
-                      if (!inputRefs.current[lineIdx])
-                        inputRefs.current[lineIdx] = [];
-                      inputRefs.current[lineIdx][wordIdx] = el;
-                    }}
-                    value={word.token}
-                    onChange={(e) =>
-                      handleTokenChange(lineIdx, wordIdx, e.target.value)
-                    }
-                    onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
-                    className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none
-                    min-w-8 font-medium text-xl py-0.5 text-gray-900 transition-colors"
-                    style={{ width: `${Math.max(word.token.length + 1, 3)}ch` }}
-                  />
+                  <div className="flex flex-col items-center gap-1 py-0.5 rounded cursor-pointer transition-all">
+                    <input
+                      key={wordIdx}
+                      ref={(el) => {
+                        if (!inputRefs.current[lineIdx])
+                          inputRefs.current[lineIdx] = [];
+                        inputRefs.current[lineIdx][wordIdx] = el;
+                      }}
+                      value={word.token}
+                      onChange={(e) =>
+                        handleTokenChange(lineIdx, wordIdx, e.target.value)
+                      }
+                      onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
+                      className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none
+                    min-w-1 font-medium text-xl mx-2 text-gray-900 transition-colors"
+                      style={{
+                        width: `${word.token.length + 1}ch`,
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             ))}

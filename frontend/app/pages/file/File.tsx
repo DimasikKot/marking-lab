@@ -1,5 +1,5 @@
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -27,8 +27,7 @@ export function File() {
   const [localRows, setLocalRows] = useState<Row[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  const hasUnsavedChanges = useRef(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     const loadPage = async () => {
@@ -39,14 +38,14 @@ export function File() {
       if (response === undefined) return;
       setFile(response);
       setLocalRows(response.rows);
-      hasUnsavedChanges.current = false;
+      setHasUnsavedChanges(false);
     };
 
     loadPage();
   }, [fileId, page, projectId]);
 
   const handleSave = async () => {
-    if (!hasUnsavedChanges.current) return;
+    if (!hasUnsavedChanges) return;
 
     setIsSaving(true);
     const response = await updateFileByIdContent(
@@ -68,7 +67,7 @@ export function File() {
       if (response === undefined) return;
       setFile(response);
       setLocalRows(response.rows);
-      hasUnsavedChanges.current = false;
+      setHasUnsavedChanges(false);
     };
 
     loadPage();
@@ -127,6 +126,7 @@ export function File() {
           isSaving={isSaving}
           handleSave={handleSave}
           hasUnsavedChanges={hasUnsavedChanges}
+          setHasUnsavedChanges={setHasUnsavedChanges}
         />
       </TabPanel>
 
@@ -142,6 +142,7 @@ export function File() {
           isSaving={isSaving}
           handleSave={handleSave}
           hasUnsavedChanges={hasUnsavedChanges}
+          setHasUnsavedChanges={setHasUnsavedChanges}
         />
       </TabPanel>
     </Tabs>

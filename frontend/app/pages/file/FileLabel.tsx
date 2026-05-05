@@ -22,28 +22,25 @@ export function FileLabel({
   isSaving,
   handleSave,
   hasUnsavedChanges,
+  setHasUnsavedChanges,
 }: {
   projectId: string | number;
   fileId: string | number;
   page: number;
   file: GetFilePageResponse | null;
   localRows: Row[];
-  setLocalRows: (rows: Row[]) => void;
+  setLocalRows: React.Dispatch<React.SetStateAction<Row[]>>;
   isLoading: boolean;
   isSaving: boolean;
   handleSave: () => void;
-  hasUnsavedChanges: React.RefObject<boolean>;
+  hasUnsavedChanges: boolean;
+  setHasUnsavedChanges: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const navigate = useNavigate();
 
   const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([]);
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    setSelectedWords([]);
-    setShowTagMenu(false);
-  }, [file]);
 
   const handleWordMouseDown = (
     lineIdx: number,
@@ -118,7 +115,7 @@ export function FileLabel({
     setSelectedWords([]);
     setShowTagMenu(false);
 
-    hasUnsavedChanges.current = true;
+    setHasUnsavedChanges(true);
   };
 
   useEffect(() => {
@@ -145,7 +142,7 @@ export function FileLabel({
         <div className="flex justify-end">
           <ButtonUI
             onClick={handleSave}
-            disabled={isSaving || isLoading || !hasUnsavedChanges.current}
+            disabled={isSaving || isLoading || !hasUnsavedChanges}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}
