@@ -207,6 +207,10 @@ class NERModel:
             fp16=torch.cuda.is_available(),  # При использовании GPU использовать 16-битные числа
             dataloader_num_workers=2,  # распараллеливание загрузки данных
             save_total_limit=1,  # хранить только лучшую модель на диске
+            max_grad_norm=1.0,  # максимальная норма градиента
+            optim="adamw_torch",  # оптимизатор
+            lr_scheduler_type="linear",  # тип распределения скорости обучения
+            warmup_ratio=0.1,  # кол-во эпох для увеличения скорости обучения
         )
 
         trainer = Trainer(
