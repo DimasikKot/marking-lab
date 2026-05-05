@@ -203,15 +203,15 @@ export function FileLabel({
                       <span className="font-medium text-gray-900 select-none">
                         {word.token}
                       </span>
-                      <span
-                        className={`text-[10px] font-mono px-2 py-0.5 rounded border text-center min-w-15 ${
-                          word.label === "O"
-                            ? "border-gray-200 text-gray-400"
-                            : "bg-blue-50 border-blue-200 text-blue-600"
-                        }`}
-                      >
-                        {word.label}
-                      </span>
+                      {word.label != "O" && (
+                        <span
+                          className={
+                            "text-[10px] font-mono px-2 py-0.5 rounded border text-center min-w-15 bg-blue-50 border-blue-200 text-blue-600"
+                          }
+                        >
+                          {word.label}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
