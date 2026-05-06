@@ -220,20 +220,20 @@ async def train_ner(
                         label_stats[true]["correct"] += 1
 
             # Добавляем статистику в метрики
-            metrics["predictions_stats"] = {
-                "overall_token_accuracy": overall_accuracy,
-                "total_sentences": len(predictions_output),
-                "total_tokens": total_tokens,
-                "label_wise_accuracy": {
-                    label: (
-                        stats["correct"] / stats["total"] if stats["total"] > 0 else 0
-                    )
-                    for label, stats in label_stats.items()
-                },
-                "first_5_examples": predictions_output[
-                    :5
-                ],  # Только первые 5 примеров для ответа
-            }
+            # metrics["predictions_stats"] = {
+            #     "overall_token_accuracy": overall_accuracy,
+            #     "total_sentences": len(predictions_output),
+            #     "total_tokens": total_tokens,
+            #     "label_wise_accuracy": {
+            #         label: (
+            #             stats["correct"] / stats["total"] if stats["total"] > 0 else 0
+            #         )
+            #         for label, stats in label_stats.items()
+            #     },
+            #     "first_5_examples": predictions_output[
+            #         :5
+            #     ],  # Только первые 5 примеров для ответа
+            # }
 
             # Сохраняем полные предсказания в файл
             predictions_file = io.BytesIO()
