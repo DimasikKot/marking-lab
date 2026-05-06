@@ -71,7 +71,6 @@ async def train_ner(
         if eval_sentences
         else None
     )
-    print(eval_dataset[:5])
 
     with tempfile.TemporaryDirectory() as tmpdir:
         result = ner.train(
@@ -138,14 +137,18 @@ async def train_ner(
                     return_tensors="pt",
                 )
 
-                word_ids = tokenized.word_ids()  # список индексов слов для каждой позиции
-                pred_ids_for_sentence = preds[idx]  # предсказания для каждой позиции (включая субтокены)
+                word_ids = (
+                    tokenized.word_ids()
+                )  # список индексов слов для каждой позиции
+                pred_ids_for_sentence = preds[
+                    idx
+                ]  # предсказания для каждой позиции (включая субтокены)
                 # Выравниваем предсказания
                 prev_word_idx = None
                 pred_labels_aligned = []
                 for i, word_idx in enumerate(word_ids):
                     if word_idx is None:
-                        continue  # пропускаем [CLS] и [SEP]  
+                        continue  # пропускаем [CLS] и [SEP]
                     if word_idx != prev_word_idx:
                         # Берем предсказание для ТЕКУЩЕЙ позиции i (первый субтокен)
                         if i < len(pred_ids_for_sentence):
@@ -153,7 +156,7 @@ async def train_ner(
                             pred_labels_aligned.append(pred_label)
                         prev_word_idx = word_idx
                 # Обрезаем до длины исходного предложения (на всякий случай)
-                pred_labels_aligned = pred_labels_aligned[:len(tokens)]
+                pred_labels_aligned = pred_labels_aligned[: len(tokens)]
                 # Собираем результаты для этого предложения
                 sentence_predictions = {
                     "sentence_id": idx,
@@ -261,22 +264,18 @@ async def train_ner(
         loss_plot = plot_loss(result["train_loss"])
         cm_plot = plot_confusion_matrix(label_list)
 
-        zip_data = build_zip_model(tmpdir)
-        zip_data = io.BytesIO(zip_data)  # если zip_data это bytes
-        zip_data.seek(0, 2)  # в конец
-        file_size = zip_data.tell()
-        zip_data.seek(0)  # обратно в начало
+        # zip_data = build_zip_model(tmpdir)
+        # zip_data = io.BytesIO(zip_data)  # если zip_data это bytes
+        # zip_data.seek(0, 2)  # в конец
+        # file_size = zip_data.tell()
+        # zip_data.seek(0)  # обратно в начало
 
-    # return StreamingResponse(
-    #     zip_data,
-    #     media_type="application/zip",
-    #     headers={
-    #         "Content-Length": str(file_size),
-    #         "Content-Disposition": "attachment; filename=ner_model.zip",
-    #         "X-Metrics": json.dumps(metrics),
-    #         "X-Graphs": json.dumps({
-    #             "train_loss": f"data:image/png;base64,{loss_plot}",
-    #             "heatmap": f"data:image/png;base64,{cm_plot}",
-    #         }),
-    #     },
-    # )
+        return {
+            "metrics": json.dumps(metrics),
+            "graphs": json.dumps(
+                {
+                    "train_loss": f"data:image/png;base64,{loss_plot}",
+                    "heatmap": f"data:image/png;base64,{cm_plot}",
+                }
+            ),
+        }

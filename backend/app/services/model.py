@@ -232,6 +232,7 @@ async def train_model_by_id(
         files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
         opened_files: list[io.BufferedReader] = []
         print(1)
+
         try:
             for path in files_paths:
                 file_stream: io.BufferedReader = open(path, "rb")
@@ -239,71 +240,45 @@ async def train_model_by_id(
                 # Формат: (название_поля, (имя_файла, объект_файла, content_type))
                 files_to_send.append(("files", (path.name, file_stream, "text/plain")))
             print(2)
-            # Отправляем POST запрос
-            # response = await client.post(
-            #     settings.ML_URL + "/models/train",  # URL обучающего сервиса
-            #     data={"parameters": json.dumps(model_db.parameters)},
-            #     files=files_to_send,
-            #     timeout=None,  # Обучение может длиться долго
-            # )
-            async with client.stream(
-                "POST",
-                settings.ML_URL + "/models/train",
+
+            response = await client.post(
+                settings.ML_URL + "/models/train",  # URL обучающего сервиса
                 data={"parameters": json.dumps(model_db.parameters)},
                 files=files_to_send,
-                timeout=None,
-            ) as response:
-
-                print(f"Status: {response.status_code}")
-                print(f"Headers: {dict(response.headers)}")  # Отладка
-
-                if response.status_code == 200:
-                    # Читаем заголовки ДО тела ответа
-                    metrics = json.loads(response.headers.get("X-Metrics", "{}"))
-                    graphs = json.loads(response.headers.get("X-Graphs", "{}"))
-
-                    content_length = response.headers.get("Content-Length")
-                    print(f"Expected size: {content_length} bytes")
-
-                    # Сохраняем файл
-                    downloaded = 0
-                    with open("ner_model.zip", "wb") as f:
-                        async for chunk in response.aiter_bytes(chunk_size=1048576):
-                            f.write(chunk)
-                            downloaded += len(chunk)
-                            if content_length:
-                                progress = (downloaded / int(content_length)) * 100
-                                print(f"\rProgress: {progress:.1f}%", end="")
-
-                    print(f"\nDownloaded: {downloaded} bytes")
+                timeout=None,  # Обучение может длиться долго
+            )
             print(3)
 
             for file_stream in opened_files:
                 file_stream.close()
+            data = response.json()
             print(4)
-            if response.status_code != 200:
-                raise HTTPException(status_code=500, detail="Ошибка обучающего сервиса")
 
-            # 3. Обработка результата
-            # Метрики забираем из заголовка (как реализовано в вашем эндпоинте)
-            metrics_raw = response.headers.get("X-Metrics")
-            graphs_raw = response.headers.get("X-Graphs")
-            metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
-            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
-            graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
+            if response.status_code != 200:
+                return response.json()
+
+            # Метрики забираем из заголовка
+            # metrics_raw = response.headers.get("X-Metrics")
+            # graphs_raw = response.headers.get("X-Graphs")
+            # metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
+            # # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
+            # graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
+
+            metrics = json.loads(data["metrics"])
+            graphs = json.loads(data["graphs"])
             print(5)
+
             # Содержимое результирующего файла (если нужно сохранить)
             # result_content = response.content
 
             model_db.metrics = metrics
             model_db.graphs = graphs
-            _create_model_on_disk(
-                project_id=model_db.project_id,
-                model_id=model_db.id,
-                content=response.content,  # content=response.content.decode("utf-8"),
-            )
+            # _create_model_on_disk(
+            #     project_id=model_db.project_id,
+            #     model_id=model_db.id,
+            #     content=response.content,  # content=response.content.decode("utf-8"),
+            # )
             print(6)
-            # model_db.accuracy = metrics.get("accuracy") # Пример
 
         finally:
             for file_stream in opened_files:
