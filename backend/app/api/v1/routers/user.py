@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 # Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
 from pydantic import BaseModel
 
-
 # Подключение к БД
 from app.core.database import get_auth_db
 
@@ -20,7 +19,6 @@ from app.services.user import (
     authenticate_user,
     encode_access_token,
 )
-
 
 router = APIRouter()
 

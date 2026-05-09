@@ -17,7 +17,6 @@ from app.services.model import (
     update_model_db_by_id,
 )
 
-
 router = APIRouter()
 
 
@@ -128,7 +127,8 @@ async def patch_by_id(
         db=db,
         name=data.name,
         parameters=data.parameters,
-        files_ids=data.files_ids,
+        training_files_ids=data.files_ids,
+        prediction_files_ids=data.files_ids,  # TODO
     )
 
     return ModelDbResponse(

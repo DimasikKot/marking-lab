@@ -7,9 +7,40 @@ import httpx
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.db import FileDB, ModelDB
+from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.project import is_owner_of_project
 from app.services.file import get_file_path_by_id
+
+
+def _update_files_by_role(
+    db: Session,
+    model_db: ModelDB,
+    files_ids: list[int],
+    role: str,
+):
+    # Текущие связи модели с данным role
+    current_links = {
+        link.file_id: link for link in model_db.file_links if link.role == role
+    }
+
+    # Загружаем файлы из БД
+    new_files = db.query(FileDB).filter(FileDB.id.in_(files_ids)).all()
+    new_files_dict = {file.id: file for file in new_files}
+
+    # Удаляем старые связи
+    for file_id, link in list(current_links.items()):
+        if file_id not in new_files_dict:
+            model_db.file_links.remove(link)
+
+    # Добавляем новые связи
+    for file_id, file_db in new_files_dict.items():
+        if file_id not in current_links:
+            model_db.file_links.append(
+                ModelFileDB(
+                    file=file_db,
+                    role=role,
+                )
+            )
 
 
 def is_owner_of_model(
@@ -130,11 +161,18 @@ def update_model_db_by_id(
     db: Session,
     name: str | None,
     parameters: dict[str, Any] | None,
-    files_ids: list[int] | None,
+    training_files_ids: list[int] | None,
+    prediction_files_ids: list[int] | None,
 ) -> ModelDB:
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
+
+    if model_db.is_draft is False:
+        raise HTTPException(
+            status_code=400,
+            detail="Нельзя изменять файлы обученной модели",
+        )
 
     if name is not None:
         model_db.name = name
@@ -146,28 +184,23 @@ def update_model_db_by_id(
             )
         model_db.parameters = parameters
 
-    if files_ids is not None:
-        if model_db.is_draft is False:
-            raise HTTPException(
-                status_code=400, detail="Нельзя изменять файлы обученной модели"
-            )
+    # ---------- TRAINING FILES ----------
+    if training_files_ids is not None:
+        _update_files_by_role(
+            db=db,
+            model_db=model_db,
+            files_ids=training_files_ids,
+            role="training",
+        )
 
-        # Получаем текущие связанные файлы
-        current_files = {file.id: file for file in model_db.files}
-
-        # Загружаем новые файлы из БД
-        new_files = db.query(FileDB).filter(FileDB.id.in_(files_ids)).all()
-        new_files_dict = {file.id: file for file in new_files}
-
-        # Удаляем старые связи
-        for file_id in list(current_files.keys()):
-            if file_id not in new_files_dict:
-                model_db.files.remove(current_files[file_id])
-
-        # Добавляем новые связи
-        for file_id, file_db in new_files_dict.items():
-            if file_id not in current_files:
-                model_db.files.append(file_db)
+    # ---------- PREDICTION FILES ----------
+    if prediction_files_ids is not None:
+        _update_files_by_role(
+            db=db,
+            model_db=model_db,
+            files_ids=prediction_files_ids,
+            role="prediction",
+        )
 
     db.commit()
     db.refresh(model_db)
@@ -185,12 +218,21 @@ async def train_model_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    if len(model_db.files) == 0:
-        raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
+    # -------- TRAINING FILES --------
+    training_files = [
+        link.file for link in model_db.file_links if link.role == "training"
+    ]
+
+    if len(training_files) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Выберите файлы для обучения",
+        )
 
     if model_db.is_draft is False:
         raise HTTPException(
-            status_code=400, detail="Нельзя обучать уже обученную модель"
+            status_code=400,
+            detail="Нельзя обучать уже обученную модель",
         )
 
     model_db.is_draft = False
@@ -198,9 +240,26 @@ async def train_model_by_id(
     db.commit()
     db.refresh(model_db)
 
-    files_paths: set[Path] = {
-        get_file_path_by_id(project_id=file_db.project_id, file_id=file_db.id)
-        for file_db in model_db.files
+    training_files_paths: set[Path] = {
+        get_file_path_by_id(
+            project_id=file_db.project_id,
+            file_id=file_db.id,
+        )
+        for file_db in training_files
+    }
+
+    # -------- PREDICTION FILES --------
+    prediction_files = [
+        link.file for link in model_db.file_links if link.role == "prediction"
+    ]
+
+    # TODO Сделать отправку с тренировочными данными
+    prediction_files_paths: set[Path] = {
+        get_file_path_by_id(
+            project_id=file_db.project_id,
+            file_id=file_db.id,
+        )
+        for file_db in prediction_files
     }
 
     # Формируем запрос к внешнему сервису
@@ -210,7 +269,7 @@ async def train_model_by_id(
         opened_files: list[io.BufferedReader] = []
 
         try:
-            for path in files_paths:
+            for path in training_files_paths:
                 file_stream: io.BufferedReader = open(path, "rb")
                 opened_files.append(file_stream)
                 # Формат: (название_поля, (имя_файла, объект_файла, content_type))

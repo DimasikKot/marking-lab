@@ -4,7 +4,6 @@ from httpx import AsyncClient
 
 from app.core.config import settings
 
-
 router: APIRouter = APIRouter()
 
 

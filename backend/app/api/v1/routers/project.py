@@ -15,7 +15,6 @@ from app.services.project import (
     update_project_by_id,
 )
 
-
 router = APIRouter()
 
 

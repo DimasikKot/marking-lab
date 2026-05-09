@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS projects CASCADE; -- удаляем таблицу, если она существует
+DROP TABLE IF EXISTS projects CASCADE;  -- удаляем таблицу, если она существует
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL          PRIMARY KEY,
     user_id         INTEGER         NOT NULL,
@@ -27,36 +27,20 @@ CREATE TABLE IF NOT EXISTS models (
     name            VARCHAR(255)    NOT NULL,
     is_draft        BOOLEAN         DEFAULT TRUE,
     saved_in_memory BOOLEAN         DEFAULT FALSE,
-    parameters      JSONB           DEFAULT '{"epochs": 3, "batch_size": 4, "learning_rate": 0.001}', -- параметры модели
-    metrics         JSONB           DEFAULT '{"accuracy": 0, "precision": 0, "recall": 0, "f1": 0, "loss": 0, "val_accuracy": 0, "val_precision": 0, "val_recall": 0, "val_f1": 0, "val_loss": 0}',   -- численные метрики на тестовом наборе
+    parameters      JSONB           DEFAULT '{}', -- параметры модели
+    metrics         JSONB           DEFAULT '{}', -- численные метрики на тестовом наборе
     graphs          JSONB           DEFAULT '{}', -- графики обучения
     created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
-DROP TABLE IF EXISTS experiments CASCADE;
-CREATE TABLE IF NOT EXISTS experiments (
-    id          SERIAL          PRIMARY KEY,
-    project_id  INTEGER         REFERENCES projects(id) ON DELETE CASCADE,
-    model_id    INTEGER         REFERENCES models(id) ON DELETE SET NULL,   -- если модель удаляется, эксперимент сохраняется, но без модели
-    name        VARCHAR(255)    NOT NULL,
-    is_draft    BOOLEAN         DEFAULT TRUE,
-    metrics     JSONB           DEFAULT '{"accuracy": 0, "precision": 0, "recall": 0, "f1": 0, "loss": 0, "val_accuracy": 0, "val_precision": 0, "val_recall": 0, "val_f1": 0, "val_loss": 0}',   -- численные метрики
-    graphs      JSONB           DEFAULT '{}', -- графики
-    created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
-);
+DROP TABLE IF EXISTS model_files;
+DROP TYPE IF EXISTS model_file_role;
+CREATE TYPE model_file_role AS ENUM ('training', 'prediction');
 
-DROP TABLE IF EXISTS model_training_files;
-CREATE TABLE IF NOT EXISTS model_training_files (
-    model_id   INTEGER  REFERENCES models(id) ON DELETE CASCADE, -- если модель удаляется, удаляются и связи с файлами
-    file_id    INTEGER  REFERENCES files(id) ON DELETE CASCADE,  -- если файл удаляется, удаляются и связи с моделями
-    PRIMARY KEY (model_id, file_id)
-);
-
-DROP TABLE IF EXISTS experiment_testing_files;
-CREATE TABLE IF NOT EXISTS experiment_testing_files (
-    experiment_id  INTEGER  REFERENCES experiments(id) ON DELETE CASCADE,    -- если эксперимент удаляется, удаляются и связи с файлами
-    file_id        INTEGER  REFERENCES files(id) ON DELETE CASCADE,          -- если файл удаляется, удаляются и связи с экспериментами
-    PRIMARY KEY (experiment_id, file_id)
+CREATE TABLE IF NOT EXISTS model_files (
+    model_id        INTEGER         REFERENCES models(id) ON DELETE CASCADE,    -- если модель удаляется, удаляются и связи с файлами
+    file_id         INTEGER         REFERENCES files(id) ON DELETE CASCADE,     -- если файл удаляется, удаляются и связи с моделями
+        role     model_file_role NOT NULL,
+    PRIMARY KEY (model_id, file_id, role)
 );
