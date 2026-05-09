@@ -26,27 +26,6 @@ def is_owner_of_model(
         raise HTTPException(status_code=404, detail="Нет доступа к модели")
 
 
-# def _get_model_path_by_id(project_id: int, model_id: int) -> Path:
-#     base_dir = Path(settings.STORAGE_PATH).resolve()
-#     model_path = base_dir / str(project_id) / "models" / f"{model_id}.txt"
-
-#     if not model_path.exists():
-#         raise HTTPException(status_code=404, detail="Файл не найден на диске")
-
-#     return model_path
-
-
-def _create_model_on_disk(project_id: int, model_id: int, content: bytes) -> None:
-    base_dir = Path(settings.STORAGE_PATH).resolve()
-    # Сохраняем модель как ZIP-архив, а не .txt
-    file_path = base_dir / str(project_id) / "models" / f"{model_id}.zip"
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Пишем бинарные данные
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-
 # router
 def create_model(
     project_id: int,
@@ -206,32 +185,29 @@ async def train_model_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    model_db.is_draft = True  # TODO: убрать в проде
+    if len(model_db.files) == 0:
+        raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
 
     if model_db.is_draft is False:
         raise HTTPException(
             status_code=400, detail="Нельзя обучать уже обученную модель"
         )
 
-    if len(model_db.files) == 0:
-        raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
+    model_db.is_draft = False
 
-    # model_db.is_draft = False
-
-    # db.commit()
-    # db.refresh(model_db)
+    db.commit()
+    db.refresh(model_db)
 
     files_paths: set[Path] = {
         get_file_path_by_id(project_id=file_db.project_id, file_id=file_db.id)
         for file_db in model_db.files
     }
 
-    # 2. Формируем запрос к внешнему сервису
+    # Формируем запрос к внешнему сервису
     # Мы используем context manager, чтобы гарантированно закрыть файлы
     async with httpx.AsyncClient() as client:
         files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
         opened_files: list[io.BufferedReader] = []
-        print(1)
 
         try:
             for path in files_paths:
@@ -239,7 +215,6 @@ async def train_model_by_id(
                 opened_files.append(file_stream)
                 # Формат: (название_поля, (имя_файла, объект_файла, content_type))
                 files_to_send.append(("files", (path.name, file_stream, "text/plain")))
-            print(2)
 
             response = await client.post(
                 settings.ML_URL + "/models/train",  # URL обучающего сервиса
@@ -247,12 +222,9 @@ async def train_model_by_id(
                 files=files_to_send,
                 timeout=None,  # Обучение может длиться долго
             )
-            print(3)
 
             for file_stream in opened_files:
                 file_stream.close()
-            data = response.json()
-            print(4)
 
             if response.status_code != 200:
                 return response.json()
@@ -261,30 +233,28 @@ async def train_model_by_id(
             # metrics_raw = response.headers.get("X-Metrics")
             # graphs_raw = response.headers.get("X-Graphs")
             # metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
-            # # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
             # graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
+            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
 
+            data = response.json()
             metrics = json.loads(data["metrics"])
             graphs = json.loads(data["graphs"])
-            print(5)
+            model_db.metrics = metrics
+            model_db.graphs = graphs
 
             # Содержимое результирующего файла (если нужно сохранить)
             # result_content = response.content
-
-            model_db.metrics = metrics
-            model_db.graphs = graphs
             # _create_model_on_disk(
             #     project_id=model_db.project_id,
             #     model_id=model_db.id,
             #     content=response.content,  # content=response.content.decode("utf-8"),
             # )
-            print(6)
 
         finally:
             for file_stream in opened_files:
                 file_stream.close()
 
-            model_db.is_draft = False
+            model_db.is_draft = True
 
             db.commit()
             db.refresh(model_db)

@@ -208,7 +208,11 @@ export function Model() {
                             {k}
                           </TextUI>
 
-                          <TextUI className="text-orange-400">
+                          <TextUI
+                            className="text-orange-400"
+                            isSpan
+                            isSelectable
+                          >
                             {String(v)}
                           </TextUI>
                         </div>

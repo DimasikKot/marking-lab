@@ -1,23 +1,3 @@
-// export const BIO_TAGS = [
-//   { value: "O", label: "O" },
-//   { value: "B-per", label: "B-PER" },
-//   { value: "I-per", label: "I-PER" },
-//   { value: "B-org", label: "B-ORG" },
-//   { value: "I-org", label: "I-ORG" },
-//   { value: "B-geo", label: "B-GEO" },
-//   { value: "I-geo", label: "I-GEO" },
-//   { value: "B-gpe", label: "B-GPE" },
-//   { value: "I-gpe", label: "I-GPE" },
-//   { value: "B-tim", label: "B-TIM" },
-//   { value: "I-tim", label: "I-TIM" },
-//   { value: "B-art", label: "B-ART" },
-//   { value: "I-art", label: "I-ART" },
-//   { value: "B-eve", label: "B-EVE" },
-//   { value: "I-eve", label: "I-EVE" },
-//   { value: "B-nat", label: "B-NAT" },
-//   { value: "I-nat", label: "I-NAT" },
-// ] as const;
-
 export const BIO_TAGS = [
   { value: "O", value_next: "", label: "Не сущность" },
   { value: "B-per", value_next: "I-per", label: "Человек" },
