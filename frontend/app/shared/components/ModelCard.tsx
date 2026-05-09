@@ -45,7 +45,7 @@ export const ModelCard = ({
               <TextUI variant="title">{model.name}</TextUI>
 
               <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
-                (id: {model.id}2)
+                (id: {model.id})
               </TextUI>
             </div>
 
