@@ -66,7 +66,7 @@ export function Header({
       <Logo onClick={() => navigate("/")} />
 
       {title && (
-        <TextUI variant="header" className={`w-2xl text-center`}>
+        <TextUI variant="header" maxLines={1} className={`w-2xl text-center`}>
           {title}
         </TextUI>
       )}

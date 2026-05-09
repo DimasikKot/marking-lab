@@ -33,29 +33,34 @@ export const FileCard = ({
         ${className}
       `}
     >
-      <div className="flex flex-row gap-4">
-        <div className="flex-1 -mt-2">
+      <div className="flex-1 h-full">
+        <div className="flex flex-row justify-between gap-4">
           <div className="flex flex-row gap-2">
-            <TextUI variant="title">{file.name}</TextUI>
+            <TextUI variant="title" maxLines={1} className="-mt-1">
+              {file.name}
+            </TextUI>
 
-            <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
+            <TextUI
+              variant="desc"
+              className="flex items-end mt-0.5 h-min w-26"
+            >
               (id: {file.id})
             </TextUI>
           </div>
 
-          {file.total_rows && (
-            <TextUI variant="desc" className="mt-2 line-clamp-2">
-              {file.total_rows} строк
-            </TextUI>
-          )}
+          <div
+            className={`flex items-center justify-center select-none material-icons 
+            ${file.is_labeled ? "text-green-500" : "text-gray-500"}`}
+          >
+            {file.is_labeled ? "sell" : "help_outline"}
+          </div>
         </div>
 
-        <div
-          className={`flex items-center justify-center select-none material-icons 
-            ${file.is_labeled ? "text-green-500" : "text-gray-500"}`}
-        >
-          {file.is_labeled ? "sell" : "help_outline"}
-        </div>
+        {file.total_rows && (
+          <TextUI variant="desc" maxLines={2} className="mt-1">
+            {file.total_rows} строк
+          </TextUI>
+        )}
       </div>
 
       <div className="w-full flex-1 border-b border-gray-300" />

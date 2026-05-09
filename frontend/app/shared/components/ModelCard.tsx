@@ -39,32 +39,41 @@ export const ModelCard = ({
         ${className}
       `}
       >
-        <div className="flex flex-row gap-4">
-          <div className="flex-1 -mt-2 overflow-auto">
+        <div className="flex-1 h-full">
+          <div className="flex flex-row justify-between gap-4">
             <div className="flex flex-row gap-2">
-              <TextUI variant="title">{model.name}</TextUI>
+              <TextUI variant="title" maxLines={1} className="-mt-1">
+                {model.name}
+              </TextUI>
 
-              <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
+              <TextUI
+                variant="desc"
+                className="flex items-end mt-0.5 h-min w-26"
+              >
                 (id: {model.id})
               </TextUI>
             </div>
 
-            {Object.entries(model.parameters).map(([key, value]) => (
-              <TextUI variant="desc" key={key}>
-                <strong>{key}:</strong> {String(value)}
-              </TextUI>
-            ))}
+            <div
+              className={`flex items-center justify-center select-none material-icons
+              ${model.is_draft ? "text-amber-500" : "text-emerald-500"}`}
+            >
+              {model.is_draft
+                ? "edit"
+                : model.saved_in_memory
+                  ? "cloud"
+                  : "cloud_off"}
+            </div>
           </div>
 
-          <div
-            className={`flex items-center justify-center select-none material-icons
-              ${model.is_draft ? "text-amber-500" : "text-emerald-500"}`}
-          >
-            {model.is_draft
-              ? "edit"
-              : model.saved_in_memory
-                ? "cloud"
-                : "cloud_off"}
+          <div className="mt-1 flex max-h-[12vh] overflow-auto">
+            <div className="flex-1">
+              {Object.entries(model.parameters).map(([key, value]) => (
+                <TextUI variant="desc" key={key}>
+                  <strong>{key}:</strong> {String(value)}
+                </TextUI>
+              ))}
+            </div>
           </div>
         </div>
 

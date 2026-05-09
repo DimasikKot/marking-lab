@@ -28,6 +28,7 @@ export function Model() {
   const [isEditing, setIsEditing] = useState(false);
   const [editParams, setEditParams] = useState("");
   const [editFilesIds, setEditFilesIds] = useState("");
+  const [predictFilesIds, setPredictFilesIds] = useState("");
 
   const loadModel = async () => {
     setLoading(true);
@@ -107,7 +108,7 @@ export function Model() {
       <Header>
         {model && (
           <div className="flex flex-row gap-4 items-center">
-            <TextUI variant="header">
+            <TextUI variant="header" maxLines={1}>
               {model ? model.name : "Загрузка..."}
             </TextUI>
 
@@ -168,19 +169,30 @@ export function Model() {
                     rows={10}
                     value={editParams}
                     onChange={(e) => setEditParams(e.target.value)}
+                    placeholder={`{\n\t"base_model": "albert-base-v2"\n\t"learning_rate": 0.001,\n\t"batch_size": 32,\n\t"epochs": 3,\n\t"validation_split": 0.2,\n}`}
                   />
                 </div>
 
                 <div>
-                  <TextUI variant="title">ID файлов через запятую</TextUI>
+                  <TextUI variant="title">ID файлов для обучения</TextUI>
 
-                  <div>
-                    <TextField
-                      value={editFilesIds}
-                      setValue={setEditFilesIds}
-                      placeholder="Пример: 1, 2, 3"
-                    />
-                  </div>
+                  <TextField
+                    value={editFilesIds}
+                    setValue={setEditFilesIds}
+                    placeholder="1, 2, 3"
+                  />
+                </div>
+
+                <div>
+                  <TextUI variant="title">
+                    ID файлов которые будут размечены
+                  </TextUI>
+
+                  <TextField
+                    value={predictFilesIds}
+                    setValue={setPredictFilesIds}
+                    placeholder="1, 2, 3"
+                  />
                 </div>
               </div>
             ) : (

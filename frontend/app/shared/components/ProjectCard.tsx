@@ -33,26 +33,31 @@ export const ProjectCard = ({
         ${className}
       `}
     >
-      <div className="flex flex-row h-full gap-4">
-        <div className="flex-1 -mt-1">
+      <div className="flex-1 h-full">
+        <div className="flex flex-row justify-between gap-4">
           <div className="flex flex-row gap-2">
-            <TextUI variant="title">{project.name}</TextUI>
+            <TextUI variant="title" maxLines={1} className="-mt-1">
+              {project.name}
+            </TextUI>
 
-            <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
+            <TextUI
+              variant="desc"
+              className="flex items-end mt-0.5 h-min w-26"
+            >
               (id: {project.id})
             </TextUI>
           </div>
 
-          {project.description && (
-            <TextUI variant="desc" className="mt-2 line-clamp-2">
-              {project.description}
-            </TextUI>
-          )}
+          <div className="flex items-center justify-center select-none material-icons">
+            {project.is_public ? "public" : "lock"}
+          </div>
         </div>
 
-        <div className="flex items-center justify-center select-none material-icons">
-          {project.is_public ? "public" : "lock"}
-        </div>
+        {project.description && (
+          <TextUI variant="desc" maxLines={2} className="mt-1">
+            {project.description}
+          </TextUI>
+        )}
       </div>
 
       <div className="w-full flex-1 border-b border-gray-300" />
