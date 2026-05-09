@@ -86,13 +86,13 @@ export function Project() {
               <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
             </Tab>
 
-            {/* Эксперименты */}
+            {/* Сравнения */}
             <Tab
               selectedClassName="active"
               className="group relative px-8 pb-2 text-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
             >
               <TextUI variant="normal" className="w-32 text-center">
-                Эксперименты
+                Сравнения
               </TextUI>
               <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
             </Tab>
