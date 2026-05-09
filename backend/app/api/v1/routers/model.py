@@ -20,7 +20,7 @@ from app.services.model import (
 router = APIRouter()
 
 
-class ModelDbResponse(BaseModel):
+class ListModelDbResponse(BaseModel):
     id: int
     name: str
     is_draft: bool
@@ -28,7 +28,7 @@ class ModelDbResponse(BaseModel):
     parameters: dict[str, Any]
     metrics: dict[str, Any]
     graphs: dict[str, Any]
-    files_ids: list[int]
+
     created_at: datetime
     updated_at: datetime
 
@@ -38,10 +38,11 @@ class ModelDbResponse(BaseModel):
 
 class PostModelRequest(BaseModel):
     name: str
-    files_ids: list[int] | None = None
+    training_files_ids: list[int] | None = None
+    prediction_files_ids: list[int] | None = None
 
 
-@router.post("", response_model=ModelDbResponse)
+@router.post("", response_model=ListModelDbResponse)
 async def post(
     project_id: int,
     data: PostModelRequest,
@@ -53,16 +54,25 @@ async def post(
         user_id=user_id,
         db=db,
         name=data.name,
-        files_ids=data.files_ids,
+        training_files_ids=data.training_files_ids,
+        prediction_files_ids=data.prediction_files_ids,
     )
 
-    return ModelDbResponse(
-        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+    return ListModelDbResponse(
+        id=model_db.id,
+        name=model_db.name,
+        is_draft=model_db.is_draft,
+        saved_in_memory=model_db.saved_in_memory,
+        parameters=model_db.parameters,
+        metrics=model_db.metrics,
+        graphs=model_db.graphs,
+        created_at=model_db.created_at,
+        updated_at=model_db.updated_at,
     )
 
 
 class GetModelsResponse(BaseModel):
-    data: list[ModelDbResponse]
+    data: list[ListModelDbResponse]
 
 
 @router.get("", response_model=GetModelsResponse)
@@ -82,12 +92,39 @@ async def get(
 
     return GetModelsResponse(
         data=[
-            ModelDbResponse(
-                files_ids=[file.id for file in model_db.files], **model_db.__dict__
+            ListModelDbResponse(
+                id=model_db.id,
+                name=model_db.name,
+                is_draft=model_db.is_draft,
+                saved_in_memory=model_db.saved_in_memory,
+                parameters=model_db.parameters,
+                metrics=model_db.metrics,
+                graphs=model_db.graphs,
+                created_at=model_db.created_at,
+                updated_at=model_db.updated_at,
             )
             for model_db in models_db
         ]
     )
+
+
+class ModelDbResponse(BaseModel):
+    id: int
+    name: str
+    is_draft: bool
+    saved_in_memory: bool
+    parameters: dict[str, Any]
+    metrics: dict[str, Any]
+    graphs: dict[str, Any]
+
+    training_files_ids: list[int]
+    prediction_files_ids: list[int]
+
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 @router.get("/{model_id}", response_model=ModelDbResponse)
@@ -101,15 +138,34 @@ async def get_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
+    training_files_ids = [
+        link.file_id for link in model_db.file_links if link.role == "training"
+    ]
+
+    prediction_files_ids = [
+        link.file_id for link in model_db.file_links if link.role == "prediction"
+    ]
+
     return ModelDbResponse(
-        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+        id=model_db.id,
+        name=model_db.name,
+        is_draft=model_db.is_draft,
+        saved_in_memory=model_db.saved_in_memory,
+        parameters=model_db.parameters,
+        metrics=model_db.metrics,
+        graphs=model_db.graphs,
+        training_files_ids=training_files_ids,
+        prediction_files_ids=prediction_files_ids,
+        created_at=model_db.created_at,
+        updated_at=model_db.updated_at,
     )
 
 
 class PatchModelDbRequest(BaseModel):
     name: str | None = None
     parameters: dict[str, Any] | None = None
-    files_ids: list[int] | None = None
+    training_files_ids: list[int] | None = None
+    prediction_files_ids: list[int] | None = None
 
 
 @router.patch("/{model_id}", response_model=ModelDbResponse)
@@ -127,12 +183,30 @@ async def patch_by_id(
         db=db,
         name=data.name,
         parameters=data.parameters,
-        training_files_ids=data.files_ids,
-        prediction_files_ids=data.files_ids,  # TODO
+        training_files_ids=data.training_files_ids,
+        prediction_files_ids=data.prediction_files_ids,
     )
 
+    training_files_ids = [
+        link.file_id for link in model_db.file_links if link.role == "training"
+    ]
+
+    prediction_files_ids = [
+        link.file_id for link in model_db.file_links if link.role == "prediction"
+    ]
+
     return ModelDbResponse(
-        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+        id=model_db.id,
+        name=model_db.name,
+        is_draft=model_db.is_draft,
+        saved_in_memory=model_db.saved_in_memory,
+        parameters=model_db.parameters,
+        metrics=model_db.metrics,
+        graphs=model_db.graphs,
+        training_files_ids=training_files_ids,
+        prediction_files_ids=prediction_files_ids,
+        created_at=model_db.created_at,
+        updated_at=model_db.updated_at,
     )
 
 
@@ -147,8 +221,26 @@ async def get_by_id_train(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
+    training_files_ids = [
+        link.file_id for link in model_db.file_links if link.role == "training"
+    ]
+
+    prediction_files_ids = [
+        link.file_id for link in model_db.file_links if link.role == "prediction"
+    ]
+
     return ModelDbResponse(
-        files_ids=[file.id for file in model_db.files], **model_db.__dict__
+        id=model_db.id,
+        name=model_db.name,
+        is_draft=model_db.is_draft,
+        saved_in_memory=model_db.saved_in_memory,
+        parameters=model_db.parameters,
+        metrics=model_db.metrics,
+        graphs=model_db.graphs,
+        training_files_ids=training_files_ids,
+        prediction_files_ids=prediction_files_ids,
+        created_at=model_db.created_at,
+        updated_at=model_db.updated_at,
     )
 
 

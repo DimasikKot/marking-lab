@@ -63,29 +63,30 @@ def create_model(
     user_id: int,
     db: Session,
     name: str,
-    files_ids: list[int] | None,
+    training_files_ids: list[int] | None,
+    prediction_files_ids: list[int] | None,
 ) -> ModelDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
     model_db = ModelDB(name=name, project_id=project_id)
 
-    if files_ids is not None:
-        # Получаем текущие связанные файлы
-        current_files = {file.id: file for file in model_db.files}
+    # ---------- TRAINING FILES ----------
+    if training_files_ids is not None:
+        _update_files_by_role(
+            db=db,
+            model_db=model_db,
+            files_ids=training_files_ids,
+            role="training",
+        )
 
-        # Загружаем новые файлы из БД
-        new_files = db.query(FileDB).filter(FileDB.id.in_(files_ids)).all()
-        new_files_dict = {file.id: file for file in new_files}
-
-        # Удаляем старые связи
-        for file_id in list(current_files.keys()):
-            if file_id not in new_files_dict:
-                model_db.files.remove(current_files[file_id])
-
-        # Добавляем новые связи
-        for file_id, file_db in new_files_dict.items():
-            if file_id not in current_files:
-                model_db.files.append(file_db)
+    # ---------- PREDICTION FILES ----------
+    if prediction_files_ids is not None:
+        _update_files_by_role(
+            db=db,
+            model_db=model_db,
+            files_ids=prediction_files_ids,
+            role="prediction",
+        )
 
     db.add(model_db)
     db.commit()

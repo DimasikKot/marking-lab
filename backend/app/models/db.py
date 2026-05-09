@@ -74,36 +74,6 @@ class FileDB(Base):
 from sqlalchemy.dialects.postgresql import JSONB
 
 
-class ModelDB(Base):
-    __tablename__ = "models"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    project_id: Mapped[int] = mapped_column(
-        ForeignKey("projects.id", ondelete="CASCADE"),
-        nullable=False,
-    )
-
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
-    saved_in_memory: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    parameters: Mapped[dict] = mapped_column(JSONB, server_default="{}")
-    metrics: Mapped[dict] = mapped_column(JSONB, server_default="{}")
-    graphs: Mapped[dict] = mapped_column(JSONB, server_default="{}")
-
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.now()
-    )
-
-    project = relationship("ProjectDB", back_populates="models")
-    file_links = relationship(
-        "ModelFileDB",
-        back_populates="model",
-        cascade="all, delete-orphan",
-    )
-
-
 class ModelFileDB(Base):
     __tablename__ = "model_files"
 
@@ -122,3 +92,42 @@ class ModelFileDB(Base):
 
     model = relationship("ModelDB", back_populates="file_links")
     file = relationship("FileDB", back_populates="model_links")
+
+
+class ModelDB(Base):
+    __tablename__ = "models"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
+    saved_in_memory: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    parameters: Mapped[dict] = mapped_column(
+        JSONB,
+        server_default="{}",
+        default={
+            "Базовая модель": "albert-base-v2",
+            "Эпохи": 2,
+            "Размер батча": 32,
+            "Размер тестового набора": 0.8,
+        },
+    )
+    metrics: Mapped[dict] = mapped_column(JSONB, server_default="{}")
+    graphs: Mapped[dict] = mapped_column(JSONB, server_default="{}")
+
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+    )
+
+    project = relationship("ProjectDB", back_populates="models")
+    file_links: Mapped[list[ModelFileDB]] = relationship(
+        "ModelFileDB",
+        back_populates="model",
+        cascade="all, delete-orphan",
+    )

@@ -27,8 +27,8 @@ export function Model() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editParams, setEditParams] = useState("");
-  const [editFilesIds, setEditFilesIds] = useState("");
-  const [predictFilesIds, setPredictFilesIds] = useState("");
+  const [trainingFilesIds, setTrainingFilesIds] = useState("");
+  const [predictionFilesIds, setPredictionFilesIds] = useState("");
 
   const loadModel = async () => {
     setLoading(true);
@@ -37,7 +37,8 @@ export function Model() {
     if (response) {
       setModel(response);
       setEditParams(JSON.stringify(response.parameters, null, 2));
-      setEditFilesIds(response.files_ids.join(", "));
+      setTrainingFilesIds(response.training_files_ids.join(", "));
+      setPredictionFilesIds(response.prediction_files_ids.join(", "));
     }
   };
 
@@ -49,7 +50,8 @@ export function Model() {
       if (response) {
         setModel(response);
         setEditParams(JSON.stringify(response.parameters, null, 2));
-        setEditFilesIds(response.files_ids.join(", "));
+        setTrainingFilesIds(response.training_files_ids.join(", "));
+        setPredictionFilesIds(response.prediction_files_ids.join(", "));
       }
     };
     loadModel();
@@ -65,14 +67,20 @@ export function Model() {
       return;
     }
 
-    const parsedFiles = editFilesIds
+    const parsedTrainingFiles = trainingFilesIds
+      .split(",")
+      .map((id) => parseInt(id.trim()))
+      .filter((id) => !isNaN(id));
+
+    const parsedPredictionFiles = predictionFilesIds
       .split(",")
       .map((id) => parseInt(id.trim()))
       .filter((id) => !isNaN(id));
 
     const response = await updateModelById(projectId, modelId, {
       parameters: parsedParams,
-      files_ids: parsedFiles,
+      training_files_ids: parsedTrainingFiles,
+      prediction_files_ids: parsedPredictionFiles,
     });
 
     if (!response) {
@@ -89,7 +97,7 @@ export function Model() {
   const handleTrainClick = async () => {
     if (!model) return;
 
-    if (model.files_ids.length === 0) {
+    if (model.training_files_ids.length === 0) {
       toast.error("Добавьте ID файлов в настройках перед обучением");
       return;
     }
@@ -177,8 +185,8 @@ export function Model() {
                   <TextUI variant="title">ID файлов для обучения</TextUI>
 
                   <TextField
-                    value={editFilesIds}
-                    setValue={setEditFilesIds}
+                    value={trainingFilesIds}
+                    setValue={setTrainingFilesIds}
                     placeholder="1, 2, 3"
                   />
                 </div>
@@ -189,8 +197,8 @@ export function Model() {
                   </TextUI>
 
                   <TextField
-                    value={predictFilesIds}
-                    setValue={setPredictFilesIds}
+                    value={predictionFilesIds}
+                    setValue={setPredictionFilesIds}
                     placeholder="1, 2, 3"
                   />
                 </div>
@@ -201,74 +209,73 @@ export function Model() {
               >
                 {/* Параметры */}
                 <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">
-                  <TextUI variant="header" className="mb-4 text-orange-400">
-                    Параметры
+                  <TextUI
+                    variant="header"
+                    className="mb-4 text-orange-400"
+                    isSelectable
+                  >
+                    Параметры обучения
                   </TextUI>
 
                   <div className="space-y-2">
-                    {Object.entries(model.parameters).length > 0 ? (
+                    {Object.entries(model.parameters).length > 0 &&
                       Object.entries(model.parameters).map(([k, v]) => (
                         <div
                           key={k}
                           className="flex justify-between py-1 border-b border-orange-200"
                         >
                           <TextUI
-                            className="text-orange-400"
-                            isSpan
+                            className="text-orange-400 w-[45%] overflow-hidden"
                             isSelectable
                           >
                             {k}
                           </TextUI>
 
                           <TextUI
-                            className="text-orange-400"
+                            className="text-orange-400 w-[50%] overflow-hidden"
                             isSpan
                             isSelectable
                           >
                             {String(v)}
                           </TextUI>
                         </div>
-                      ))
-                    ) : (
-                      <TextUI>Параметры не заданы</TextUI>
-                    )}
+                      ))}
                   </div>
                 </div>
 
-                {/* Метрики, видны только после обучения (!is_draft) */}
-                {!model.is_draft && (
-                  <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl animate-in fade-in slide-in-from-right-4 duration-500">
-                    <TextUI variant="header" className="mb-4 text-emerald-500">
+                {/* Метрики */}
+                {Object.entries(model.metrics).length > 0 && (
+                  <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl">
+                    <TextUI
+                      variant="header"
+                      className="mb-4 text-emerald-500"
+                      isSelectable
+                    >
                       Результаты обучения
                     </TextUI>
 
                     <div className="space-y-2">
-                      {Object.entries(model.metrics).length > 0 ? (
-                        Object.entries(model.metrics).map(([k, v]) => (
-                          <div
-                            key={k}
-                            className="flex justify-between py-1 border-b border-emerald-300"
+                      {Object.entries(model.metrics).map(([k, v]) => (
+                        <div
+                          key={k}
+                          className="flex justify-between py-1 border-b border-emerald-300"
+                        >
+                          <TextUI
+                            className="text-emerald-500 w-[45%] overflow-hidden"
+                            isSelectable
                           >
-                            <TextUI
-                              className="text-emerald-500"
-                              isSpan
-                              isSelectable
-                            >
-                              {k}
-                            </TextUI>
+                            {k}
+                          </TextUI>
 
-                            <TextUI
-                              className="text-emerald-500"
-                              isSpan
-                              isSelectable
-                            >
-                              {String(v)}
-                            </TextUI>
-                          </div>
-                        ))
-                      ) : (
-                        <TextUI>Метрики не найдены</TextUI>
-                      )}
+                          <TextUI
+                            className="text-emerald-500 w-[50%] overflow-hidden"
+                            isSpan
+                            isSelectable
+                          >
+                            {String(v)}
+                          </TextUI>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -276,18 +283,28 @@ export function Model() {
             )}
 
             {!isEditing && (
-              <div className="flex justify-between text-gray-400 text-xs">
+              <>
                 <TextUI isSpan variant="title">
-                  Файлы:{" "}
-                  {model.files_ids.length > 0
-                    ? model.files_ids.join(", ")
+                  Файлы для обучения:{" "}
+                  {model.training_files_ids.length > 0
+                    ? model.training_files_ids.join(", ")
                     : "не выбраны"}
                 </TextUI>
-                <TextUI isSpan variant="title">
-                  Обновлено:{" "}
-                  {new Date(model.updated_at).toLocaleString("ru-RU")}
-                </TextUI>
-              </div>
+
+                <div className="flex justify-between text-gray-400 text-xs">
+                  <TextUI isSpan variant="title">
+                    Файлы для предсказания:{" "}
+                    {model.prediction_files_ids.length > 0
+                      ? model.prediction_files_ids.join(", ")
+                      : "не выбраны"}
+                  </TextUI>
+
+                  <TextUI isSpan variant="title">
+                    Обновлено:{" "}
+                    {new Date(model.updated_at).toLocaleString("ru-RU")}
+                  </TextUI>
+                </div>
+              </>
             )}
           </div>
         )}

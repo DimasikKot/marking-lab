@@ -44,18 +44,18 @@ export const ModelModalCard = ({
           {/* Графики */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 px-6 pb-6">
             {/* Параметры */}
-            <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">
-              <TextUI
-                variant="header"
-                className="mb-4 text-orange-400"
-                isSelectable
-              >
-                Параметры
-              </TextUI>
+            {Object.entries(model.parameters).length > 0 && (
+              <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">
+                <TextUI
+                  variant="header"
+                  className="mb-4 text-orange-400"
+                  isSelectable
+                >
+                  Параметры обучения
+                </TextUI>
 
-              <div className="space-y-2">
-                {Object.entries(model.parameters).length > 0 &&
-                  Object.entries(model.parameters).map(([k, v]) => (
+                <div className="space-y-2">
+                  {Object.entries(model.parameters).map(([k, v]) => (
                     <div
                       key={k}
                       className="flex justify-between py-1 border-b border-orange-200"
@@ -76,22 +76,23 @@ export const ModelModalCard = ({
                       </TextUI>
                     </div>
                   ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Метрики */}
-            <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl">
-              <TextUI
-                variant="header"
-                className="mb-4 text-emerald-500"
-                isSelectable
-              >
-                Результаты обучения
-              </TextUI>
+            {Object.entries(model.metrics).length > 0 && (
+              <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl">
+                <TextUI
+                  variant="header"
+                  className="mb-4 text-emerald-500"
+                  isSelectable
+                >
+                  Результаты обучения
+                </TextUI>
 
-              <div className="space-y-2">
-                {Object.entries(model.metrics).length > 0 &&
-                  Object.entries(model.metrics).map(([k, v]) => (
+                <div className="space-y-2">
+                  {Object.entries(model.metrics).map(([k, v]) => (
                     <div
                       key={k}
                       className="flex justify-between py-1 border-b border-emerald-300"
@@ -112,8 +113,9 @@ export const ModelModalCard = ({
                       </TextUI>
                     </div>
                   ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {Object.entries(model.graphs).map(([key, value]) => (
               <div key={key} className="border rounded-xl p-3">

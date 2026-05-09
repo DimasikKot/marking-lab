@@ -17,14 +17,16 @@ export interface ModelDbResponse {
   parameters: Record<string, JsonValue>;
   metrics: Record<string, JsonValue>;
   graphs: Record<string, string>;
-  files_ids: number[];
+  training_files_ids: number[];
+  prediction_files_ids: number[];
   created_at: string;
   updated_at: string;
 }
 
 export interface PostModelRequest {
   name: string;
-  files_ids?: number[];
+  training_files_ids?: number[];
+  prediction_files_ids?: number[];
 }
 
 export const createModel = async (
@@ -84,7 +86,8 @@ export const fetchModelById = async (
 export interface PatchModelDbRequest {
   name?: string;
   parameters?: Record<string, JsonValue>;
-  files_ids?: number[];
+  training_files_ids?: number[];
+  prediction_files_ids?: number[];
 }
 
 export const updateModelById = async (
