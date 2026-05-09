@@ -15,7 +15,9 @@ import { Project } from "@/pages/projects/Project.tsx";
 import { Projects } from "@/pages/projects/Projects.tsx";
 import { File } from "@/pages/file/File.tsx";
 import { Model } from "@/pages/projects/Model.tsx";
-import { Experiment } from "@/pages/projects/Experiment.tsx";
+
+import { ComparisonFiles } from "@/pages/comparisons/ComparisonFiles";
+import { ComparisonModels } from "@/pages/comparisons/ComparisonModels";
 
 export function App() {
   return (
@@ -48,8 +50,13 @@ export function App() {
             />
 
             <Route
-              path="/projects/:projectId/experiments/:experimentId"
-              element={<Experiment />}
+              path="/projects/:projectId/ComparisonFiles/compare=:ids"
+              element={<ComparisonFiles />}
+            />
+
+            <Route
+              path="/projects/:projectId/ComparisonModels/compare=:ids"
+              element={<ComparisonModels />}
             />
           </Route>
         </Routes>

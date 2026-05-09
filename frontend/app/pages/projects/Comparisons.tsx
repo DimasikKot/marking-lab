@@ -1,7 +1,7 @@
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { useNavigate } from "react-router-dom";
 
-export function Experiments({ projectId }: { projectId: string | number }) {
+export function Comparisons({ projectId }: { projectId: string | number }) {
   const navigate = useNavigate();
 
   return (
@@ -9,7 +9,7 @@ export function Experiments({ projectId }: { projectId: string | number }) {
       <ButtonPage onClick={() => navigate("/projects")} />
 
       <div className="border border-gray-200 rounded-4xl p-6">
-        <p>Список экспериментов</p>
+        <p>Можно сравнить файлы или модели</p>
 
         <p>{projectId}</p>
       </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Files } from "./Files";
 import { Models } from "./Models";
-import { Experiments } from "./Experiments";
+import { Comparisons } from "./Comparisons";
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
 import { fetchFiles, type FileDbResponse } from "@/shared/api/file";
@@ -121,7 +121,7 @@ export function Project() {
       </TabPanel>
 
       <TabPanel>
-        <Experiments projectId={projectId} />
+        <Comparisons projectId={projectId} />
       </TabPanel>
     </Tabs>
   );
