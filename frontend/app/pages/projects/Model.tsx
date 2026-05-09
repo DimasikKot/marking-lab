@@ -205,7 +205,7 @@ export function Model() {
               </div>
             ) : (
               <div
-                className={`grid grid-cols-1 ${Object.entries(model.parameters).length > 0 ? "md:grid-cols-2" : ""} gap-8`}
+                className={`grid grid-cols-1 ${Object.entries(model.metrics).length > 0 ? "md:grid-cols-2" : ""} gap-8`}
               >
                 {/* Параметры */}
                 <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">

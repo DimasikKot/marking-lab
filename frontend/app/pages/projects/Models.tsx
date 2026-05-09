@@ -107,6 +107,20 @@ export function Models({
     model.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const handleCopyClick = async (model: ModelDbResponse) => {
+    if (!projectId) return;
+
+    setLoading(true);
+    const response = await createModel(projectId, {
+      name: `${model.name} (copy)`,
+    });
+    setLoading(false);
+
+    if (response === undefined) return;
+    toast.success("Модель успешно скопирована");
+    loadModels();
+  };
+
   return (
     <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
@@ -174,6 +188,7 @@ export function Models({
                 navigate(`/projects/${projectId}/models/${model.id}`)
               }
               onEditClick={() => handleEditClick(model)}
+              onCopyClick={() => handleCopyClick(model)}
               onDeleteClick={() => handleDeleteClick(model.id)}
             />
           ))}
