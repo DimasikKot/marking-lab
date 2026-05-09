@@ -38,7 +38,7 @@ export const FileCard = ({
           <div className="flex flex-row gap-2">
             <TextUI variant="title">{file.name}</TextUI>
 
-            <TextUI variant="desc" className="flex items-end mb-1">
+            <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
               (id: {file.id})
             </TextUI>
           </div>

@@ -10,6 +10,7 @@ type ModelCardProps = {
   model: ModelDbResponse;
   onClick?: () => void;
   onEditClick?: () => void;
+  onCopyClick?: () => void;
   onDeleteClick?: () => void;
   dateIsCreatedAt?: boolean;
   className?: string;
@@ -19,6 +20,7 @@ export const ModelCard = ({
   model,
   onClick = () => toast.error("Обработка нажатия не настроена"),
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
+  onCopyClick = () => toast.error("Обработка копирования не настроена"),
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
@@ -42,8 +44,8 @@ export const ModelCard = ({
             <div className="flex flex-row gap-2">
               <TextUI variant="title">{model.name}</TextUI>
 
-              <TextUI variant="desc" className="flex items-end mb-1">
-                (id: {model.id})
+              <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
+                (id: {model.id}2)
               </TextUI>
             </div>
 
@@ -76,6 +78,10 @@ export const ModelCard = ({
               className="text-left"
             >
               <div className="select-none material-icons">edit</div>
+            </ButtonUI>
+
+            <ButtonUI onClick={onCopyClick} variant="secondary">
+              <div className="select-none material-icons">copy_all</div>
             </ButtonUI>
 
             {Object.keys(model.graphs).length != 0 && (

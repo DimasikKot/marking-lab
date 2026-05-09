@@ -38,7 +38,7 @@ export const ProjectCard = ({
           <div className="flex flex-row gap-2">
             <TextUI variant="title">{project.name}</TextUI>
 
-            <TextUI variant="desc" className="flex items-end mb-1">
+            <TextUI variant="desc" className="flex items-end mt-1.5 h-min w-26">
               (id: {project.id})
             </TextUI>
           </div>

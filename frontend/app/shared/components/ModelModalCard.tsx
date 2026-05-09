@@ -44,7 +44,11 @@ export const ModelModalCard = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Параметры */}
           <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">
-            <TextUI variant="header" className="mb-4 text-orange-400">
+            <TextUI
+              variant="header"
+              className="mb-4 text-orange-400"
+              isSelectable
+            >
               Параметры
             </TextUI>
 
@@ -71,8 +75,12 @@ export const ModelModalCard = ({
           </div>
 
           {/* Метрики */}
-          <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl animate-in fade-in slide-in-from-right-4 duration-500">
-            <TextUI variant="header" className="mb-4 text-emerald-500">
+          <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl">
+            <TextUI
+              variant="header"
+              className="mb-4 text-emerald-500"
+              isSelectable
+            >
               Результаты обучения
             </TextUI>
 
