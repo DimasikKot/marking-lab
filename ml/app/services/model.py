@@ -27,8 +27,6 @@ logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------
 # Константы по умолчанию
 # -------------------------------------------------------------------
-MODEL_NAME = "distilbert-base-uncased"
-MAX_LENGTH = 128
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -69,7 +67,7 @@ def parse_csv_from_text(text: str):
 # -------------------------------------------------------------------
 # 2. Токенизация с выравниванием меток
 # -------------------------------------------------------------------
-def tokenize_and_align_labels(examples, tokenizer, label2id, max_length=MAX_LENGTH):
+def tokenize_and_align_labels(examples, tokenizer, label2id, max_length):
     tokenized_inputs = tokenizer(
         examples["tokens"],
         truncation=True,
@@ -98,9 +96,7 @@ def tokenize_and_align_labels(examples, tokenizer, label2id, max_length=MAX_LENG
 # -------------------------------------------------------------------
 # 3. Подготовка датасета
 # -------------------------------------------------------------------
-def prepare_dataset(
-    sentences: List[List[Dict]], tokenizer, label2id, max_length=MAX_LENGTH
-):
+def prepare_dataset(sentences: List[List[Dict]], tokenizer, label2id, max_length):
     tokens_list = [[item["token"] for item in sent] for sent in sentences]
     tags_list = [[item["label"] for item in sent] for sent in sentences]
     dataset = Dataset.from_dict({"tokens": tokens_list, "ner_tags": tags_list})
@@ -265,9 +261,11 @@ class NERModel:
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label
 
-    def predict(self, text: str, return_entities: bool = True) -> List[Dict]:
+    def predict(
+        self, text: str, return_entities: bool = True, max_length: int = 512
+    ) -> List[Dict]:
         inputs = self.tokenizer(
-            text, return_tensors="pt", truncation=True, max_length=MAX_LENGTH
+            text, return_tensors="pt", truncation=True, max_length=max_length
         ).to(device)
         with torch.no_grad():
             outputs = self.model(**inputs)

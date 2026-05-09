@@ -17,8 +17,6 @@ from app.services.model import (
     plot_confusion_matrix,
     plot_loss,
     prepare_dataset,
-    MAX_LENGTH,
-    MODEL_NAME,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -57,17 +55,22 @@ async def train_ner(
     train_sentences = all_sentences[:split_idx]
     eval_sentences = all_sentences[split_idx:]
 
-    epochs = int(params.get("epochs", 3))
-    batch_size = int(params.get("batch_size", 16))
-    learning_rate = float(params.get("learning_rate", 2e-5))
+    base_model = str(params.get("Базовая модель", "albert-base-v2")) # distilbert-base-uncased
+    epochs = int(params.get("Эпохи", 2))
+    batch_size = int(params.get("Размер батча", 32))
+    learning_rate = float(params.get("Скорость обучения", 2e-5))
+    testing_size = float(params.get("Размер тестового набора", 0.2))
+    max_line_lenght = int(params.get("Максимальная длина предложения", 128))
 
-    ner = NERModel(MODEL_NAME, label_list)
+    ner = NERModel(base_model, label_list)
     tokenizer = ner.tokenizer
     label2id = ner.label2id
 
-    train_dataset = prepare_dataset(train_sentences, tokenizer, label2id, MAX_LENGTH)
+    train_dataset = prepare_dataset(
+        train_sentences, tokenizer, label2id, max_line_lenght
+    )
     eval_dataset = (
-        prepare_dataset(eval_sentences, tokenizer, label2id, MAX_LENGTH)
+        prepare_dataset(eval_sentences, tokenizer, label2id, max_line_lenght)
         if eval_sentences
         else None
     )
@@ -83,22 +86,37 @@ async def train_ner(
         )
 
         eval_metrics = result["eval_metrics"]
-        print(eval_metrics)
-        metrics = {
-            "epochs": epochs,
-            "batch_size": batch_size,
-            "learning_rate": learning_rate,
-        }
+
+        metrics = {}
+        metrics_labels = {}
+
+        # ========== ВЫВОД МЕТРИК ==========
+        logger.info("Generating metrics...")
         if eval_metrics:
-            metrics.update(
-                {
-                    "accuracy": eval_metrics.get("eval_accuracy"),
-                    "f1": eval_metrics.get("eval_f1"),
-                    "precision": eval_metrics.get("eval_precision"),
-                    "recall": eval_metrics.get("eval_recall"),
-                }
-            )
-            # ========== ВЫВОД ПРЕДСКАЗАНИЙ ==========
+            metrics = {
+                "Точность (accuracy)": eval_metrics.get("eval_accuracy"),
+                "Точность (precision)": eval_metrics.get("eval_precision"),
+                "Полнота (recall)": eval_metrics.get("eval_recall"),
+                "F1-мера": eval_metrics.get("eval_f1"),
+            }
+
+            # метрики по классам (если они есть в результате)
+            for key, value in eval_metrics.items():
+                # обычно классовые метрики идут как:
+                # "eval_PER", "eval_ORG", "eval_LOC" и т.д.
+                if key.startswith("eval_") and isinstance(value, dict):
+                    label_name = key.replace("eval_", "")
+
+                    metrics_labels[label_name] = {
+                        "Точность": value.get("precision"),
+                        "Полнота": value.get("recall"),
+                        "F1-мера": value.get("f1"),
+                    }
+
+        print(metrics)
+        print(metrics_labels)
+
+        # ========== ВЫВОД ПРЕДСКАЗАНИЙ ==========
         predictions_output = []
 
         if eval_dataset and len(eval_sentences) > 0:
@@ -133,7 +151,7 @@ async def train_ner(
                     tokens,
                     truncation=True,
                     is_split_into_words=True,
-                    max_length=MAX_LENGTH,
+                    max_length=max_line_lenght,
                     return_tensors="pt",
                 )
 
@@ -275,7 +293,7 @@ async def train_ner(
             "graphs": json.dumps(
                 {
                     "train_loss": f"data:image/png;base64,{loss_plot}",
-                    "heatmap": f"data:image/png;base64,{cm_plot}",
+                    # "heatmap": f"data:image/png;base64,{cm_plot}",
                 }
             ),
         }
