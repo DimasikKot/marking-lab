@@ -54,24 +54,28 @@ export const ModelModalCard = ({
               </TextUI>
 
               <div className="space-y-2">
-                {Object.entries(model.parameters).length > 0 ? (
+                {Object.entries(model.parameters).length > 0 &&
                   Object.entries(model.parameters).map(([k, v]) => (
                     <div
                       key={k}
                       className="flex justify-between py-1 border-b border-orange-200"
                     >
-                      <TextUI className="text-orange-400" isSelectable>
+                      <TextUI
+                        className="text-orange-400 w-[45%] overflow-hidden"
+                        isSelectable
+                      >
                         {k}
                       </TextUI>
 
-                      <TextUI className="text-orange-400" isSpan isSelectable>
+                      <TextUI
+                        className="text-orange-400 w-[50%] overflow-hidden"
+                        isSpan
+                        isSelectable
+                      >
                         {String(v)}
                       </TextUI>
                     </div>
-                  ))
-                ) : (
-                  <TextUI>Параметры не заданы</TextUI>
-                )}
+                  ))}
               </div>
             </div>
 
@@ -86,24 +90,28 @@ export const ModelModalCard = ({
               </TextUI>
 
               <div className="space-y-2">
-                {Object.entries(model.metrics).length > 0 ? (
+                {Object.entries(model.metrics).length > 0 &&
                   Object.entries(model.metrics).map(([k, v]) => (
                     <div
                       key={k}
                       className="flex justify-between py-1 border-b border-emerald-300"
                     >
-                      <TextUI className="text-emerald-500" isSelectable>
+                      <TextUI
+                        className="text-emerald-500 w-[45%] overflow-hidden"
+                        isSelectable
+                      >
                         {k}
                       </TextUI>
 
-                      <TextUI className="text-emerald-500" isSpan isSelectable>
+                      <TextUI
+                        className="text-emerald-500 w-[50%] overflow-hidden"
+                        isSpan
+                        isSelectable
+                      >
                         {String(v)}
                       </TextUI>
                     </div>
-                  ))
-                ) : (
-                  <TextUI>Метрики не найдены</TextUI>
-                )}
+                  ))}
               </div>
             </div>
 

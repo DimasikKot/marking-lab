@@ -67,13 +67,58 @@ export const ModelCard = ({
           </div>
 
           <div className="mt-1 flex max-h-[12vh] overflow-auto">
-            <div className="flex-1">
-              {Object.entries(model.parameters).map(([key, value]) => (
-                <TextUI variant="desc" key={key}>
-                  <strong>{key}:</strong> {String(value)}
-                </TextUI>
-              ))}
-            </div>
+            {Object.entries(model.parameters).length > 0 && (
+              <div className="flex-1 w-[50%]">
+                {Object.entries(model.parameters).map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="flex justify-between px-1 border-b border-orange-200"
+                  >
+                    <TextUI
+                      variant="desc"
+                      className="text-orange-400 w-[45%] overflow-hidden"
+                    >
+                      {k}
+                    </TextUI>
+
+                    <TextUI
+                      variant="desc"
+                      className="text-orange-400 w-[50%] overflow-hidden"
+                      isSpan
+                    >
+                      {String(v)}
+                    </TextUI>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {Object.entries(model.metrics).length > 0 && (
+              <div className="flex-1 w-[50%]">
+                {Object.entries(model.metrics).map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="flex justify-between px-1 border-b border-emerald-300"
+                  >
+                    <TextUI
+                      variant="desc"
+                      className="text-green-500/90 w-[45%] overflow-hidden"
+                    >
+                      {k}
+                    </TextUI>
+
+                    <TextUI
+                      variant="desc"
+                      className="text-green-500/90 w-[50%] overflow-hidden"
+                      isSpan
+                      maxLines={1}
+                    >
+                      {String(v)}
+                    </TextUI>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

@@ -169,7 +169,7 @@ export function Model() {
                     rows={10}
                     value={editParams}
                     onChange={(e) => setEditParams(e.target.value)}
-                    placeholder={`{\n\t"base_model": "albert-base-v2"\n\t"learning_rate": 0.001,\n\t"batch_size": 32,\n\t"epochs": 3,\n\t"validation_split": 0.2,\n}`}
+                    placeholder={`{\n\t"Базовая модель": "albert-base-v2"\n\t"Скорость обучения": 0.001,\n\t"Размер батча": 32,\n\t"Эпох": 2,\n\t"Размер валидационного набора": 0.2,\n}`}
                   />
                 </div>
 
