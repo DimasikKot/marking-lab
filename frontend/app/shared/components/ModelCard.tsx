@@ -66,7 +66,7 @@ export const ModelCard = ({
             </div>
           </div>
 
-          <div className="mt-1 flex max-h-[12vh] overflow-auto">
+          <div className="mt-1 flex max-h-[20vh] overflow-auto">
             {Object.entries(model.parameters).length > 0 && (
               <div className="flex-1 w-[50%]">
                 {Object.entries(model.parameters).map(([k, v]) => (
