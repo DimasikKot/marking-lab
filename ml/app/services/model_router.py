@@ -1,9 +1,8 @@
 import tempfile
 from datasets import Dataset
+from fastapi import BackgroundTasks
 
-from app.services.model_class import (
-    NERModel,
-)
+from app.services.model_class import NERModel
 from app.services.model_metrics import loss_plot
 from app.services.model_files import (
     extract_labels_from_sentences,
@@ -11,15 +10,18 @@ from app.services.model_files import (
 )
 
 
-def model_router(
+def _model_train(
     EPOCHS: int,
     BATCH_SIZE: int,
     BASE_MODEL: str,
     LEARNING_RATE: float,
     TESTING_SIZE: float,
     MAX_LINE_LENGHT: int,
+    project_id: int,
+    model_id: int,
+    uuid: str,
     all_sentences: list[list[dict]],
-) -> tuple[dict, dict, str | None]:
+):
     # Список уникальных меток
     label_list = extract_labels_from_sentences(all_sentences)
 
@@ -89,13 +91,51 @@ def model_router(
 
         # TODO Предсказания
 
-        return_parameters = {
-            "Эпохи": EPOCHS,
-            "Размер батчей": BATCH_SIZE,
-            "Базовая модель": BASE_MODEL,
-            "Скорость обучения": LEARNING_RATE,
-            "Размер тренировочного набора": TESTING_SIZE,
-            "Максимальная длина предложения": MAX_LINE_LENGHT,
-        }
+        # "metrics": json.dumps(return_metrics),
+        # "graphs": json.dumps(
+        #     {
+        #         "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
+        #         # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
+        #         # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
+        #     }
+        # ),
 
-        return return_parameters, return_metrics, train_loss_plot
+
+# router
+def model_router(
+    EPOCHS: int,
+    BATCH_SIZE: int,
+    BASE_MODEL: str,
+    LEARNING_RATE: float,
+    TESTING_SIZE: float,
+    MAX_LINE_LENGHT: int,
+    project_id: int,
+    model_id: int,
+    uuid: str,
+    all_sentences: list[list[dict]],
+    background_tasks: BackgroundTasks,
+) -> dict:
+    background_tasks.add_task(
+        _model_train,
+        EPOCHS,
+        BATCH_SIZE,
+        BASE_MODEL,
+        LEARNING_RATE,
+        TESTING_SIZE,
+        MAX_LINE_LENGHT,
+        project_id,
+        model_id,
+        uuid,
+        all_sentences,
+    )
+
+    return_parameters = {
+        "Эпохи": EPOCHS,
+        "Размер батчей": BATCH_SIZE,
+        "Базовая модель": BASE_MODEL,
+        "Скорость обучения": LEARNING_RATE,
+        "Размер тренировочного набора": TESTING_SIZE,
+        "Максимальная длина предложения": MAX_LINE_LENGHT,
+    }
+
+    return return_parameters

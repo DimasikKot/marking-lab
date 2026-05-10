@@ -23,7 +23,7 @@ async def train_ner(
 
     # Тренируем модель
     params_dict: dict = json.loads(parameters)
-    return_parameters, return_metrics, train_loss_plot = model_router(
+    return_parameters = model_router(
         EPOCHS=int(params_dict.get("Эпохи", 2)),
         BATCH_SIZE=int(params_dict.get("Размер батчей", 16)),
         # distilbert-base-uncased
@@ -31,17 +31,13 @@ async def train_ner(
         LEARNING_RATE=float(params_dict.get("Скорость обучения", 2e-5)),
         TESTING_SIZE=float(params_dict.get("Размер тренировочного набора", 0.8)),
         MAX_LINE_LENGHT=int(params_dict.get("Максимальная длина предложения", 128)),
+        project_id=project_id,
+        model_id=model_id,
+        uuid=uuid,
         all_sentences=all_sentences,
+        background_tasks=background_tasks,
     )
 
     return {
         "parameters": json.dumps(return_parameters),
-        "metrics": json.dumps(return_metrics),
-        "graphs": json.dumps(
-            {
-                "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
-                # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
-                # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
-            }
-        ),
     }
