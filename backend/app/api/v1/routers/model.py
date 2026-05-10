@@ -1,21 +1,30 @@
 from datetime import datetime
 import io
-from pathlib import Path
-import tempfile
 from typing import Any
 import zipfile
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Path,
+    Query,
+    UploadFile,
+)
 
 from app.api.v1.routers.echo import GetEchoResponse
 from app.models.db import ModelDB
 from app.services.get_user_id import get_user_id
 from app.core.database import get_db
+from app.api.v1.routers.file import FileDbResponse
 from app.services.model import (
     SortType,
     create_model,
+    create_prediction_file_by_project_id,
     delete_model_by_id,
     fetch_model_db_by_id,
     fetch_models_db_by_project_id,
@@ -225,6 +234,28 @@ async def get_by_id_predict(
         media_type="application/zip",
         headers={"Content-Disposition": "attachment; filename=prediction_files.zip"},
     )
+
+
+@router.post("", response_model=FileDbResponse)
+async def post_file(
+    project_id: int = Path(...),
+    model_id: int = Path(...),
+    uuid: str = Form(...),
+    name: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    if uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
+        raise HTTPException(status_code=400, detail="Неверный uuid")
+
+    file_db = create_prediction_file_by_project_id(
+        project_id=project_id,
+        db=db,
+        name=name,
+        file=file.file,
+    )
+
+    return file_db
 
 
 @router.get("/{model_id}/train", response_model=ModelDbResponse)

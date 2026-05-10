@@ -1,7 +1,7 @@
 import io
 import json
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, BinaryIO, Literal
 from fastapi import HTTPException
 import httpx
 from sqlalchemy.orm import Session
@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.project import is_owner_of_project
-from app.services.file import get_file_path_by_id
+from app.services.file import _create_file_on_disk, get_file_path_by_id
+from backend.app.services.file_normalize import normalize_content_to_csv
 
 
 def _update_files_by_role(
@@ -277,6 +278,29 @@ def get_prediction_files_by_id(
     }
 
     return prediction_files_paths
+
+
+# router
+def create_prediction_file_by_project_id(
+    project_id: int,
+    db: Session,
+    name: str,
+    file: BinaryIO,
+) -> FileDB:
+    content, total_rows = normalize_content_to_csv(file)
+
+    file_db = FileDB(
+        name=name, project_id=project_id, total_rows=total_rows, is_labeled=True
+    )
+    db.add(file_db)
+    db.flush()
+
+    _create_file_on_disk(project_id, file_db.id, content)
+
+    db.commit()
+    db.refresh(file_db)
+
+    return file_db
 
 
 async def _train_model_request(

@@ -1,5 +1,6 @@
 import csv
 import io
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -71,62 +72,66 @@ def model_predict(
                         sentences=validation_sentences,
                     )
 
-                    trainer = Trainer(
-                        model=ner.model,
-                        args=TrainingArguments(
-                            output_dir="./tmp_predict",
-                            per_device_eval_batch_size=BATCH_SIZE,
-                            report_to="none",
-                        ),
-                        data_collator=ner.data_collator,
-                    )
-
-                    predictions = trainer.predict(dataset)  # type: ignore
-                    preds = np.argmax(predictions.predictions, axis=2)
-                    result_rows = []
-                    for idx, sentence in enumerate(validation_sentences):
-                        tokens = [item["token"] for item in sentence]
-                        tokenized = ner.tokenizer(
-                            tokens,
-                            truncation=True,
-                            is_split_into_words=True,
-                            max_length=MAX_LINE_LENGTH,
-                            return_tensors="pt",
-                        )
-                        word_ids = tokenized.word_ids()
-                        pred_ids_for_sentence = preds[idx]
-                        prev_word_idx = None
-                        pred_labels_aligned = []
-
-                        for i, word_idx in enumerate(word_ids):
-                            if word_idx is None:
-                                continue
-                            if word_idx != prev_word_idx:
-                                if i < len(pred_ids_for_sentence):
-                                    pred_label = ner.label_list[
-                                        pred_ids_for_sentence[i]
-                                    ]
-                                    pred_labels_aligned.append(pred_label)
-                                prev_word_idx = word_idx
-                        pred_labels_aligned = pred_labels_aligned[: len(tokens)]
-                        result_rows.append(
-                            {
-                                "tokens": tokens,
-                                "labels": pred_labels_aligned,
-                            }
+                    # Сохраняем модель во временном каталоге, чтобы не засорять память
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        trainer = Trainer(
+                            model=ner.model,
+                            args=TrainingArguments(
+                                output_dir=tmpdir,
+                                per_device_eval_batch_size=BATCH_SIZE,
+                                report_to="none",
+                            ),
+                            data_collator=ner.data_collator,
                         )
 
-                    # Сохранение CSV
-                    result_path = Path("./files") / f"{Path(file_name).stem}_pred.csv"
-                    result_path.parent.mkdir(parents=True, exist_ok=True)
-                    with result_path.open(
-                        "w",
-                        encoding="utf-8",
-                        newline="",
-                    ) as f:
-                        writer = csv.writer(f)
-                        writer.writerow(["text", "labels"])
-                        for item in result_rows:
-                            text_part = " ".join(item["tokens"])
-                            labels_part = " ".join(item["labels"])
-                            writer.writerow([text_part, labels_part])
+                        predictions = trainer.predict(dataset)  # type: ignore
+                        preds = np.argmax(predictions.predictions, axis=2)
+                        result_rows = []
+                        for idx, sentence in enumerate(validation_sentences):
+                            tokens = [item["token"] for item in sentence]
+                            tokenized = ner.tokenizer(
+                                tokens,
+                                truncation=True,
+                                is_split_into_words=True,
+                                max_length=MAX_LINE_LENGTH,
+                                return_tensors="pt",
+                            )
+                            word_ids = tokenized.word_ids()
+                            pred_ids_for_sentence = preds[idx]
+                            prev_word_idx = None
+                            pred_labels_aligned = []
+
+                            for i, word_idx in enumerate(word_ids):
+                                if word_idx is None:
+                                    continue
+                                if word_idx != prev_word_idx:
+                                    if i < len(pred_ids_for_sentence):
+                                        pred_label = ner.label_list[
+                                            pred_ids_for_sentence[i]
+                                        ]
+                                        pred_labels_aligned.append(pred_label)
+                                    prev_word_idx = word_idx
+                            pred_labels_aligned = pred_labels_aligned[: len(tokens)]
+                            result_rows.append(
+                                {
+                                    "tokens": tokens,
+                                    "labels": pred_labels_aligned,
+                                }
+                            )
+
+                        # Сохранение CSV
+                        result_path = (
+                            Path("./files") / f"{Path(file_name).stem}_pred.csv"
+                        )
+                        result_path.parent.mkdir(parents=True, exist_ok=True)
+                        with result_path.open(
+                            "w",
+                            encoding="utf-8",
+                            newline="",
+                        ) as f:
+                            writer = csv.writer(f)
+                            writer.writerow(["text", "labels"])
+                            for item in result_rows:
+                                text_part = " ".join(item["tokens"])
+                                labels_part = " ".join(item["labels"])
+                                writer.writerow([text_part, labels_part])
