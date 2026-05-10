@@ -167,20 +167,26 @@ export function Model() {
               )}
             </div>
 
+            {!isEditing && (
+              <>
+                <TextUI isSpan variant="title">
+                  Файлы для обучения:{" "}
+                  {model.training_files_ids.length > 0
+                    ? model.training_files_ids.join(", ")
+                    : "не выбраны"}
+                </TextUI>
+
+                <TextUI isSpan variant="title">
+                  Файлы для предсказания:{" "}
+                  {model.prediction_files_ids.length > 0
+                    ? model.prediction_files_ids.join(", ")
+                    : "не выбраны"}
+                </TextUI>
+              </>
+            )}
+
             {isEditing ? (
               <div className="flex flex-col gap-4">
-                <div>
-                  <TextUI variant="title">Параметры обучения</TextUI>
-
-                  <TextField
-                    isArea
-                    rows={10}
-                    value={editParams}
-                    onChange={(e) => setEditParams(e.target.value)}
-                    placeholder={`{\n\t"Базовая модель": "albert-base-v2"\n\t"Скорость обучения": 0.001,\n\t"Размер батча": 32,\n\t"Эпох": 2,\n\t"Размер валидационного набора": 0.2,\n}`}
-                  />
-                </div>
-
                 <div>
                   <TextUI variant="title">ID файлов для обучения</TextUI>
 
@@ -202,13 +208,25 @@ export function Model() {
                     placeholder="1, 2, 3"
                   />
                 </div>
+
+                <div>
+                  <TextUI variant="title">Параметры обучения</TextUI>
+
+                  <TextField
+                    isArea
+                    rows={10}
+                    value={editParams}
+                    onChange={(e) => setEditParams(e.target.value)}
+                    placeholder={`{\n\t"Базовая модель": "albert-base-v2"\n\t"Скорость обучения": 0.001,\n\t"Размер батча": 32,\n\t"Эпох": 2,\n\t"Размер валидационного набора": 0.2,\n}`}
+                  />
+                </div>
               </div>
             ) : (
               <div
                 className={`grid grid-cols-1 ${Object.entries(model.metrics).length > 0 ? "md:grid-cols-2" : ""} gap-8`}
               >
                 {/* Параметры */}
-                <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">
+                <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-2xl">
                   <TextUI
                     variant="header"
                     className="mb-4 text-orange-400"
@@ -245,7 +263,7 @@ export function Model() {
 
                 {/* Метрики */}
                 {Object.entries(model.metrics).length > 0 && (
-                  <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl">
+                  <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-2xl">
                     <TextUI
                       variant="header"
                       className="mb-4 text-emerald-500"
@@ -279,32 +297,21 @@ export function Model() {
                     </div>
                   </div>
                 )}
+
+                {/* Графики */}
+                {Object.entries(model.graphs).map(([key, value]) => (
+                  <div key={key} className="border rounded-2xl p-3">
+                    <TextUI className="mb-2" isSelectable>
+                      {key}
+                    </TextUI>
+                    <img
+                      src={value}
+                      alt={key}
+                      className="w-full select-none rounded-lg"
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-
-            {!isEditing && (
-              <>
-                <TextUI isSpan variant="title">
-                  Файлы для обучения:{" "}
-                  {model.training_files_ids.length > 0
-                    ? model.training_files_ids.join(", ")
-                    : "не выбраны"}
-                </TextUI>
-
-                <div className="flex justify-between text-gray-400 text-xs">
-                  <TextUI isSpan variant="title">
-                    Файлы для предсказания:{" "}
-                    {model.prediction_files_ids.length > 0
-                      ? model.prediction_files_ids.join(", ")
-                      : "не выбраны"}
-                  </TextUI>
-
-                  <TextUI isSpan variant="title">
-                    Обновлено:{" "}
-                    {new Date(model.updated_at).toLocaleString("ru-RU")}
-                  </TextUI>
-                </div>
-              </>
             )}
           </div>
         )}

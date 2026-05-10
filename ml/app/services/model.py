@@ -13,7 +13,7 @@ from transformers import (
     EarlyStoppingCallback,
 )
 
-from ml.app.services.model_metrics import compute_metrics
+from app.services.model_metrics import compute_metrics
 
 # Константы по умолчанию
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

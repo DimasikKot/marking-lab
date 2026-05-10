@@ -45,7 +45,7 @@ export const ModelModalCard = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 px-6 pb-6">
             {/* Параметры */}
             {Object.entries(model.parameters).length > 0 && (
-              <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-3xl">
+              <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-2xl">
                 <TextUI
                   variant="header"
                   className="mb-4 text-orange-400"
@@ -82,7 +82,7 @@ export const ModelModalCard = ({
 
             {/* Метрики */}
             {Object.entries(model.metrics).length > 0 && (
-              <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-3xl">
+              <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-2xl">
                 <TextUI
                   variant="header"
                   className="mb-4 text-emerald-500"
@@ -117,8 +117,9 @@ export const ModelModalCard = ({
               </div>
             )}
 
+            {/* Графики */}
             {Object.entries(model.graphs).map(([key, value]) => (
-              <div key={key} className="border rounded-xl p-3">
+              <div key={key} className="border rounded-2xl p-3">
                 <TextUI className="mb-2" isSelectable>
                   {key}
                 </TextUI>
