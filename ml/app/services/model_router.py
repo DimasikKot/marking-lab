@@ -1,12 +1,7 @@
-import io
-import json
 import tempfile
-import numpy as np
 from datasets import Dataset
 
 from app.services.model_class import (
-    Trainer,
-    TrainingArguments,
     NERModel,
 )
 from app.services.model_metrics import loss_plot
@@ -47,6 +42,7 @@ def model_router(
         else None
     )
 
+    # Обучаем модель во временном каталоге, чтобы не засорять память
     with tempfile.TemporaryDirectory() as tmpdir:
         result = ner.train(
             train_dataset=train_dataset,
