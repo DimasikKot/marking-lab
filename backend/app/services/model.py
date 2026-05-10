@@ -2,7 +2,7 @@ import io
 import json
 from pathlib import Path
 from typing import Any, Literal
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import HTTPException
 import httpx
 from sqlalchemy.orm import Session
 
@@ -291,14 +291,9 @@ async def _train_model_request(
 
             data = response.json()
             parameters = json.loads(data["parameters"])
-            metrics = json.loads(data["metrics"])
-            graphs = json.loads(data["graphs"])
-
             model_db.parameters = parameters
-            model_db.metrics = metrics
-            model_db.graphs = graphs
 
-            model_db.progress = 100
+            model_db.progress = 5
             db.commit()
             db.refresh(model_db)
 
@@ -309,7 +304,7 @@ async def _train_model_request(
 
             raise HTTPException(
                 status_code=500,
-                detail=f"Ошибка при обучении модели: {error}",
+                detail=f"Ошибка при страрте обучения модели: {error}",
             )
 
         finally:
@@ -323,7 +318,6 @@ async def train_model_by_id(
     model_id: int,
     user_id: int,
     db: Session,
-    background_tasks: BackgroundTasks,
 ) -> ModelDB:
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
@@ -357,26 +351,11 @@ async def train_model_by_id(
         for file_db in training_files
     }
 
-    # -------- PREDICTION FILES --------
-    prediction_files = [
-        link.file for link in model_db.file_links if link.role == "prediction"
-    ]
-
-    # TODO Сделать отправку с тренировочными данными
-    prediction_files_paths: set[Path] = {
-        get_file_path_by_id(
-            project_id=file_db.project_id,
-            file_id=file_db.id,
-        )
-        for file_db in prediction_files
-    }
-
     model_db.progress = 2
     db.commit()
     db.refresh(model_db)
 
-    background_tasks.add_task(
-        _train_model_request,
+    await _train_model_request(
         training_files_paths=training_files_paths,
         model_db=model_db,
         db=db,
