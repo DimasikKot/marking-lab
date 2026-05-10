@@ -275,7 +275,6 @@ async def train_model_by_id(
     db.refresh(model_db)
 
     # Формируем запрос к внешнему сервису
-    # Мы используем context manager, чтобы гарантированно закрыть файлы
     async with httpx.AsyncClient() as client:
         files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
         opened_files: list[io.BufferedReader] = []
@@ -329,14 +328,14 @@ async def train_model_by_id(
             db.commit()
             db.refresh(model_db)
 
-        except Exception as e:
+        except Exception as error:
             model_db.progress = 0
             db.commit()
             db.refresh(model_db)
 
             raise HTTPException(
                 status_code=500,
-                detail=f"Ошибка при обучении модели: {e}",
+                detail=f"Ошибка при обучении модели: {error}",
             )
 
         finally:

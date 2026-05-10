@@ -11,5 +11,5 @@ class GetEchoResponse(BaseModel):
 
 
 @router.get("/ml", response_model=GetEchoResponse)
-def test_ml():
+async def test_ml():
     return GetEchoResponse(detail="ML контейнер исправно работает", success=True)

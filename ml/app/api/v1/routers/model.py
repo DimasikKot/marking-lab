@@ -2,19 +2,20 @@ import io
 import json
 import tempfile
 import numpy as np
-from fastapi import APIRouter, File, Form, UploadFile
-from fastapi.responses import StreamingResponse
+from datasets import Dataset
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from app.services.model import (
+from app.services.model_class import (
     Trainer,
     TrainingArguments,
     NERModel,
-    build_zip_model,
+)
+from app.services.model_metrics import loss_plot
+from app.services.model_files import (
     extract_labels_from_sentences,
-    parse_csv_from_text,
+    get_all_sentences,
     prepare_dataset,
 )
-from app.services.model_metrics import loss_plot, plot_confusion_matrix
 
 router = APIRouter()
 
@@ -25,7 +26,6 @@ async def train_ner(
     files: list[UploadFile] = File(...),
 ):
     params = json.loads(parameters)
-
     EPOCHS = int(params.get("Эпохи", 2))
     BATCH_SIZE = int(params.get("Размер батчей", 16))
     # distilbert-base-uncased
@@ -34,85 +34,74 @@ async def train_ner(
     TESTING_SIZE = float(params.get("Размер тренировочного набора", 0.8))
     MAX_LINE_LENGHT = int(params.get("Максимальная длина предложения", 128))
 
-    # Собираем все предложения из загруженных CSV-файлов
-    all_sentences = []
-    for file in files:
-        content = await file.read()
-        text = content.decode("utf-8")
-        # Теперь используем правильный парсер
-        all_sentences.extend(parse_csv_from_text(text))  # список предложений
+    # Получаем предложения
+    all_sentences = await get_all_sentences(files)
+    if len(all_sentences) == 0:
+        raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
 
-    if not all_sentences:  # если предложений нет
-        return StreamingResponse(
-            io.BytesIO(b"no data"),
-            media_type="text/plain",
-            status_code=400,
-        )
+    # Список уникальных меток
+    label_list = extract_labels_from_sentences(all_sentences)
 
-    label_list = extract_labels_from_sentences(all_sentences)  # список уникальных меток
-
-    # Разбиение train/validation (80/20)
-    split_idx = int(len(all_sentences) * TESTING_SIZE)
-    train_sentences = all_sentences[:split_idx]
-    eval_sentences = all_sentences[split_idx:]
-
+    # Инициализируем модель
     ner = NERModel(BASE_MODEL, label_list)
     tokenizer = ner.tokenizer
     label2id = ner.label2id
 
-    train_dataset = prepare_dataset(
+    # Разделяем набор на тренировочный и валидационный
+    split_idx = int(len(all_sentences) * TESTING_SIZE)
+    train_sentences = all_sentences[:split_idx]
+    validation_sentences = all_sentences[split_idx:]
+
+    train_dataset: Dataset = prepare_dataset(
         train_sentences, tokenizer, label2id, MAX_LINE_LENGHT
     )
-    eval_dataset = (
-        prepare_dataset(eval_sentences, tokenizer, label2id, MAX_LINE_LENGHT)
-        if eval_sentences
+    validation_dataset: Dataset | None = (
+        prepare_dataset(validation_sentences, tokenizer, label2id, MAX_LINE_LENGHT)
+        if validation_sentences
         else None
     )
 
     with tempfile.TemporaryDirectory() as tmpdir:
         result = ner.train(
             train_dataset=train_dataset,
-            eval_dataset=eval_dataset,
+            eval_dataset=validation_dataset,
             output_dir=tmpdir,
             epochs=EPOCHS,
             batch_size=BATCH_SIZE,
             learning_rate=LEARNING_RATE,
         )
 
-        eval_metrics = result["eval_metrics"]
-
-        metrics = {}
-        metrics_labels = {}
-
-        # Метрики
-        if eval_metrics:
-            metrics = {
-                "Точность (accuracy)": eval_metrics.get("eval_accuracy"),
-                "Точность (precision)": eval_metrics.get("eval_precision"),
-                "Полнота (recall)": eval_metrics.get("eval_recall"),
-                "F1-мера": eval_metrics.get("eval_f1"),
+        # Метрики валидационной выборки
+        validation_metrics: dict = result["eval_metrics"]
+        return_metrics = {}
+        labels_metrics = {}
+        if validation_metrics:
+            return_metrics = {
+                "Точность (accuracy)": validation_metrics.get("eval_accuracy"),
+                "Точность (precision)": validation_metrics.get("eval_precision"),
+                "Полнота (recall)": validation_metrics.get("eval_recall"),
+                "F1-мера": validation_metrics.get("eval_f1"),
             }
 
-            # метрики по классам (если они есть в результате)
-            for key, value in eval_metrics.items():
+            # Метрики по классам (если они есть в результате)
+            for key, value in validation_metrics.items():
                 # обычно классовые метрики идут как:
                 # "eval_PER", "eval_ORG", "eval_LOC" и т.д.
                 if key.startswith("eval_") and isinstance(value, dict):
                     label_name = key.replace("eval_", "")
 
-                    metrics_labels[label_name] = {
+                    labels_metrics[label_name] = {
                         "Точность": value.get("precision"),
                         "Полнота": value.get("recall"),
                         "F1-мера": value.get("f1"),
                     }
 
-        print(metrics)
-        print(metrics_labels)
+        print(return_metrics)
+        print(labels_metrics)
 
-        # ========== ВЫВОД ПРЕДСКАЗАНИЙ ==========
+        # Предсказания
         predictions_output = []
-
-        if eval_dataset and len(eval_sentences) > 0:
+        if validation_dataset and len(validation_sentences) > 0:
             # Получаем предсказания модели
             trainer = Trainer(
                 model=ner.model,
@@ -124,11 +113,11 @@ async def train_ner(
                 data_collator=ner.data_collator,
             )
 
-            predictions = trainer.predict(eval_dataset)  # type: ignore
+            predictions = trainer.predict(validation_dataset)  # type: ignore
             preds = np.argmax(predictions.predictions, axis=2)
 
             # Декодируем предсказания для каждого примера
-            for idx, (sentence, true_labels_original) in enumerate(zip(eval_sentences, predictions.label_ids)):  # type: ignore
+            for idx, (sentence, true_labels_original) in enumerate(zip(validation_sentences, predictions.label_ids)):  # type: ignore
                 # Получаем исходные токены
                 tokens = [item["token"] for item in sentence]
                 true_labels = [item["label"] for item in sentence]
@@ -250,25 +239,9 @@ async def train_ner(
         # )
         # confusion_matrix_plot = plot_confusion_matrix(label_list)
 
-        # Если есть предсказания, добавляем их в zip архив
-        zip_data = build_zip_model(tmpdir)
-        if predictions_output:
-            import zipfile
-
-            zip_buffer = io.BytesIO(zip_data)
-            with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zf:
-                zf.writestr("predictions.json", predictions_json)
-            zip_data = zip_buffer.getvalue()
-
-        # zip_data = build_zip_model(tmpdir)
-        # zip_data = io.BytesIO(zip_data)  # если zip_data это bytes
-        # zip_data.seek(0, 2)  # в конец
-        # file_size = zip_data.tell()
-        # zip_data.seek(0)  # обратно в начало
-
         return {
             "parameters": json.dumps(parameters),
-            "metrics": json.dumps(metrics),
+            "metrics": json.dumps(return_metrics),
             "graphs": json.dumps(
                 {
                     "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
