@@ -17,7 +17,7 @@ class ProgressCallback(TrainerCallback):
 
         self.last_progress = -1
 
-    def _send_progress(self, progress: int, metrics: dict | None = None):
+    def _send_progress(self, progress: int, metrics: dict):
         try:
             url = (
                 f"http://backend:8000/api/v1/projects/"
@@ -27,16 +27,14 @@ class ProgressCallback(TrainerCallback):
             request = {
                 "uuid": self.uuid,
                 "progress": progress,
+                "metrics": metrics,
             }
 
-            if metrics:
-                request["metrics"] = metrics
+            print("=" * 100)
+            print(request)
+            print("=" * 100)
 
-            # print("=" * 100)
-            # print(request)
-            # print("=" * 100)
-
-            with httpx.Client(timeout=5.0) as client:
+            with httpx.Client(timeout=100) as client:
                 client.post(url, json=request)
 
         except Exception as event:

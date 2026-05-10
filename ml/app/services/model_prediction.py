@@ -154,11 +154,11 @@ def model_predict(
                             url,
                             data={
                                 "uuid": uuid,
-                                "name": f"file {file_name}(id) predict model {model_id}(id).csv",
+                                "name": f"model-{model_id} file-{file_name} prediction.csv",
                             },
                             files={
                                 "file": (
-                                    f"file {file_name}(id) predict model {model_id}(id).csv",
+                                    f"model-{model_id} file-{file_name} prediction.csv",
                                     csv_bytes,
                                     "text/csv",
                                 )
