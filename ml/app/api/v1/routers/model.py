@@ -14,7 +14,7 @@ from app.services.model import (
     parse_csv_from_text,
     prepare_dataset,
 )
-from app.services.model_plots import loss_plot, plot_confusion_matrix
+from ml.app.services.model_metrics import loss_plot, plot_confusion_matrix
 
 router = APIRouter()
 

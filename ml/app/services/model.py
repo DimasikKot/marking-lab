@@ -13,7 +13,7 @@ from transformers import (
     EarlyStoppingCallback,
 )
 
-from app.services.model_plots import compute_metrics
+from ml.app.services.model_metrics import compute_metrics
 
 # Константы по умолчанию
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -51,9 +51,7 @@ def parse_csv_from_text(text: str):
     return sentences
 
 
-# -------------------------------------------------------------------
-# 2. Токенизация с выравниванием меток
-# -------------------------------------------------------------------
+# Токенизация с выравниванием меток
 def tokenize_and_align_labels(examples, tokenizer, label2id, max_length):
     tokenized_inputs = tokenizer(
         examples["tokens"],
@@ -80,9 +78,7 @@ def tokenize_and_align_labels(examples, tokenizer, label2id, max_length):
     return tokenized_inputs
 
 
-# -------------------------------------------------------------------
-# 3. Подготовка датасета
-# -------------------------------------------------------------------
+# Подготовка датасета
 def prepare_dataset(sentences: list[list[dict]], tokenizer, label2id, max_length):
     tokens_list = [[item["token"] for item in sent] for sent in sentences]
     tags_list = [[item["label"] for item in sent] for sent in sentences]
@@ -95,9 +91,7 @@ def prepare_dataset(sentences: list[list[dict]], tokenizer, label2id, max_length
     return tokenized_dataset
 
 
-# -------------------------------------------------------------------
-# 5. Класс NER модели
-# -------------------------------------------------------------------
+# Класс NER модели
 class NERModel:
     def __init__(self, model_name: str, label_list: list[str]):
         self.model_name = model_name
@@ -158,7 +152,7 @@ class NERModel:
             max_grad_norm=1.0,  # максимальная норма градиента
             optim="adamw_torch",  # оптимизатор
             lr_scheduler_type="linear",  # тип распределения скорости обучения
-            warmup_ratio=0.1,  # кол-во эпох для увеличения скорости обучения
+            warmup_steps=0.1,  # кол-во эпох для увеличения скорости обучения
         )
 
         trainer = Trainer(
@@ -285,9 +279,7 @@ class NERModel:
             return result
 
 
-# -------------------------------------------------------------------
 # Вспомогательные функции
-# -------------------------------------------------------------------
 def extract_labels_from_sentences(sentences: list[list[dict]]) -> list[str]:
     all_labels = set()
     for sent in sentences:
