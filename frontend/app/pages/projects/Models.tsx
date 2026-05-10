@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -51,6 +51,23 @@ export function Models({
     if (response === undefined) return;
     setModels(response.data);
   };
+
+  useEffect(() => {
+    const loadModels = async () => {
+      setLoading(true);
+      const response = await fetchModels(projectId);
+      setLoading(false);
+      if (response === undefined) return;
+      setModels(response.data);
+    };
+
+    const interval = setInterval(() => {
+      loadModels();
+    }, 5000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   // Создание новой модели
   const handleCreate = async () => {
