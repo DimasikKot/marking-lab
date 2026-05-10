@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from app.services.model import (
     delete_model_by_id,
     fetch_model_db_by_id,
     fetch_models_db_by_project_id,
+    set_progress_model_db_by_id,
     train_model_by_id,
     update_model_db_by_id,
 )
@@ -156,15 +157,45 @@ async def patch_by_id(
     return ModelDbToResponse(model_db=model_db)
 
 
+class PostProgressRequest(BaseModel):
+    uuid: str
+    progress: int
+
+
+@router.post("/{model_id}/progress", response_model=ModelDbResponse)
+async def get_by_id_predict(
+    project_id: int,
+    model_id: int,
+    data: PostProgressRequest,
+    db: Session = Depends(get_db),
+):
+    if data.uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
+        raise HTTPException(status_code=400, detail="Неверный uuid")
+
+    model_db = set_progress_model_db_by_id(
+        project_id=project_id,
+        model_id=model_id,
+        db=db,
+        progress=data.progress,
+    )
+
+    return ModelDbToResponse(model_db=model_db)
+
+
 @router.get("/{model_id}/train", response_model=ModelDbResponse)
 async def get_by_id_train(
     project_id: int,
     model_id: int,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     model_db = await train_model_by_id(
-        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+        project_id=project_id,
+        model_id=model_id,
+        user_id=user_id,
+        db=db,
+        background_tasks=background_tasks,
     )
 
     return ModelDbToResponse(model_db=model_db)

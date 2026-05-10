@@ -123,7 +123,7 @@ export function Model() {
             <TextUI
               variant="label"
               isSpan
-              className={`px-3 py-1 rounded-2xl border size-max mt-1 
+              className={`px-3 py-1 rounded-2xl border size-max mt-1 w-38 text-center
                 ${
                   model.progress === 0
                     ? "bg-amber-100 border-amber-300"
@@ -136,9 +136,9 @@ export function Model() {
                 model.progress === 0
                   ? "Черновик"
                   : model.progress !== 100
-                    ? "Обучается"
+                    ? `Обучается ${model.progress}%`
                     : "Обучена"
-              } ${model.progress}%`}
+              }`}
             </TextUI>
           </div>
         )}

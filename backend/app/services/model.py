@@ -2,7 +2,7 @@ import io
 import json
 from pathlib import Path
 from typing import Any, Literal
-from fastapi import HTTPException
+from fastapi import BackgroundTasks, HTTPException
 import httpx
 from sqlalchemy.orm import Session
 
@@ -218,11 +218,112 @@ def update_model_db_by_id(
 
 
 # router
+def set_progress_model_db_by_id(
+    project_id: int, model_id: int, db: Session, progress: int
+) -> ModelDB:
+    model_db = (
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
+        .first()
+    )
+
+    if not model_db:
+        raise HTTPException(status_code=404, detail="Модель не найдена")
+
+    model_db.progress = progress
+    db.commit()
+    db.refresh(model_db)
+
+    return model_db
+
+
+async def _train_model_request(
+    training_files_paths: set[Path], model_db: ModelDB, db: Session
+):
+    # Формируем запрос к внешнему сервису
+    async with httpx.AsyncClient() as client:
+        files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
+        opened_files: list[io.BufferedReader] = []
+
+        model_db.progress = 4
+        db.commit()
+        db.refresh(model_db)
+
+        try:
+            for path in training_files_paths:
+                file_stream: io.BufferedReader = open(path, "rb")
+                opened_files.append(file_stream)
+                # Формат: (название_поля, (имя_файла, объект_файла, content_type))
+                files_to_send.append(("files", (path.name, file_stream, "text/plain")))
+
+            model_db.progress = 5
+            db.commit()
+            db.refresh(model_db)
+
+            response = await client.post(
+                settings.ML_URL + "/models/train",
+                data={
+                    "parameters": json.dumps(model_db.parameters),
+                    "uuid": str((model_db.project_id - 51) * 2 - model_db.id + 231) * 3,
+                    "model_id": model_db.id,
+                    "project_id": model_db.project_id,
+                },
+                files=files_to_send,
+                timeout=30000,
+            )
+
+            for file_stream in opened_files:
+                file_stream.close()
+
+            if response.status_code != 200:
+                model_db.progress = 0
+                db.commit()
+                db.refresh(model_db)
+
+                raise response.json()
+
+            # Метрики забираем из заголовка
+            # metrics_raw = response.headers.get("X-Metrics")
+            # graphs_raw = response.headers.get("X-Graphs")
+            # metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
+            # graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
+            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
+
+            data = response.json()
+            parameters = json.loads(data["parameters"])
+            metrics = json.loads(data["metrics"])
+            graphs = json.loads(data["graphs"])
+
+            model_db.parameters = parameters
+            model_db.metrics = metrics
+            model_db.graphs = graphs
+
+            model_db.progress = 100
+            db.commit()
+            db.refresh(model_db)
+
+        except Exception as error:
+            model_db.progress = 0
+            db.commit()
+            db.refresh(model_db)
+
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка при обучении модели: {error}",
+            )
+
+        finally:
+            for file_stream in opened_files:
+                file_stream.close()
+
+
+# router
 async def train_model_by_id(
     project_id: int,
     model_id: int,
     user_id: int,
     db: Session,
+    background_tasks: BackgroundTasks,
 ) -> ModelDB:
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
@@ -274,76 +375,12 @@ async def train_model_by_id(
     db.commit()
     db.refresh(model_db)
 
-    # Формируем запрос к внешнему сервису
-    async with httpx.AsyncClient() as client:
-        files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
-        opened_files: list[io.BufferedReader] = []
-
-        try:
-            for path in training_files_paths:
-                file_stream: io.BufferedReader = open(path, "rb")
-                opened_files.append(file_stream)
-                # Формат: (название_поля, (имя_файла, объект_файла, content_type))
-                files_to_send.append(("files", (path.name, file_stream, "text/plain")))
-
-            response = await client.post(
-                settings.ML_URL + "/models/train",  # URL обучающего сервиса
-                data={"parameters": json.dumps(model_db.parameters)},
-                files=files_to_send,
-                timeout=None,  # Обучение может длиться долго
-            )
-
-            for file_stream in opened_files:
-                file_stream.close()
-
-            if response.status_code != 200:
-                model_db.progress = 0
-                db.commit()
-                db.refresh(model_db)
-
-                raise response.json()
-
-            # Метрики забираем из заголовка
-            # metrics_raw = response.headers.get("X-Metrics")
-            # graphs_raw = response.headers.get("X-Graphs")
-            # metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
-            # graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
-            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
-
-            data = response.json()
-            parameters = json.loads(data["parameters"])
-            metrics = json.loads(data["metrics"])
-            graphs = json.loads(data["graphs"])
-
-            model_db.parameters = parameters
-            model_db.metrics = metrics
-            model_db.graphs = graphs
-
-            # Содержимое результирующего файла (если нужно сохранить)
-            # result_content = response.content
-            # _create_model_on_disk(
-            #     project_id=model_db.project_id,
-            #     model_id=model_db.id,
-            #     content=response.content,  # content=response.content.decode("utf-8"),
-            # )
-
-            model_db.progress = 100
-            db.commit()
-            db.refresh(model_db)
-
-        except Exception as error:
-            model_db.progress = 0
-            db.commit()
-            db.refresh(model_db)
-
-            raise HTTPException(
-                status_code=500,
-                detail=f"Ошибка при обучении модели: {error}",
-            )
-
-        finally:
-            for file_stream in opened_files:
-                file_stream.close()
+    background_tasks.add_task(
+        _train_model_request,
+        training_files_paths=training_files_paths,
+        model_db=model_db,
+        db=db,
+    )
 
     return model_db
 

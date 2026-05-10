@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 
 from app.services.model_router import model_router
 from app.services.model_files import get_all_sentences
@@ -10,7 +10,11 @@ router = APIRouter()
 @router.post("/train")
 async def train_ner(
     parameters: str = Form(...),
+    project_id: int = Form(...),
+    model_id: int = Form(...),
+    uuid: str = Form(...),
     files: list[UploadFile] = File(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     # Получаем предложения
     all_sentences = await get_all_sentences(files)
