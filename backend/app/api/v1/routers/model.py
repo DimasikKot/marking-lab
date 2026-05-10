@@ -236,7 +236,7 @@ async def get_by_id_predict(
     )
 
 
-@router.post("", response_model=FileDbResponse)
+@router.post("/{model_id}/prediction_files", response_model=FileDbResponse)
 async def post_file(
     project_id: int = Path(...),
     model_id: int = Path(...),

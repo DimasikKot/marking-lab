@@ -2,8 +2,6 @@ import csv
 import io
 import tempfile
 import zipfile
-from pathlib import Path
-
 import httpx
 import numpy as np
 from transformers import Trainer, TrainingArguments
@@ -120,18 +118,53 @@ def model_predict(
                             )
 
                         # Сохранение CSV
-                        result_path = (
-                            Path("./files") / f"{Path(file_name).stem}_pred.csv"
+                        # result_path = (
+                        #     Path("./files") / f"{Path(file_name).stem}_pred.csv"
+                        # )
+                        # result_path.parent.mkdir(parents=True, exist_ok=True)
+                        # with result_path.open(
+                        #     "w",
+                        #     encoding="utf-8",
+                        #     newline="",
+                        # ) as f:
+                        #     writer = csv.writer(f)
+                        #     writer.writerow(["text", "labels"])
+                        #     for item in result_rows:
+                        #         text_part = " ".join(item["tokens"])
+                        #         labels_part = " ".join(item["labels"])
+                        #         writer.writerow([text_part, labels_part])
+
+                        # Создаём CSV в памяти
+                        csv_buffer = io.StringIO()
+
+                        writer = csv.writer(csv_buffer)
+                        writer.writerow(["text", "labels"])
+
+                        for item in result_rows:
+                            text_part = " ".join(item["tokens"])
+                            labels_part = " ".join(item["labels"])
+                            writer.writerow([text_part, labels_part])
+
+                        # Переводим в bytes
+                        csv_bytes = csv_buffer.getvalue().encode("utf-8")
+
+                        url = f"http://backend:8000/projects/{project_id}/models/{model_id}/prediction_files"
+
+                        response = httpx.post(
+                            url,
+                            data={
+                                "uuid": uuid,
+                                "name": f"file {file_name}(id) predict model {model_id}(id).csv",
+                            },
+                            files={
+                                "file": (
+                                    f"file {file_name}(id) predict model {model_id}(id).csv",
+                                    csv_bytes,
+                                    "text/csv",
+                                )
+                            },
+                            timeout=60.0,
                         )
-                        result_path.parent.mkdir(parents=True, exist_ok=True)
-                        with result_path.open(
-                            "w",
-                            encoding="utf-8",
-                            newline="",
-                        ) as f:
-                            writer = csv.writer(f)
-                            writer.writerow(["text", "labels"])
-                            for item in result_rows:
-                                text_part = " ".join(item["tokens"])
-                                labels_part = " ".join(item["labels"])
-                                writer.writerow([text_part, labels_part])
+
+                        print(response.status_code)
+                        print(response.json())

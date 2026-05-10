@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.project import is_owner_of_project
 from app.services.file import _create_file_on_disk, get_file_path_by_id
-from backend.app.services.file_normalize import normalize_content_to_csv
+from app.services.file_normalize import normalize_content_to_csv
 
 
 def _update_files_by_role(
