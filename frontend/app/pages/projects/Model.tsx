@@ -117,7 +117,7 @@ export function Model() {
         {model && (
           <div className="flex flex-row gap-4 items-center">
             <TextUI variant="header" maxLines={1}>
-              {model ? model.name : "Загрузка..."}
+              {model.name}
             </TextUI>
 
             <TextUI

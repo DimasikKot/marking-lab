@@ -97,6 +97,7 @@ export const ModelCard = ({
                       <TextUI
                         variant="desc"
                         className="text-orange-400 w-[45%] overflow-hidden"
+                        maxLines={1}
                       >
                         {k}
                       </TextUI>
@@ -105,6 +106,7 @@ export const ModelCard = ({
                         variant="desc"
                         className="text-orange-400 w-[50%] overflow-hidden"
                         isSpan
+                        maxLines={1}
                       >
                         {String(v)}
                       </TextUI>
@@ -123,6 +125,7 @@ export const ModelCard = ({
                       <TextUI
                         variant="desc"
                         className="text-green-500/90 w-[45%] overflow-hidden"
+                        maxLines={1}
                       >
                         {k}
                       </TextUI>
@@ -162,11 +165,11 @@ export const ModelCard = ({
               <div className="select-none material-icons">copy_all</div>
             </ButtonUI>
 
-            {Object.keys(model.metrics).length > 0 && (
+            {/* {Object.keys(model.metrics).length > 0 && (
               <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
                 <div className="select-none material-icons">insert_chart</div>
               </ButtonUI>
-            )}
+            )} */}
           </div>
 
           <TextUI
@@ -187,7 +190,8 @@ export const ModelCard = ({
             className="flex-max text-right text-red-600 hover:text-red-800"
           >
             <div
-              className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
+              // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
+              className="ml-9 select-none material-icons"
             >
               delete
             </div>

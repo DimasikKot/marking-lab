@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import type { ModelDbResponse } from "../api/model";
 import { ButtonUI } from "./ButtonUI";
 import { TextUI } from "./TextUI";
 
+// depricated
 export const ModelModalCard = ({
   model,
   onClose,
@@ -9,6 +11,13 @@ export const ModelModalCard = ({
   model: ModelDbResponse;
   onClose: () => void;
 }) => {
+  useEffect(() => {
+    // добавляем фейковый шаг в историю
+    window.history.pushState({ modal: true }, "");
+
+    window.addEventListener("popstate", onClose);
+  }, [onClose]);
+
   return (
     <div
       className="
