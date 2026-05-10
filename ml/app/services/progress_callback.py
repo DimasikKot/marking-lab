@@ -17,64 +17,118 @@ class ProgressCallback(TrainerCallback):
         self.uuid = uuid
         self.total_epochs = total_epochs
 
-    def _send_progress(self, progress: int, metrics: dict):
+        self.last_progress = -1
+
+    def _send_progress(self, progress: int, metrics: dict | None = None):
         try:
-            url = f"http://backend:8000/api/v1/projects/{self.project_id}/models/{self.model_id}/progress"
+            url = (
+                f"http://backend:8000/api/v1/projects/"
+                f"{self.project_id}/models/{self.model_id}/progress"
+            )
+
             request = {
                 "uuid": self.uuid,
                 "progress": progress,
             }
 
-            if metrics != {}:
-                request["metrics"] = json.dumps(metrics)
+            if metrics:
+                request["metrics"] = metrics
+
             print("=" * 100)
-            print(request, metrics)
+            print(request)
             print("=" * 100)
 
-            with httpx.Client() as client:
-                try:
-                    client.post(url, json=request)
-                except Exception as event:
-                    with httpx.Client() as client:
-                        client.post(url, json={"progress": 0})
-                    raise RuntimeError(f"Ошибка отправки прогресса: {event}") from event
+            with httpx.Client(timeout=5.0) as client:
+                client.post(url, json=request)
 
         except Exception as event:
-            with httpx.Client() as client:
-                client.post(url, json={"progress": 0})
-            raise RuntimeError(f"Ошибка отправки прогресса: {event}") from event
+            print(f"Ошибка отправки прогресса: {event}")
 
-    def on_epoch_end(self, args, state, control, logs=None, **kwargs):
-        current_epoch = int(state.epoch or 0)
+    def _calculate_progress(self, state):
+        """
+        Прогресс по step, а не по epoch.
+        """
 
-        progress = int((current_epoch / self.total_epochs) * 90 + 5)
+        if state.max_steps and state.max_steps > 0:
+            progress = int((state.global_step / state.max_steps) * 90) + 5
+        else:
+            progress = 0
+
+        return min(progress, 95)
+
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        """
+        Вызывается постоянно во время train.
+        """
+
+        if not logs:
+            return
+
+        progress = self._calculate_progress(state)
+
+        # не спамим одинаковый progress
+        if progress == self.last_progress:
+            return
+
+        self.last_progress = progress
 
         metrics = {}
 
+        # TRAIN METRICS
+        if "loss" in logs:
+            metrics["train_loss"] = float(logs["loss"])
+
+        if "learning_rate" in logs:
+            metrics["learning_rate"] = float(logs["learning_rate"])
+
+        if "epoch" in logs:
+            metrics["epoch"] = float(logs["epoch"])
+
         print("^" * 100)
+        print("ON LOG")
         print(logs)
         print("^" * 100)
-
-        if logs:
-            if "loss" in logs:
-                metrics["train_loss"] = logs["loss"]
-
-            if "eval_loss" in logs:
-                metrics["eval_loss"] = logs["eval_loss"]
-
-            if "eval_accuracy" in logs:
-                metrics["accuracy"] = logs["eval_accuracy"]
-
-            if "eval_precision" in logs:
-                metrics["precision"] = logs["eval_precision"]
-
-            if "eval_recall" in logs:
-                metrics["recall"] = logs["eval_recall"]
-
-            if "eval_f1" in logs:
-                metrics["f1"] = logs["eval_f1"]
 
         self._send_progress(
             progress=progress,
             metrics=metrics,
+        )
+
+    def on_evaluate(self, args, state, control, metrics=None, **kwargs):
+        if not metrics:
+            return
+
+        progress = self._calculate_progress(state)
+
+        eval_metrics = {}
+
+        if "eval_loss" in metrics:
+            eval_metrics["eval_loss"] = float(metrics["eval_loss"])
+
+        if "eval_accuracy" in metrics:
+            eval_metrics["accuracy"] = float(metrics["eval_accuracy"])
+
+        if "eval_precision" in metrics:
+            eval_metrics["precision"] = float(metrics["eval_precision"])
+
+        if "eval_recall" in metrics:
+            eval_metrics["recall"] = float(metrics["eval_recall"])
+
+        if "eval_f1" in metrics:
+            eval_metrics["f1"] = float(metrics["eval_f1"])
+
+        print("^" * 100)
+        print("ON EVALUATE")
+        print(metrics)
+        print("^" * 100)
+
+        self._send_progress(
+            progress=progress,
+            metrics=eval_metrics,
+        )
+
+    def on_train_end(self, args, state, control, **kwargs):
+        self._send_progress(
+            progress=100,
+            metrics={"status": "completed"},
         )

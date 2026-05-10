@@ -56,6 +56,7 @@ class NERModel:
     ) -> dict:
         training_args = TrainingArguments(  # параметры выбираемые для обучения модели
             output_dir=output_dir,
+            eval_steps=10,
             eval_strategy=(
                 "epoch" if eval_dataset else "no"
             ),  # оценка модели в конце каждой эпохи
@@ -65,7 +66,7 @@ class NERModel:
             per_device_eval_batch_size=batch_size,  # размер батча для валидационной выборки
             num_train_epochs=epochs,  # кол-во эпох
             weight_decay=0.01,  # штраф за большие веса чтобы модель не переобучалась
-            logging_steps=50,  # каждый 50 шагов логируем метрики
+            logging_steps=10,  # каждые 10 шагов логируем метрики
             load_best_model_at_end=(
                 True if eval_dataset else False
             ),  # выбирает лучшую модель по метрике
