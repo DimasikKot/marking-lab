@@ -41,7 +41,7 @@ export const ModelCard = ({
       >
         <div className="flex-1 h-full">
           <div className="flex flex-row justify-between gap-4">
-            <div className="flex flex-row gap-2">
+            <div className="flex w-full flex-row gap-2">
               <TextUI variant="title" maxLines={1} className="-mt-1">
                 {model.name}
               </TextUI>
@@ -53,6 +53,15 @@ export const ModelCard = ({
                 (id: {model.id})
               </TextUI>
             </div>
+
+            {model.progress !== 0 && model.progress !== 100 && (
+              <TextUI
+                variant="normal"
+                className="text-cyan-500 -mr-3"
+              >
+                {`${model.progress}%`}
+              </TextUI>
+            )}
 
             <div
               className={`flex items-center justify-center select-none material-icons

@@ -132,11 +132,13 @@ export function Model() {
                       : "bg-emerald-100 border-emerald-300"
                 }`}
             >
-              {model.progress === 0
-                ? "Черновик"
-                : model.progress !== 100
-                  ? "Обучается"
-                  : "Обучена"}
+              {`${
+                model.progress === 0
+                  ? "Черновик"
+                  : model.progress !== 100
+                    ? "Обучается"
+                    : "Обучена"
+              } ${model.progress}%`}
             </TextUI>
           </div>
         )}

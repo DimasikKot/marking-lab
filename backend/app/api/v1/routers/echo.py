@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from httpx import AsyncClient
 
@@ -19,8 +19,12 @@ async def get_backend():
 
 @router.get("/ml", response_model=GetEchoResponse)
 async def get_ml():
-    async with AsyncClient() as client:
-        response_dict = await client.get(settings.ML_URL + "/echos/ml")
-        response_json = response_dict.json()
-
-    return response_json
+    try:
+        async with AsyncClient() as client:
+            response_dict = await client.get(
+                settings.ML_URL + "/echos/ml", timeout=5000
+            )
+            response_json = response_dict.json()
+        return response_json
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
