@@ -47,15 +47,46 @@ export function FileLabel({
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm("Вы не сохранили изменения, хотите продолжить?"))
+        return;
+    }
+
+    navigate(
+      `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
+    );
+  };
+
+  const handleNextClick = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm("Вы не сохранили изменения, хотите продолжить?"))
+        return;
+    }
+
+    navigate(
+      `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
+    );
+  };
+
+  const handleExitClick = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm("Вы не сохранили изменения, хотите продолжить?"))
+        return;
+    }
+
+    navigate(`/projects/${projectId}?tab=files`);
+  };
+
   const handleWordMouseDown = (
     lineIdx: number,
     wordIdx: number,
-    e: React.MouseEvent,
+    event: React.MouseEvent,
   ) => {
-    e.stopPropagation();
+    event.stopPropagation();
 
-    if (e.button === 2) {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    if (event.button === 2) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       setMenuPosition({ x: rect.left - 330, y: rect.top + 40 });
       setShowTagMenu(true);
 
@@ -73,7 +104,7 @@ export function FileLabel({
       ([l, w]) => l === lineIdx && w === wordIdx,
     );
 
-    if (e.shiftKey && selectedWords.length > 0) {
+    if (event.shiftKey && selectedWords.length > 0) {
       const first = selectedWords[0];
       const startLine = Math.min(first[0], lineIdx);
       const endLine = Math.max(first[0], lineIdx);
@@ -137,10 +168,7 @@ export function FileLabel({
 
   return (
     <div className="relative max-w-6xl mx-auto m-2 mb-80">
-      <ButtonPage
-        onClick={() => navigate(`/projects/${projectId}?tab=files`)}
-        isLoading={isSaving || isLoading}
-      />
+      <ButtonPage onClick={handleExitClick} isLoading={isSaving || isLoading} />
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
         {/* Header */}
@@ -162,16 +190,8 @@ export function FileLabel({
           className="mb-4"
           currentPage={page}
           totalPages={file?.total_pages || 1}
-          onBack={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=label&page=${page - 1}`,
-            )
-          }
-          onNext={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=label&page=${page + 1}`,
-            )
-          }
+          onBack={handleBackClick}
+          onNext={handleNextClick}
         />
 
         {/* Разметка текста */}
@@ -193,8 +213,8 @@ export function FileLabel({
                   return (
                     <div
                       key={wordIdx}
-                      onMouseDown={(e) =>
-                        handleWordMouseDown(lineIdx, wordIdx, e)
+                      onMouseDown={(event) =>
+                        handleWordMouseDown(lineIdx, wordIdx, event)
                       }
                       className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
                         ${TAG_COLORS[word.label] ?? ""}
@@ -221,24 +241,17 @@ export function FileLabel({
           className="mt-2"
           currentPage={page}
           totalPages={file?.total_pages || 1}
-          onBack={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=label&page=${page - 1}`,
-            )
-          }
-          onNext={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=label&page=${page + 1}`,
-            )
-          }
+          onBack={handleBackClick}
+          onNext={handleNextClick}
         />
       </div>
 
+      {/* Панель справа */}
       <div className="fixed right-4 top-18 max-h-11/12 w-80">
         <div
           className="bg-white shadow-2xl border border-gray-300 rounded-2xl z-50 w-80 h-full overflow-clip"
-          onClick={(e) => e.stopPropagation()}
-          onScroll={(e) => e.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+          onScroll={(event) => event.stopPropagation()}
         >
           <div className="py-2 w-80 h-full overflow-auto">
             {BIO_TAGS.map((tag) => (

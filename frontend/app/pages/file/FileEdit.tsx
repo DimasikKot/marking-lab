@@ -6,6 +6,7 @@ import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { type GetFilePageResponse, type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
+import { TAG_COLORS } from "@/shared/constants/tags";
 
 export function FileEdit({
   projectId,
@@ -36,6 +37,37 @@ export function FileEdit({
 
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
 
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm("Вы не сохранили изменения, хотите продолжить?"))
+        return;
+    }
+
+    navigate(
+      `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
+    );
+  };
+
+  const handleNextClick = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm("Вы не сохранили изменения, хотите продолжить?"))
+        return;
+    }
+
+    navigate(
+      `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
+    );
+  };
+
+  const handleExitClick = () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm("Вы не сохранили изменения, хотите продолжить?"))
+        return;
+    }
+
+    navigate(`/projects/${projectId}?tab=files`);
+  };
+
   const handleTokenChange = (
     lineIdx: number,
     wordIdx: number,
@@ -49,15 +81,15 @@ export function FileEdit({
   const handleKeyDown = (
     lineIdx: number,
     wordIdx: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
+    event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    const input = e.currentTarget;
+    const input = event.currentTarget;
     const cursorPos = input.selectionStart ?? 0;
     const text = input.value;
 
     // ================= SPACE =================
-    if (e.key === " ") {
-      e.preventDefault();
+    if (event.key === " ") {
+      event.preventDefault();
 
       const left = text.slice(0, cursorPos);
       const right = text.slice(cursorPos);
@@ -90,8 +122,8 @@ export function FileEdit({
     }
 
     // ================= ENTER =================
-    if (e.key === "Enter") {
-      e.preventDefault();
+    if (event.key === "Enter") {
+      event.preventDefault();
 
       const left = text.slice(0, cursorPos);
       const right = text.slice(cursorPos);
@@ -138,15 +170,15 @@ export function FileEdit({
     }
 
     // ================= BACKSPACE =================
-    if (e.key === "Backspace" && cursorPos === 0) {
-      e.preventDefault();
+    if (event.key === "Backspace" && cursorPos === 0) {
+      event.preventDefault();
 
       setLocalRows((prev) => {
         setHasUnsavedChanges(true);
 
         const newRows = [...prev];
 
-        const line = newRows[lineIdx]; // 🔥 FIX: брать из prev
+        const line = newRows[lineIdx];
         const prevWord = line.words[wordIdx - 1];
 
         if (!prevWord) return prev;
@@ -177,7 +209,7 @@ export function FileEdit({
     }
 
     // ================= DELETE =================
-    if (e.key === "Delete") {
+    if (event.key === "Delete") {
       const isEnd = cursorPos === text.length;
 
       if (isEnd) {
@@ -213,25 +245,25 @@ export function FileEdit({
           return newRows;
         });
 
-        e.preventDefault();
+        event.preventDefault();
         return;
       }
     }
 
     // ================= ARROWS =================
 
-    if (e.key === "ArrowRight") {
+    if (event.key === "ArrowRight") {
       if (cursorPos === text.length) {
         const next = inputRefs.current[lineIdx]?.[wordIdx + 1];
 
         if (next) {
-          e.preventDefault();
+          event.preventDefault();
           next.focus();
           next.setSelectionRange(0, 0);
         } else {
           const nextLine = inputRefs.current[lineIdx + 1]?.[0];
           if (nextLine) {
-            e.preventDefault();
+            event.preventDefault();
             nextLine.focus();
             nextLine.setSelectionRange(0, 0);
           }
@@ -239,12 +271,12 @@ export function FileEdit({
       }
     }
 
-    if (e.key === "ArrowLeft") {
+    if (event.key === "ArrowLeft") {
       if (cursorPos === 0) {
         const prev = inputRefs.current[lineIdx]?.[wordIdx - 1];
 
         if (prev) {
-          e.preventDefault();
+          event.preventDefault();
           prev.focus();
           prev.setSelectionRange(prev.value.length, prev.value.length);
         } else {
@@ -254,7 +286,7 @@ export function FileEdit({
             const last = prevLine[lastIdx];
 
             if (last) {
-              e.preventDefault();
+              event.preventDefault();
               last.focus();
               last.setSelectionRange(last.value.length, last.value.length);
             }
@@ -263,18 +295,18 @@ export function FileEdit({
       }
     }
 
-    if (e.key === "ArrowDown") {
+    if (event.key === "ArrowDown") {
       const next = inputRefs.current[lineIdx + 1]?.[0];
       if (next) {
-        e.preventDefault();
+        event.preventDefault();
         next.focus();
       }
     }
 
-    if (e.key === "ArrowUp") {
+    if (event.key === "ArrowUp") {
       const prev = inputRefs.current[lineIdx - 1]?.[0];
       if (prev) {
-        e.preventDefault();
+        event.preventDefault();
         prev.focus();
       }
     }
@@ -282,10 +314,7 @@ export function FileEdit({
 
   return (
     <div className="max-w-6xl mx-auto m-2 mb-80">
-      <ButtonPage
-        onClick={() => navigate(`/projects/${projectId}?tab=files`)}
-        isLoading={isLoading}
-      />
+      <ButtonPage onClick={handleExitClick} isLoading={isLoading} />
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
         {/* Header */}
@@ -307,16 +336,8 @@ export function FileEdit({
           className="mb-4"
           currentPage={page}
           totalPages={file?.total_pages || 1}
-          onBack={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
-            )
-          }
-          onNext={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
-            )
-          }
+          onBack={handleBackClick}
+          onNext={handleNextClick}
         />
 
         {/* Редактор */}
@@ -341,10 +362,12 @@ export function FileEdit({
                         handleTokenChange(lineIdx, wordIdx, e.target.value)
                       }
                       onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
-                      className="border-b border-transparent hover:border-gray-300 focus:border-blue-500 outline-none
-                    min-w-1 font-medium text-xl mx-1 text-gray-900 transition-colors"
+                      className={`hover:ring-gray-300 hover:ring-2 focus:ring-blue-500 focus:ring-2 outline-none
+                        min-w-1 font-medium text-xl mx-1 text-gray-900 transition-colors
+                        flex flex-col items-center gap-1 px-2 py-0.5 rounded
+                        ${TAG_COLORS[word.label] ?? ""}`}
                       style={{
-                        width: `${word.token.length + 1}ch`,
+                        width: `${word.token.length + 2}ch`,
                       }}
                     />
                   </div>
@@ -363,16 +386,8 @@ export function FileEdit({
           className="mt-2"
           currentPage={page}
           totalPages={file?.total_pages || 1}
-          onBack={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=edit&page=${page - 1}`,
-            )
-          }
-          onNext={() =>
-            navigate(
-              `/projects/${projectId}/files/${fileId}?tab=edit&page=${page + 1}`,
-            )
-          }
+          onBack={handleBackClick}
+          onNext={handleNextClick}
         />
       </div>
     </div>
