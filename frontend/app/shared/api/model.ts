@@ -17,14 +17,17 @@ export interface ModelDbResponse {
   parameters: Record<string, JsonValue>;
   metrics: Record<string, JsonValue>;
   graphs: Record<string, string>;
+
   training_files_ids: number[];
   prediction_files_ids: number[];
+
   created_at: string;
   updated_at: string;
 }
 
 export interface PostModelRequest {
   name: string;
+  parameters?: Record<string, JsonValue>;
   training_files_ids?: number[];
   prediction_files_ids?: number[];
 }

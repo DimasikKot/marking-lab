@@ -10,7 +10,7 @@ export const ButtonUI = ({
   hidden = false,
   children,
 }: {
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   variant?: "primary" | "secondary" | "link";
   className?: string;
   disabled?: boolean;
@@ -19,9 +19,9 @@ export const ButtonUI = ({
 }) =>
   !hidden && (
     <button
-      onClick={(e) => {
-        e.stopPropagation(); // Останавливаем всплытие
-        onClick();
+      onClick={(event) => {
+        event.stopPropagation(); // Останавливаем всплытие
+        onClick?.(event);
       }}
       disabled={disabled}
       className={`h-min w-max transition duration-200 select-none

@@ -67,8 +67,13 @@ export function Models({
   };
 
   // Удаление модели
-  const handleDeleteClick = async (model_id: number) => {
-    if (!window.confirm("Вы уверены, что хотите удалить эту модель?")) return;
+  const handleDeleteClick = async (
+    model_id: number,
+    event?: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (!event || !event.shiftKey) {
+      if (!window.confirm("Вы уверены, что хотите удалить эту модель?")) return;
+    }
 
     setLoading(true);
     const response = await deleteModelById(projectId, model_id);
@@ -107,18 +112,28 @@ export function Models({
     model.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleCopyClick = async (model: ModelDbResponse) => {
+  const handleCopyClick = async (
+    model: ModelDbResponse,
+    event?: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     if (!projectId) return;
 
     setLoading(true);
     const response = await createModel(projectId, {
       name: `${model.name} (copy)`,
+      parameters: model.parameters,
+      training_files_ids: model.training_files_ids,
+      prediction_files_ids: model.prediction_files_ids,
     });
     setLoading(false);
 
     if (response === undefined) return;
     toast.success("Модель успешно скопирована");
     loadModels();
+
+    if (!event || !event.shiftKey) {
+      navigate(`/projects/${projectId}/models/${response.id}`);
+    }
   };
 
   return (
@@ -188,8 +203,8 @@ export function Models({
                 navigate(`/projects/${projectId}/models/${model.id}`)
               }
               onEditClick={() => handleEditClick(model)}
-              onCopyClick={() => handleCopyClick(model)}
-              onDeleteClick={() => handleDeleteClick(model.id)}
+              onCopyClick={(event) => handleCopyClick(model, event)}
+              onDeleteClick={(event) => handleDeleteClick(model.id, event)}
             />
           ))}
         </div>

@@ -10,8 +10,8 @@ type ModelCardProps = {
   model: ModelDbResponse;
   onClick?: () => void;
   onEditClick?: () => void;
-  onCopyClick?: () => void;
-  onDeleteClick?: () => void;
+  onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
   dateIsCreatedAt?: boolean;
   className?: string;
 };
@@ -134,7 +134,7 @@ export const ModelCard = ({
               <div className="select-none material-icons">edit</div>
             </ButtonUI>
 
-            <ButtonUI onClick={onCopyClick} variant="secondary">
+            <ButtonUI onClick={(event) => onCopyClick?.(event)} variant="secondary">
               <div className="select-none material-icons">copy_all</div>
             </ButtonUI>
 

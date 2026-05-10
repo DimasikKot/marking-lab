@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.api.v1.routers.echo import GetEchoResponse
+from app.models.db import ModelDB
 from app.services.get_user_id import get_user_id
 from app.core.database import get_db
 from app.services.model import (
@@ -18,94 +19,6 @@ from app.services.model import (
 )
 
 router = APIRouter()
-
-
-class ListModelDbResponse(BaseModel):
-    id: int
-    name: str
-    is_draft: bool
-    saved_in_memory: bool
-    parameters: dict[str, Any]
-    metrics: dict[str, Any]
-    graphs: dict[str, Any]
-
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class PostModelRequest(BaseModel):
-    name: str
-    training_files_ids: list[int] | None = None
-    prediction_files_ids: list[int] | None = None
-
-
-@router.post("", response_model=ListModelDbResponse)
-async def post(
-    project_id: int,
-    data: PostModelRequest,
-    user_id: int = Depends(get_user_id),
-    db: Session = Depends(get_db),
-):
-    model_db = create_model(
-        project_id=project_id,
-        user_id=user_id,
-        db=db,
-        name=data.name,
-        training_files_ids=data.training_files_ids,
-        prediction_files_ids=data.prediction_files_ids,
-    )
-
-    return ListModelDbResponse(
-        id=model_db.id,
-        name=model_db.name,
-        is_draft=model_db.is_draft,
-        saved_in_memory=model_db.saved_in_memory,
-        parameters=model_db.parameters,
-        metrics=model_db.metrics,
-        graphs=model_db.graphs,
-        created_at=model_db.created_at,
-        updated_at=model_db.updated_at,
-    )
-
-
-class GetModelsResponse(BaseModel):
-    data: list[ListModelDbResponse]
-
-
-@router.get("", response_model=GetModelsResponse)
-async def get(
-    project_id: int,
-    sort: SortType | None = Query(
-        "updated_at_desc",
-        description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
-    ),
-    search: str | None = Query(None, description="Поиск по имени модели"),
-    user_id: int = Depends(get_user_id),
-    db: Session = Depends(get_db),
-) -> GetModelsResponse:
-    models_db = fetch_models_db_by_project_id(
-        project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
-    )
-
-    return GetModelsResponse(
-        data=[
-            ListModelDbResponse(
-                id=model_db.id,
-                name=model_db.name,
-                is_draft=model_db.is_draft,
-                saved_in_memory=model_db.saved_in_memory,
-                parameters=model_db.parameters,
-                metrics=model_db.metrics,
-                graphs=model_db.graphs,
-                created_at=model_db.created_at,
-                updated_at=model_db.updated_at,
-            )
-            for model_db in models_db
-        ]
-    )
 
 
 class ModelDbResponse(BaseModel):
@@ -127,17 +40,7 @@ class ModelDbResponse(BaseModel):
         from_attributes = True
 
 
-@router.get("/{model_id}", response_model=ModelDbResponse)
-async def get_by_id(
-    project_id: int,
-    model_id: int,
-    user_id: int = Depends(get_user_id),
-    db: Session = Depends(get_db),
-):
-    model_db = fetch_model_db_by_id(
-        project_id=project_id, model_id=model_id, user_id=user_id, db=db
-    )
-
+def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
     training_files_ids = [
         link.file_id for link in model_db.file_links if link.role == "training"
     ]
@@ -159,6 +62,69 @@ async def get_by_id(
         created_at=model_db.created_at,
         updated_at=model_db.updated_at,
     )
+
+
+class PostModelRequest(BaseModel):
+    name: str
+    training_files_ids: list[int] | None = None
+    prediction_files_ids: list[int] | None = None
+
+
+@router.post("", response_model=ModelDbResponse)
+async def post(
+    project_id: int,
+    data: PostModelRequest,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = create_model(
+        project_id=project_id,
+        user_id=user_id,
+        db=db,
+        name=data.name,
+        training_files_ids=data.training_files_ids,
+        prediction_files_ids=data.prediction_files_ids,
+    )
+
+    return ModelDbToResponse(model_db=model_db)
+
+
+class GetModelsResponse(BaseModel):
+    data: list[ModelDbResponse]
+
+
+@router.get("", response_model=GetModelsResponse)
+async def get(
+    project_id: int,
+    sort: SortType | None = Query(
+        "updated_at_desc",
+        description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
+    ),
+    search: str | None = Query(None, description="Поиск по имени модели"),
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+) -> GetModelsResponse:
+    models_db = fetch_models_db_by_project_id(
+        project_id=project_id, user_id=user_id, db=db, sort=sort, search=search
+    )
+
+    return GetModelsResponse(
+        data=[ModelDbToResponse(model_db=model_db) for model_db in models_db]
+    )
+
+
+@router.get("/{model_id}", response_model=ModelDbResponse)
+async def get_by_id(
+    project_id: int,
+    model_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = fetch_model_db_by_id(
+        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+    )
+
+    return ModelDbToResponse(model_db=model_db)
 
 
 class PatchModelDbRequest(BaseModel):
@@ -187,27 +153,7 @@ async def patch_by_id(
         prediction_files_ids=data.prediction_files_ids,
     )
 
-    training_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "training"
-    ]
-
-    prediction_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "prediction"
-    ]
-
-    return ModelDbResponse(
-        id=model_db.id,
-        name=model_db.name,
-        is_draft=model_db.is_draft,
-        saved_in_memory=model_db.saved_in_memory,
-        parameters=model_db.parameters,
-        metrics=model_db.metrics,
-        graphs=model_db.graphs,
-        training_files_ids=training_files_ids,
-        prediction_files_ids=prediction_files_ids,
-        created_at=model_db.created_at,
-        updated_at=model_db.updated_at,
-    )
+    return ModelDbToResponse(model_db=model_db)
 
 
 @router.get("/{model_id}/train", response_model=ModelDbResponse)
@@ -221,27 +167,7 @@ async def get_by_id_train(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    training_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "training"
-    ]
-
-    prediction_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "prediction"
-    ]
-
-    return ModelDbResponse(
-        id=model_db.id,
-        name=model_db.name,
-        is_draft=model_db.is_draft,
-        saved_in_memory=model_db.saved_in_memory,
-        parameters=model_db.parameters,
-        metrics=model_db.metrics,
-        graphs=model_db.graphs,
-        training_files_ids=training_files_ids,
-        prediction_files_ids=prediction_files_ids,
-        created_at=model_db.created_at,
-        updated_at=model_db.updated_at,
-    )
+    return ModelDbToResponse(model_db=model_db)
 
 
 @router.delete("/{model_id}", response_model=GetEchoResponse)
