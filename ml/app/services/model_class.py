@@ -1,3 +1,4 @@
+import gc
 import torch
 from transformers import (
     AutoTokenizer,
@@ -81,6 +82,7 @@ class NERModel:
             optim="adamw_torch",  # оптимизатор
             lr_scheduler_type="linear",  # тип распределения скорости обучения
             warmup_steps=0.1,  # кол-во эпох для увеличения скорости обучения
+            dataloader_pin_memory=False,
         )
 
         trainer = Trainer(
@@ -117,6 +119,8 @@ class NERModel:
         )
         print(DEVICE)
 
+        torch.cuda.empty_cache()
+        gc.collect()
         trainer.train()  # обучаем модель
 
         # trainer.save_model(output_dir)  # сохраняем обученную модель

@@ -46,6 +46,20 @@ def _model_train(
         else None
     )
 
+    url = (
+        f"http://backend:8000/api/v1/projects/"
+        f"{project_id}/models/{model_id}/progress"
+    )
+
+    with httpx.Client(timeout=5.0) as client:
+        client.post(
+            url,
+            json={
+                "uuid": uuid,
+                "progress": 10,
+            },
+        )
+
     # Обучаем модель во временном каталоге, чтобы не засорять память
     with tempfile.TemporaryDirectory() as tmpdir:
         result = ner.train(
@@ -96,7 +110,7 @@ def _model_train(
         # )
         # confusion_matrix_plot = plot_confusion_matrix(label_list)
 
-        model_predict(project_id, model_id, uuid, ner)
+        model_predict(project_id, model_id, uuid, ner, MAX_LINE_LENGHT, BATCH_SIZE)
 
         url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/progress"
         request = {

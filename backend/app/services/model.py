@@ -236,7 +236,9 @@ def set_progress_model_db_by_id(
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
     if metrics is not None:
-        model_db.metrics.update(metrics)
+        if 0 < progress < 100:
+            metrics.update(model_db.metrics)
+        model_db.metrics = metrics
 
     if graphs is not None:
         model_db.graphs = graphs

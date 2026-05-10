@@ -1,5 +1,4 @@
 import httpx
-
 from transformers import TrainerCallback
 
 
@@ -33,9 +32,9 @@ class ProgressCallback(TrainerCallback):
             if metrics:
                 request["metrics"] = metrics
 
-            print("=" * 100)
-            print(request)
-            print("=" * 100)
+            # print("=" * 100)
+            # print(request)
+            # print("=" * 100)
 
             with httpx.Client(timeout=5.0) as client:
                 client.post(url, json=request)
@@ -49,7 +48,7 @@ class ProgressCallback(TrainerCallback):
         """
 
         if state.max_steps and state.max_steps > 0:
-            progress = int((state.global_step / state.max_steps) * 90) + 5
+            progress = int((state.global_step / state.max_steps) * 80) + 10
         else:
             progress = 0
 
@@ -83,10 +82,10 @@ class ProgressCallback(TrainerCallback):
         if "epoch" in logs:
             metrics["epoch"] = float(logs["epoch"])
 
-        print("^" * 100)
-        print("ON LOG")
-        print(logs)
-        print("^" * 100)
+        # print("^" * 100)
+        # print("ON LOG")
+        # print(logs)
+        # print("^" * 100)
 
         self._send_progress(
             progress=progress,
@@ -116,18 +115,18 @@ class ProgressCallback(TrainerCallback):
         if "eval_f1" in metrics:
             eval_metrics["f1"] = float(metrics["eval_f1"])
 
-        print("^" * 100)
-        print("ON EVALUATE")
-        print(metrics)
-        print("^" * 100)
+        # print("^" * 100)
+        # print("ON EVALUATE")
+        # print(metrics)
+        # print("^" * 100)
 
         self._send_progress(
             progress=progress,
             metrics=eval_metrics,
         )
 
-    def on_train_end(self, args, state, control, **kwargs):
-        self._send_progress(
-            progress=100,
-            metrics={"status": "completed"},
-        )
+    # def on_train_end(self, args, state, control, **kwargs):
+    #     self._send_progress(
+    #         progress=100,
+    #         metrics={"status": "completed"},
+    #     )
