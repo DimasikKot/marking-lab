@@ -9,6 +9,7 @@ from transformers import (
 )
 
 from app.services.model_metrics import compute_metrics
+from app.services.progress_callback import ProgressCallback
 
 # Константы по умолчанию
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,6 +48,9 @@ class NERModel:
         epochs: int,
         batch_size: int,
         learning_rate: float,
+        project_id: int,
+        model_id: int,
+        uuid: str,
         eval_dataset=None,
         output_dir: str = "./models",
     ) -> dict:
@@ -91,18 +95,31 @@ class NERModel:
             ),  # функция для расчёта метрик
             callbacks=(
                 [
-                    EarlyStoppingCallback(early_stopping_patience=2)
-                ]  # кол-во эпох для остановки
+                    EarlyStoppingCallback(early_stopping_patience=2),
+                    ProgressCallback(
+                        project_id=project_id,
+                        model_id=model_id,
+                        uuid=uuid,
+                        total_epochs=epochs,
+                    ),
+                ]
                 if eval_dataset
-                else []
-            ),  # ранняя остановка обучения модели при достижении определенного кол-ва эпох без улучшения метрики
+                else [
+                    ProgressCallback(
+                        project_id=project_id,
+                        model_id=model_id,
+                        uuid=uuid,
+                        total_epochs=epochs,
+                    ),
+                ]
+            ),
         )
         print(DEVICE)
 
         trainer.train()  # обучаем модель
 
-        trainer.save_model(output_dir)  # сохраняем обученную модель
-        self.tokenizer.save_pretrained(output_dir)  # сохраняем токенизатор
+        # trainer.save_model(output_dir)  # сохраняем обученную модель
+        # self.tokenizer.save_pretrained(output_dir)  # сохраняем токенизатор
 
         log_history = trainer.state.log_history
         train_loss = []
@@ -113,8 +130,10 @@ class NERModel:
             if "eval_f1" in entry:
                 eval_metrics = entry
 
+        print("-" * 100)
         print(eval_metrics)
         print(log_history[-5:])
+        print("-" * 100)
         return {
             "train_loss": train_loss,
             "eval_metrics": eval_metrics,

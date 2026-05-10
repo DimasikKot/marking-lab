@@ -161,8 +161,8 @@ async def patch_by_id(
 class PostProgressRequest(BaseModel):
     uuid: str
     progress: int
-    metrics: dict[str, Any] | None
-    graphs: dict[str, Any] | None
+    metrics: dict[str, Any] | None = None
+    graphs: dict[str, Any] | None = None
 
 
 @router.post("/{model_id}/progress", response_model=ModelDbResponse)
@@ -191,6 +191,7 @@ class GetPredictionFilesRequest(BaseModel):
     uuid: str
 
 
+# TODO Сделать предсказания файлов
 @router.get("/{model_id}/prediction_files")
 async def get_by_id_predict(
     project_id: int,

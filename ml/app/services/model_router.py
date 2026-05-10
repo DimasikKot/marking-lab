@@ -1,6 +1,8 @@
+import json
 import tempfile
 from datasets import Dataset
 from fastapi import BackgroundTasks
+import httpx
 
 from app.services.model_class import NERModel
 from app.services.model_metrics import loss_plot
@@ -53,6 +55,9 @@ def _model_train(
             epochs=EPOCHS,
             batch_size=BATCH_SIZE,
             learning_rate=LEARNING_RATE,
+            project_id=project_id,
+            model_id=model_id,
+            uuid=uuid,
         )
 
         # Метрики валидационной выборки
@@ -80,8 +85,10 @@ def _model_train(
                         "F1-мера": value.get("f1"),
                     }
 
+        print("+" * 100)
         print(return_metrics)
         print(labels_metrics)
+        print("+" * 100)
 
         train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
         # validation_loss_plot = loss_plot(
@@ -91,14 +98,20 @@ def _model_train(
 
         # TODO Предсказания
 
-        # "metrics": json.dumps(return_metrics),
-        # "graphs": json.dumps(
-        #     {
-        #         "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
-        #         # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
-        #         # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
-        #     }
-        # ),
+        url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/progress"
+        request = {
+            "uuid": uuid,
+            "progress": 100,
+            "metrics": return_metrics,
+            "graphs": {
+                "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
+                # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
+                # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
+            },
+        }
+
+        with httpx.Client() as client:
+            client.post(url, json=request)
 
 
 # router

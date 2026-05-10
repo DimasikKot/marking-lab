@@ -235,18 +235,16 @@ def set_progress_model_db_by_id(
     if not model_db:
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
-    if 5 < model_db.progress < 95:
-        model_db.progress = progress
-
     if metrics is not None:
         model_db.metrics = metrics
 
     if graphs is not None:
         model_db.graphs = graphs
 
+    model_db.progress = progress
+
     db.commit()
     db.refresh(model_db)
-
     return model_db
 
 
@@ -330,8 +328,6 @@ async def _train_model_request(
             data = response.json()
             parameters = json.loads(data["parameters"])
             model_db.parameters = parameters
-
-            model_db.progress = 5
             db.commit()
             db.refresh(model_db)
 

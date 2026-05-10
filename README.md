@@ -237,3 +237,10 @@ docker volume prune -a
 docker-compose up --build
 
 ```
+
+6. Увеличить память контейнера (по желанию):
+
+```bash
+docker update --memory 4g ml
+
+```
