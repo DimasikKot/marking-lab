@@ -311,8 +311,11 @@ async def train_model_by_id(
             # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
 
             data = response.json()
+            parameters = json.loads(data["parameters"])
             metrics = json.loads(data["metrics"])
             graphs = json.loads(data["graphs"])
+
+            model_db.parameters = parameters
             model_db.metrics = metrics
             model_db.graphs = graphs
 
