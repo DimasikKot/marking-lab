@@ -45,16 +45,31 @@ export function Model() {
   useEffect(() => {
     const loadModel = async () => {
       setLoading(true);
+
       const response = await fetchModelById(projectId, modelId);
+
       setLoading(false);
-      if (response) {
-        setModel(response);
-        setEditParams(JSON.stringify(response.parameters, null, 2));
-        setTrainingFilesIds(response.training_files_ids.join(", "));
-        setPredictionFilesIds(response.prediction_files_ids.join(", "));
+
+      if (!response) return;
+
+      setModel(response);
+
+      setEditParams(JSON.stringify(response.parameters, null, 2));
+      setTrainingFilesIds(response.training_files_ids.join(", "));
+      setPredictionFilesIds(response.prediction_files_ids.join(", "));
+
+      if (response.progress === 0 || response.progress >= 100) {
+        clearInterval(interval);
       }
     };
+
     loadModel();
+
+    const interval = setInterval(() => {
+      loadModel();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [projectId, modelId]);
 
   const handleSaveSettings = async () => {
@@ -98,7 +113,7 @@ export function Model() {
     if (!model) return;
 
     if (model.training_files_ids.length === 0) {
-      toast.error("Добавьте ID файлов в настройках перед обучением");
+      toast.error("Добавьте файлы для обучения");
       return;
     }
 
@@ -107,8 +122,9 @@ export function Model() {
     setIsTraining(false);
 
     if (response === undefined) return;
-    toast.success("Модель успешно обучена");
+    toast.success("Обучение модели успешно запущено");
     setModel(response);
+    window.location.reload();
   };
 
   return (
@@ -123,7 +139,7 @@ export function Model() {
             <TextUI
               variant="label"
               isSpan
-              className={`px-3 py-1 rounded-2xl border size-max mt-1 w-38 text-center
+              className={`px-3 py-1 rounded-2xl border size-max mt-1 min-w-38 text-center
                 ${
                   model.progress === 0
                     ? "bg-amber-100 border-amber-300"
