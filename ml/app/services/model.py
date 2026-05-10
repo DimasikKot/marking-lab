@@ -1,14 +1,9 @@
-import base64
 import csv
 import io
-import logging
-from typing import Any, List, Dict, cast
 from pathlib import Path
 import zipfile
-import matplotlib.pyplot as plt
-
 import torch
-import numpy as np
+from datasets import Dataset
 from transformers import (
     AutoTokenizer,
     AutoModelForTokenClassification,
@@ -17,22 +12,14 @@ from transformers import (
     DataCollatorForTokenClassification,
     EarlyStoppingCallback,
 )
-from datasets import Dataset
-from seqeval.metrics import classification_report, f1_score, accuracy_score
-from seqeval.scheme import IOB2
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.services.model_plots import compute_metrics
 
-# -------------------------------------------------------------------
 # Константы по умолчанию
-# -------------------------------------------------------------------
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# -------------------------------------------------------------------
-# 1. Чтение данных из файлов
-# -------------------------------------------------------------------
+# Чтение данных из файлов
 def parse_csv_from_text(text: str):
     """
     Парсит содержимое CSV-файла с колонками text и labels.
@@ -41,7 +28,7 @@ def parse_csv_from_text(text: str):
     "Thousands of demonstrators have marched...",O O O O O O B-geo ...
     Возвращает список предложений, где каждое предложение – список словарей {token, label}.
     """
-    sentences: List[List[Dict[str, str]]] = []
+    sentences: list[list[dict[str, str]]] = []
     reader = csv.reader(io.StringIO(text), skipinitialspace=True)
     next(reader, None)  # пропускаем заголовок, если он есть (text,labels)
     for row in reader:
@@ -54,7 +41,7 @@ def parse_csv_from_text(text: str):
         tokens = text_part.split()
         labels = labels_part.split()
         if len(tokens) != len(labels):
-            logger.warning(
+            print(
                 f"Несовпадение длины токенов ({len(tokens)}) и меток ({len(labels)}). "
                 f"Строка пропущена: {text_part[:100]}..."
             )
@@ -96,7 +83,7 @@ def tokenize_and_align_labels(examples, tokenizer, label2id, max_length):
 # -------------------------------------------------------------------
 # 3. Подготовка датасета
 # -------------------------------------------------------------------
-def prepare_dataset(sentences: List[List[Dict]], tokenizer, label2id, max_length):
+def prepare_dataset(sentences: list[list[dict]], tokenizer, label2id, max_length):
     tokens_list = [[item["token"] for item in sent] for sent in sentences]
     tags_list = [[item["label"] for item in sent] for sent in sentences]
     dataset = Dataset.from_dict({"tokens": tokens_list, "ner_tags": tags_list})
@@ -109,45 +96,10 @@ def prepare_dataset(sentences: List[List[Dict]], tokenizer, label2id, max_length
 
 
 # -------------------------------------------------------------------
-# 4. Метрики
-# -------------------------------------------------------------------
-def compute_metrics(p, label_list):
-    predictions, labels = p  # предсказанные метки и истинные метки
-    predictions = np.argmax(
-        predictions, axis=2
-    )  # для каждого токена определяем индекс метки, по вероятности пренадлежности к классу
-
-    true_predictions = [  # буквально X для модели
-        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]  # убираем элементы со значениями -100, преобразуем индексы меток в предсказанные метки
-    true_labels = [  # буквально Y для модели
-        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]  # убираем элементы со значениями -100, преобразуем индексы меток в истинные метки
-    # true_predictions (X) -> true_labels (Y)
-    report = classification_report(
-        true_labels,  # истинные метки
-        true_predictions,  # предсказанные метки
-        scheme=IOB2,  # схема разметки
-        output_dict=True,  # вернуть словарём
-    )
-    report_dict = cast(Dict[str, Any], report)
-    f1 = f1_score(true_labels, true_predictions, scheme=IOB2)
-    acc = accuracy_score(true_labels, true_predictions)
-    return {
-        "accuracy": acc,
-        "f1": f1,
-        "precision": report_dict["micro avg"]["precision"],
-        "recall": report_dict["micro avg"]["recall"],
-    }
-
-
-# -------------------------------------------------------------------
 # 5. Класс NER модели
 # -------------------------------------------------------------------
 class NERModel:
-    def __init__(self, model_name: str, label_list: List[str]):
+    def __init__(self, model_name: str, label_list: list[str]):
         self.model_name = model_name
         self.label_list = label_list  # список уникальных меток
         self.label2id = {
@@ -166,7 +118,7 @@ class NERModel:
             id2label=self.id2label,  # словарь число-метка
             label2id=self.label2id,  # cловарь метка-число
         ).to(
-            device
+            DEVICE
         )  # используем GPU
         self.data_collator = DataCollatorForTokenClassification(
             self.tokenizer, padding="longest"
@@ -175,11 +127,11 @@ class NERModel:
     def train(
         self,
         train_dataset,
+        epochs: int,
+        batch_size: int,
+        learning_rate: float,
         eval_dataset=None,
         output_dir: str = "./models",
-        epochs: int = 5,
-        batch_size: int = 16,
-        learning_rate: float = 2e-5,
     ) -> dict:
         training_args = TrainingArguments(  # параметры выбираемые для обучения модели
             output_dir=output_dir,
@@ -228,7 +180,7 @@ class NERModel:
                 else []
             ),  # ранняя остановка обучения модели при достижении определенного кол-ва эпох без улучшения метрики
         )
-        print(device)
+        print(DEVICE)
 
         trainer.train()  # обучаем модель
 
@@ -255,7 +207,7 @@ class NERModel:
     def load(self, model_dir: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
         self.model = AutoModelForTokenClassification.from_pretrained(model_dir).to(
-            device
+            DEVICE
         )
         self.label_list = list(self.model.config.id2label.values())
         self.label2id = self.model.config.label2id
@@ -263,10 +215,10 @@ class NERModel:
 
     def predict(
         self, text: str, return_entities: bool = True, max_length: int = 512
-    ) -> List[Dict]:
+    ) -> list[dict]:
         inputs = self.tokenizer(
             text, return_tensors="pt", truncation=True, max_length=max_length
-        ).to(device)
+        ).to(DEVICE)
         with torch.no_grad():
             outputs = self.model(**inputs)
         logits = outputs.logits
@@ -336,7 +288,7 @@ class NERModel:
 # -------------------------------------------------------------------
 # Вспомогательные функции
 # -------------------------------------------------------------------
-def extract_labels_from_sentences(sentences: List[List[Dict]]) -> List[str]:
+def extract_labels_from_sentences(sentences: list[list[dict]]) -> list[str]:
     all_labels = set()
     for sent in sentences:
         for item in sent:
@@ -353,39 +305,3 @@ def build_zip_model(model_dir: str) -> bytes:
             if file_path.is_file():
                 zf.write(file_path, arcname=file_path.relative_to(model_dir))
     return zip_buffer.getvalue()
-
-
-def plot_loss(train_loss: list) -> str:
-    fig, ax = plt.subplots(figsize=(6, 4))
-    if train_loss:
-        epochs = [item[0] for item in train_loss if item[0] is not None]
-        losses = [item[1] for item in train_loss if item[0] is not None]
-        if epochs:
-            ax.plot(epochs, losses, "b-o", linewidth=2, markersize=8)
-    ax.set_title("Training Loss")
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    ax.grid(True, alpha=0.3)
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
-    plt.close(fig)
-    return base64.b64encode(buf.getvalue()).decode("utf-8")
-
-
-def plot_confusion_matrix(label_list: List[str]) -> str:
-    fig, ax = plt.subplots(figsize=(8, 6))
-    labels = [l for l in label_list if l != "O"]
-    size = len(labels)
-    data = np.random.rand(size, size)  # заглушка, замените на реальную матрицу
-    if size > 0:
-        im = ax.imshow(data, cmap="hot", interpolation="nearest")
-        ax.set_xticks(range(size))
-        ax.set_yticks(range(size))
-        ax.set_xticklabels(labels, rotation=45)
-        ax.set_yticklabels(labels)
-        plt.colorbar(im, ax=ax)
-    ax.set_title("Confusion Matrix (example)")
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
-    plt.close(fig)
-    return base64.b64encode(buf.getvalue()).decode("utf-8")

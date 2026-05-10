@@ -63,12 +63,13 @@ def create_model(
     user_id: int,
     db: Session,
     name: str,
+    parameters: dict[str, Any] | None,
     training_files_ids: list[int] | None,
     prediction_files_ids: list[int] | None,
 ) -> ModelDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    model_db = ModelDB(name=name, project_id=project_id)
+    model_db = ModelDB(project_id=project_id, name=name, parameters=parameters)
 
     # ---------- TRAINING FILES ----------
     if training_files_ids is not None:
@@ -169,12 +170,6 @@ def update_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    if model_db.is_draft is False:
-        raise HTTPException(
-            status_code=400,
-            detail="Нельзя изменять файлы обученной модели",
-        )
-
     if name is not None:
         model_db.name = name
 
@@ -183,10 +178,17 @@ def update_model_db_by_id(
             raise HTTPException(
                 status_code=400, detail="Нельзя изменять параметры обученной модели"
             )
+
         model_db.parameters = parameters
 
     # ---------- TRAINING FILES ----------
     if training_files_ids is not None:
+        if model_db.is_draft is False:
+            raise HTTPException(
+                status_code=400,
+                detail="Нельзя изменять файлы обученной модели",
+            )
+
         _update_files_by_role(
             db=db,
             model_db=model_db,
@@ -196,6 +198,12 @@ def update_model_db_by_id(
 
     # ---------- PREDICTION FILES ----------
     if prediction_files_ids is not None:
+        if model_db.is_draft is False:
+            raise HTTPException(
+                status_code=400,
+                detail="Нельзя изменять файлы обученной модели",
+            )
+
         _update_files_by_role(
             db=db,
             model_db=model_db,

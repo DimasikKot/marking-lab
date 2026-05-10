@@ -1,11 +1,9 @@
 import io
 import json
 import tempfile
-import logging
-
+import numpy as np
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
-import numpy as np
 
 from app.services.model import (
     Trainer,
@@ -14,13 +12,9 @@ from app.services.model import (
     build_zip_model,
     extract_labels_from_sentences,
     parse_csv_from_text,
-    plot_confusion_matrix,
-    plot_loss,
     prepare_dataset,
 )
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.services.model_plots import loss_plot, plot_confusion_matrix
 
 router = APIRouter()
 
@@ -37,7 +31,7 @@ async def train_ner(
     # distilbert-base-uncased
     BASE_MODEL = str(params.get("Базовая модель", "albert-base-v2"))
     LEARNING_RATE = float(params.get("Скорость обучения", 2e-5))
-    TESTING_SIZE = float(params.get("Размер тестового набора", 0.2))
+    TESTING_SIZE = float(params.get("Размер тренировочного набора", 0.2))
     MAX_LINE_LENGHT = int(params.get("Максимальная длина предложения", 128))
 
     # Собираем все предложения из загруженных CSV-файлов
@@ -90,8 +84,7 @@ async def train_ner(
         metrics = {}
         metrics_labels = {}
 
-        # ========== ВЫВОД МЕТРИК ==========
-        logger.info("Generating metrics...")
+        # Метрики
         if eval_metrics:
             metrics = {
                 "Точность (accuracy)": eval_metrics.get("eval_accuracy"),
@@ -120,8 +113,6 @@ async def train_ner(
         predictions_output = []
 
         if eval_dataset and len(eval_sentences) > 0:
-            logger.info("Generating predictions on validation set...")
-
             # Получаем предсказания модели
             trainer = Trainer(
                 model=ner.model,
@@ -210,14 +201,6 @@ async def train_ner(
 
                 predictions_output.append(sentence_predictions)
 
-                # Логируем первые 5 предложений для проверки
-                if idx < 5:
-                    logger.info(f"\n=== Пример {idx} ===")
-                    logger.info(f"Tokens: {tokens[:20]}")
-                    logger.info(f"True: {true_labels[:20]}")
-                    logger.info(f"Pred: {pred_labels_aligned[:20]}")
-                    logger.info(f"Errors: {len(errors)}/{len(tokens)}")
-
             # Общая статистика по предсказаниям
             total_correct = sum(
                 p["accuracy"] * len(p["tokens"]) for p in predictions_output
@@ -261,17 +244,14 @@ async def train_ner(
             predictions_file.write(predictions_json.encode("utf-8"))
             predictions_file.seek(0)
 
-            logger.info(
-                f"Predictions generated for {len(predictions_output)} sentences"
-            )
-            logger.info(f"Overall token accuracy: {overall_accuracy:.4f}")
-
-        loss_plot = plot_loss(result["train_loss"])
-        cm_plot = plot_confusion_matrix(label_list)
-
-        zip_data = build_zip_model(tmpdir)
+        train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
+        # validation_loss_plot = loss_plot(
+        #     "Потери на валидации", result["validation_loss"]
+        # )
+        # confusion_matrix_plot = plot_confusion_matrix(label_list)
 
         # Если есть предсказания, добавляем их в zip архив
+        zip_data = build_zip_model(tmpdir)
         if predictions_output:
             import zipfile
 
@@ -279,8 +259,6 @@ async def train_ner(
             with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zf:
                 zf.writestr("predictions.json", predictions_json)
             zip_data = zip_buffer.getvalue()
-        loss_plot = plot_loss(result["train_loss"])
-        cm_plot = plot_confusion_matrix(label_list)
 
         # zip_data = build_zip_model(tmpdir)
         # zip_data = io.BytesIO(zip_data)  # если zip_data это bytes
@@ -293,8 +271,9 @@ async def train_ner(
             "metrics": json.dumps(metrics),
             "graphs": json.dumps(
                 {
-                    "train_loss": f"data:image/png;base64,{loss_plot}",
-                    # "heatmap": f"data:image/png;base64,{cm_plot}",
+                    "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
+                    # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
+                    # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
                 }
             ),
         }

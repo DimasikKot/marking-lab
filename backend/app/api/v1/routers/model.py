@@ -66,6 +66,7 @@ def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
 
 class PostModelRequest(BaseModel):
     name: str
+    parameters: dict[str, Any] | None = None
     training_files_ids: list[int] | None = None
     prediction_files_ids: list[int] | None = None
 
@@ -82,6 +83,7 @@ async def post(
         user_id=user_id,
         db=db,
         name=data.name,
+        parameters=data.parameters,
         training_files_ids=data.training_files_ids,
         prediction_files_ids=data.prediction_files_ids,
     )
