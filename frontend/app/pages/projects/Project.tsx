@@ -46,7 +46,7 @@ export function Project() {
 
     loadFiles();
     loadModels();
-  }, [selectedIndex, projectId]);
+  }, [projectId]);
 
   // Обработчик смены вкладки - меняем URL
   const handleSelect = (index: number) => {
