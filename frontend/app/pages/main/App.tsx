@@ -2,19 +2,19 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "material-icons/iconfont/material-icons.css";
 
 import { ToasterUI } from "@/shared/components/ToasterUI";
-import { PrivateRoute } from "@/shared/components/PrivateRoute.tsx";
+import { PrivateRoute } from "@/shared/components/PrivateRoute";
 
-import { Home } from "@/pages/main/Home.tsx";
-import { NotFound } from "@/pages/main/NotFound.tsx";
-import { Components } from "@/pages/main/Components.tsx";
+import { Home } from "@/pages/main/Home";
+import { NotFound } from "@/pages/main/NotFound";
+import { Components } from "@/pages/main/Components";
 
-import { Login } from "@/pages/auth/Login.tsx";
-import { Register } from "@/pages/auth/Register.tsx";
+import { Login } from "@/pages/auth/Login";
+import { Register } from "@/pages/auth/Register";
 
-import { Project } from "@/pages/projects/Project.tsx";
-import { Projects } from "@/pages/projects/Projects.tsx";
-import { File } from "@/pages/file/File.tsx";
-import { Model } from "@/pages/projects/Model.tsx";
+import { Project } from "@/pages/projects/Project";
+import { Projects } from "@/pages/projects/Projects";
+import { File } from "@/pages/file/File";
+import { Model } from "@/pages/projects/Model";
 
 import { ComparisonFiles } from "@/pages/comparisons/ComparisonFiles";
 import { ComparisonModels } from "@/pages/comparisons/ComparisonModels";
