@@ -14,6 +14,7 @@ from app.services.model import (
     delete_model_by_id,
     fetch_model_db_by_id,
     fetch_models_db_by_project_id,
+    get_prediction_files_by_id,
     set_progress_model_db_by_id,
     train_model_by_id,
     update_model_db_by_id,
@@ -160,10 +161,12 @@ async def patch_by_id(
 class PostProgressRequest(BaseModel):
     uuid: str
     progress: int
+    metrics: dict[str, Any] | None
+    graphs: dict[str, Any] | None
 
 
 @router.post("/{model_id}/progress", response_model=ModelDbResponse)
-async def get_by_id_predict(
+async def set_progress_by_id(
     project_id: int,
     model_id: int,
     data: PostProgressRequest,
@@ -177,9 +180,34 @@ async def get_by_id_predict(
         model_id=model_id,
         db=db,
         progress=data.progress,
+        metrics=data.metrics,
+        graphs=data.graphs,
     )
 
     return ModelDbToResponse(model_db=model_db)
+
+
+class GetPredictionFilesRequest(BaseModel):
+    uuid: str
+
+
+@router.get("/{model_id}/prediction_files")
+async def get_by_id_predict(
+    project_id: int,
+    model_id: int,
+    data: GetPredictionFilesRequest,
+    db: Session = Depends(get_db),
+):
+    if data.uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
+        raise HTTPException(status_code=400, detail="Неверный uuid")
+
+    prediction_files = get_prediction_files_by_id(
+        project_id=project_id,
+        model_id=model_id,
+        db=db,
+    )
+
+    return prediction_files
 
 
 @router.get("/{model_id}/train", response_model=ModelDbResponse)
@@ -188,14 +216,12 @@ async def get_by_id_train(
     model_id: int,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
-    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     model_db = await train_model_by_id(
         project_id=project_id,
         model_id=model_id,
         user_id=user_id,
         db=db,
-        background_tasks=background_tasks,
     )
 
     return ModelDbToResponse(model_db=model_db)
