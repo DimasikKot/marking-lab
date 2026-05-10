@@ -1,6 +1,11 @@
 from datetime import datetime
+import io
+from pathlib import Path
+import tempfile
 from typing import Any
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+import zipfile
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -187,28 +192,39 @@ async def set_progress_by_id(
     return ModelDbToResponse(model_db=model_db)
 
 
-class GetPredictionFilesRequest(BaseModel):
-    uuid: str
-
-
-# TODO Сделать предсказания файлов
 @router.get("/{model_id}/prediction_files")
 async def get_by_id_predict(
     project_id: int,
     model_id: int,
-    data: GetPredictionFilesRequest,
+    uuid: str,
     db: Session = Depends(get_db),
 ):
-    if data.uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
+    if uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
         raise HTTPException(status_code=400, detail="Неверный uuid")
 
-    prediction_files = get_prediction_files_by_id(
+    prediction_files_paths = get_prediction_files_by_id(
         project_id=project_id,
         model_id=model_id,
         db=db,
     )
 
-    return prediction_files
+    if not prediction_files_paths:
+        raise HTTPException(status_code=404, detail="Файлы не найдены")
+
+    # zip в памяти
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "w") as zipf:
+        for file_path in prediction_files_paths:
+            zipf.write(file_path, arcname=file_path.name)
+
+    zip_buffer.seek(0)
+
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=prediction_files.zip"},
+    )
 
 
 @router.get("/{model_id}/train", response_model=ModelDbResponse)

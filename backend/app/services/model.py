@@ -236,7 +236,7 @@ def set_progress_model_db_by_id(
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
     if metrics is not None:
-        model_db.metrics = metrics
+        model_db.metrics.update(metrics)
 
     if graphs is not None:
         model_db.graphs = graphs
@@ -249,7 +249,10 @@ def set_progress_model_db_by_id(
 
 
 # router
-def get_prediction_files_by_id(project_id: int, model_id: int, db: Session):
+def get_prediction_files_by_id(
+    project_id: int, model_id: int, db: Session
+) -> set[Path]:
+
     model_db = (
         db.query(ModelDB)
         .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
@@ -263,7 +266,6 @@ def get_prediction_files_by_id(project_id: int, model_id: int, db: Session):
         link.file for link in model_db.file_links if link.role == "prediction"
     ]
 
-    # TODO Сделать предсказания файлов
     prediction_files_paths: set[Path] = {
         get_file_path_by_id(
             project_id=file_db.project_id,
@@ -271,6 +273,8 @@ def get_prediction_files_by_id(project_id: int, model_id: int, db: Session):
         )
         for file_db in prediction_files
     }
+
+    return prediction_files_paths
 
 
 async def _train_model_request(

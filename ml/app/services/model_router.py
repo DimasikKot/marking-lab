@@ -1,4 +1,3 @@
-import json
 import tempfile
 from datasets import Dataset
 from fastapi import BackgroundTasks
@@ -10,6 +9,7 @@ from app.services.model_files import (
     extract_labels_from_sentences,
     prepare_dataset,
 )
+from app.services.model_prediction import model_predict
 
 
 def _model_train(
@@ -96,7 +96,7 @@ def _model_train(
         # )
         # confusion_matrix_plot = plot_confusion_matrix(label_list)
 
-        # TODO Предсказания
+        model_predict(project_id, model_id, uuid, ner)
 
         url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/progress"
         request = {
