@@ -56,69 +56,90 @@ export const ModelCard = ({
 
             <div
               className={`flex items-center justify-center select-none material-icons
-              ${model.is_draft ? "text-amber-500" : "text-emerald-500"}`}
+                ${
+                  model.progress === 0
+                    ? "text-amber-500"
+                    : model.progress !== 100
+                      ? "text-cyan-500"
+                      : "text-emerald-500"
+                }`}
             >
-              {model.is_draft
-                ? "edit"
-                : model.saved_in_memory
-                  ? "cloud"
-                  : "cloud_off"}
+              {model.progress === 0
+                ? "edit_note"
+                : model.progress !== 100
+                  ? "model_training"
+                  : "school"}
+              {/* task_alt */}
             </div>
           </div>
 
-          <div className="mt-1 flex max-h-[20vh] overflow-auto">
-            {Object.entries(model.parameters).length > 0 && (
-              <div className="flex-1 w-[50%]">
-                {Object.entries(model.parameters).map(([k, v]) => (
-                  <div
-                    key={k}
-                    className="flex justify-between px-1 border-b border-orange-200"
-                  >
-                    <TextUI
-                      variant="desc"
-                      className="text-orange-400 w-[45%] overflow-hidden"
-                    >
-                      {k}
-                    </TextUI>
-
-                    <TextUI
-                      variant="desc"
-                      className="text-orange-400 w-[50%] overflow-hidden"
-                      isSpan
-                    >
-                      {String(v)}
-                    </TextUI>
-                  </div>
-                ))}
-              </div>
+          <div className="flex flex-col overflow-auto">
+            {model.training_files_ids.length > 0 && (
+              <TextUI isSpan variant="desc">
+                Файлы для обучения: {model.training_files_ids.join(", ")}
+              </TextUI>
             )}
 
-            {Object.entries(model.metrics).length > 0 && (
-              <div className="flex-1 w-[50%]">
-                {Object.entries(model.metrics).map(([k, v]) => (
-                  <div
-                    key={k}
-                    className="flex justify-between px-1 border-b border-emerald-300"
-                  >
-                    <TextUI
-                      variant="desc"
-                      className="text-green-500/90 w-[45%] overflow-hidden"
-                    >
-                      {k}
-                    </TextUI>
-
-                    <TextUI
-                      variant="desc"
-                      className="text-green-500/90 w-[50%] overflow-hidden"
-                      isSpan
-                      maxLines={1}
-                    >
-                      {String(v)}
-                    </TextUI>
-                  </div>
-                ))}
-              </div>
+            {model.prediction_files_ids.length > 0 && (
+              <TextUI isSpan variant="desc">
+                Файлы для предсказания: {model.prediction_files_ids.join(", ")}
+              </TextUI>
             )}
+
+            <div className="mt-1 flex max-h-[20vh]">
+              {Object.entries(model.parameters).length > 0 && (
+                <div className="flex-1 w-[50%]">
+                  {Object.entries(model.parameters).map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="flex justify-between px-1 border-b border-orange-200"
+                    >
+                      <TextUI
+                        variant="desc"
+                        className="text-orange-400 w-[45%] overflow-hidden"
+                      >
+                        {k}
+                      </TextUI>
+
+                      <TextUI
+                        variant="desc"
+                        className="text-orange-400 w-[50%] overflow-hidden"
+                        isSpan
+                      >
+                        {String(v)}
+                      </TextUI>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {Object.entries(model.metrics).length > 0 && (
+                <div className="flex-1 w-[50%]">
+                  {Object.entries(model.metrics).map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="flex justify-between px-1 border-b border-emerald-300"
+                    >
+                      <TextUI
+                        variant="desc"
+                        className="text-green-500/90 w-[45%] overflow-hidden"
+                      >
+                        {k}
+                      </TextUI>
+
+                      <TextUI
+                        variant="desc"
+                        className="text-green-500/90 w-[50%] overflow-hidden"
+                        isSpan
+                        maxLines={1}
+                      >
+                        {String(v)}
+                      </TextUI>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -134,11 +155,14 @@ export const ModelCard = ({
               <div className="select-none material-icons">edit</div>
             </ButtonUI>
 
-            <ButtonUI onClick={(event) => onCopyClick?.(event)} variant="secondary">
+            <ButtonUI
+              onClick={(event) => onCopyClick?.(event)}
+              variant="secondary"
+            >
               <div className="select-none material-icons">copy_all</div>
             </ButtonUI>
 
-            {Object.keys(model.graphs).length != 0 && (
+            {Object.keys(model.metrics).length > 0 && (
               <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
                 <div className="select-none material-icons">insert_chart</div>
               </ButtonUI>
@@ -163,7 +187,7 @@ export const ModelCard = ({
             className="flex-max text-right text-red-600 hover:text-red-800"
           >
             <div
-              className={`${Object.keys(model.graphs).length != 0 ? "ml-9" : ""} select-none material-icons`}
+              className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
             >
               delete
             </div>

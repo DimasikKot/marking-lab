@@ -27,11 +27,11 @@ async def train_ner(
     params = json.loads(parameters)
 
     EPOCHS = int(params.get("Эпохи", 2))
-    BATCH_SIZE = int(params.get("Размер батчей", 32))
+    BATCH_SIZE = int(params.get("Размер батчей", 16))
     # distilbert-base-uncased
     BASE_MODEL = str(params.get("Базовая модель", "albert-base-v2"))
     LEARNING_RATE = float(params.get("Скорость обучения", 2e-5))
-    TESTING_SIZE = float(params.get("Размер тренировочного набора", 0.2))
+    TESTING_SIZE = float(params.get("Размер тренировочного набора", 0.8))
     MAX_LINE_LENGHT = int(params.get("Максимальная длина предложения", 128))
 
     # Собираем все предложения из загруженных CSV-файлов

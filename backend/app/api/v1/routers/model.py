@@ -24,8 +24,7 @@ router = APIRouter()
 class ModelDbResponse(BaseModel):
     id: int
     name: str
-    is_draft: bool
-    saved_in_memory: bool
+    progress: int
     parameters: dict[str, Any]
     metrics: dict[str, Any]
     graphs: dict[str, Any]
@@ -52,8 +51,7 @@ def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
     return ModelDbResponse(
         id=model_db.id,
         name=model_db.name,
-        is_draft=model_db.is_draft,
-        saved_in_memory=model_db.saved_in_memory,
+        progress=model_db.progress,
         parameters=model_db.parameters,
         metrics=model_db.metrics,
         graphs=model_db.graphs,

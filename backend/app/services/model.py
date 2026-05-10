@@ -69,7 +69,10 @@ def create_model(
 ) -> ModelDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    model_db = ModelDB(project_id=project_id, name=name, parameters=parameters)
+    model_db = ModelDB(project_id=project_id, name=name)
+
+    if parameters is not None:
+        model_db.parameters = parameters
 
     # ---------- TRAINING FILES ----------
     if training_files_ids is not None:
@@ -174,19 +177,18 @@ def update_model_db_by_id(
         model_db.name = name
 
     if parameters is not None:
-        if model_db.is_draft is False:
+        if 0 < model_db.progress < 100:
             raise HTTPException(
-                status_code=400, detail="Нельзя изменять параметры обученной модели"
+                status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
 
         model_db.parameters = parameters
 
     # ---------- TRAINING FILES ----------
     if training_files_ids is not None:
-        if model_db.is_draft is False:
+        if 0 < model_db.progress < 100:
             raise HTTPException(
-                status_code=400,
-                detail="Нельзя изменять файлы обученной модели",
+                status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
 
         _update_files_by_role(
@@ -198,10 +200,9 @@ def update_model_db_by_id(
 
     # ---------- PREDICTION FILES ----------
     if prediction_files_ids is not None:
-        if model_db.is_draft is False:
+        if 0 < model_db.progress < 100:
             raise HTTPException(
-                status_code=400,
-                detail="Нельзя изменять файлы обученной модели",
+                status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
 
         _update_files_by_role(
@@ -238,14 +239,12 @@ async def train_model_by_id(
             detail="Выберите файлы для обучения",
         )
 
-    if model_db.is_draft is False:
+    if 0 < model_db.progress < 100:
         raise HTTPException(
-            status_code=400,
-            detail="Нельзя обучать уже обученную модель",
+            status_code=400, detail="Нельзя изменять параметры обучаемой модели"
         )
 
-    model_db.is_draft = False
-
+    model_db.progress = 1
     db.commit()
     db.refresh(model_db)
 
@@ -271,6 +270,10 @@ async def train_model_by_id(
         for file_db in prediction_files
     }
 
+    model_db.progress = 2
+    db.commit()
+    db.refresh(model_db)
+
     # Формируем запрос к внешнему сервису
     # Мы используем context manager, чтобы гарантированно закрыть файлы
     async with httpx.AsyncClient() as client:
@@ -295,7 +298,11 @@ async def train_model_by_id(
                 file_stream.close()
 
             if response.status_code != 200:
-                return response.json()
+                model_db.progress = 0
+                db.commit()
+                db.refresh(model_db)
+
+                raise response.json()
 
             # Метрики забираем из заголовка
             # metrics_raw = response.headers.get("X-Metrics")
@@ -318,14 +325,23 @@ async def train_model_by_id(
             #     content=response.content,  # content=response.content.decode("utf-8"),
             # )
 
+            model_db.progress = 100
+            db.commit()
+            db.refresh(model_db)
+
+        except Exception as e:
+            model_db.progress = 0
+            db.commit()
+            db.refresh(model_db)
+
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ошибка при обучении модели: {e}",
+            )
+
         finally:
             for file_stream in opened_files:
                 file_stream.close()
-
-            model_db.is_draft = True
-
-            db.commit()
-            db.refresh(model_db)
 
     return model_db
 

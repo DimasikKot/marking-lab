@@ -12,8 +12,7 @@ type JsonValue =
 export interface ModelDbResponse {
   id: number;
   name: string;
-  is_draft: boolean;
-  saved_in_memory: boolean;
+  progress: number;
   parameters: Record<string, JsonValue>;
   metrics: Record<string, JsonValue>;
   graphs: Record<string, string>;

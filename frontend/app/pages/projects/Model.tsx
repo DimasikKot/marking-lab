@@ -123,13 +123,20 @@ export function Model() {
             <TextUI
               variant="label"
               isSpan
-              className={`px-3 py-1 rounded-2xl border size-max mt-1 ${
-                model.is_draft
-                  ? "bg-amber-100 border-amber-300"
-                  : "bg-emerald-100 border-emerald-300"
-              }`}
+              className={`px-3 py-1 rounded-2xl border size-max mt-1 
+                ${
+                  model.progress === 0
+                    ? "bg-amber-100 border-amber-300"
+                    : model.progress !== 100
+                      ? "bg-cyan-100 border-cyan-300"
+                      : "bg-emerald-100 border-emerald-300"
+                }`}
             >
-              {model.is_draft ? "Черновик" : "Обучена"}
+              {model.progress === 0
+                ? "Черновик"
+                : model.progress !== 100
+                  ? "Обучается"
+                  : "Обучена"}
             </TextUI>
           </div>
         )}
@@ -144,7 +151,7 @@ export function Model() {
         {model && (
           <div className="border border-gray-200 rounded-4xl flex flex-col gap-4 p-6 overflow-auto">
             <div className="flex justify-between items-center">
-              {model.is_draft && (
+              {!(model.progress > 0 && model.progress < 100) && (
                 <>
                   <ButtonUI
                     variant="secondary"

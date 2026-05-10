@@ -68,8 +68,7 @@ export function Components() {
     {
       id: 2,
       name: "Классификатор BERT",
-      is_draft: false,
-      saved_in_memory: true,
+      progress: 0,
       parameters: {
         model: "bert",
         epochs: 3,
@@ -106,8 +105,7 @@ export function Components() {
     {
       id: 2,
       name: "Вторая модель",
-      is_draft: true,
-      saved_in_memory: false,
+      progress: 70,
       parameters: {
         model: "ner",
         epochs: 3,
@@ -117,6 +115,27 @@ export function Components() {
         epochs2: 3,
         batch_size2: 4,
         learning_rate2: 0.001,
+      },
+      metrics: {
+        model: "ner lia",
+        epochs: 8,
+        batch_size: 40,
+        learning_rate: 0.01,
+      },
+      graphs: {},
+      training_files_ids: [11, 12],
+      prediction_files_ids: [13, 14],
+      created_at: "2026-04-24T02:05:34.752538",
+      updated_at: "2026-04-24T22:34:30.828596",
+    },
+    {
+      id: 3,
+      name: "Вторая модель",
+      progress: 100,
+      parameters: {
+        epochs: 3,
+        batch_size: 4,
+        learning_rate: 0.001,
       },
       metrics: {
         model: "ner lia",
@@ -251,9 +270,11 @@ export function Components() {
             <TextUI variant="header" className="mb-6">
               ModelCard
             </TextUI>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ModelCard model={models[0]} />
               <ModelCard model={models[1]} dateIsCreatedAt={true} />
+              <ModelCard model={models[2]} />
+              <ModelCard model={models[2]} dateIsCreatedAt={true} />
             </div>
           </div>
 

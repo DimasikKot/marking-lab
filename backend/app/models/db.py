@@ -91,7 +91,7 @@ class ModelFileDB(Base):
     )
 
     model = relationship("ModelDB", back_populates="file_links")
-    file = relationship("FileDB", back_populates="model_links")
+    file: Mapped[FileDB] = relationship("FileDB", back_populates="model_links")
 
 
 class ModelDB(Base):
@@ -104,18 +104,17 @@ class ModelDB(Base):
     )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_draft: Mapped[bool] = mapped_column(Boolean, default=True)
-    saved_in_memory: Mapped[bool] = mapped_column(Boolean, default=False)
+    progress: Mapped[int] = mapped_column(Integer, default=0)
 
     parameters: Mapped[dict] = mapped_column(
         JSONB,
         server_default="{}",
         default={
             "Эпохи": 2,
-            "Размер батчей": 32,
+            "Размер батчей": 16,
             "Базовая модель": "albert-base-v2",
-            "Скорость обучения": 2e-3,
-            "Размер тренировочного набора": 0.2,
+            "Скорость обучения": 2e-5,
+            "Размер тренировочного набора": 0.8,
             "Максимальная длина предложения": 128,
         },
     )

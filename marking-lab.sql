@@ -25,8 +25,7 @@ CREATE TABLE IF NOT EXISTS models (
     id              SERIAL          PRIMARY KEY,
     project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,
     name            VARCHAR(255)    NOT NULL,
-    is_draft        BOOLEAN         DEFAULT TRUE,
-    saved_in_memory BOOLEAN         DEFAULT FALSE,
+    progress        INTEGER         DEFAULT 0,
     parameters      JSONB           DEFAULT '{}', -- параметры модели
     metrics         JSONB           DEFAULT '{}', -- численные метрики на тестовом наборе
     graphs          JSONB           DEFAULT '{}', -- графики обучения
