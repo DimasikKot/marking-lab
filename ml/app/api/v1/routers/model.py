@@ -31,7 +31,14 @@ async def train_ner(
     files: list[UploadFile] = File(...),
 ):
     params = json.loads(parameters)
-    logger.info(f"Training parameters: {params}")
+
+    EPOCHS = int(params.get("Эпохи", 2))
+    BATCH_SIZE = int(params.get("Размер батчей", 32))
+    # distilbert-base-uncased
+    BASE_MODEL = str(params.get("Базовая модель", "albert-base-v2"))
+    LEARNING_RATE = float(params.get("Скорость обучения", 2e-5))
+    TESTING_SIZE = float(params.get("Размер тестового набора", 0.2))
+    MAX_LINE_LENGHT = int(params.get("Максимальная длина предложения", 128))
 
     # Собираем все предложения из загруженных CSV-файлов
     all_sentences = []
@@ -51,26 +58,19 @@ async def train_ner(
     label_list = extract_labels_from_sentences(all_sentences)  # список уникальных меток
 
     # Разбиение train/validation (80/20)
-    split_idx = int(len(all_sentences) * 0.8)
+    split_idx = int(len(all_sentences) * TESTING_SIZE)
     train_sentences = all_sentences[:split_idx]
     eval_sentences = all_sentences[split_idx:]
 
-    base_model = str(params.get("Базовая модель", "albert-base-v2")) # distilbert-base-uncased
-    epochs = int(params.get("Эпохи", 2))
-    batch_size = int(params.get("Размер батча", 32))
-    learning_rate = float(params.get("Скорость обучения", 2e-5))
-    testing_size = float(params.get("Размер тестового набора", 0.2))
-    max_line_lenght = int(params.get("Максимальная длина предложения", 128))
-
-    ner = NERModel(base_model, label_list)
+    ner = NERModel(BASE_MODEL, label_list)
     tokenizer = ner.tokenizer
     label2id = ner.label2id
 
     train_dataset = prepare_dataset(
-        train_sentences, tokenizer, label2id, max_line_lenght
+        train_sentences, tokenizer, label2id, MAX_LINE_LENGHT
     )
     eval_dataset = (
-        prepare_dataset(eval_sentences, tokenizer, label2id, max_line_lenght)
+        prepare_dataset(eval_sentences, tokenizer, label2id, MAX_LINE_LENGHT)
         if eval_sentences
         else None
     )
@@ -80,9 +80,9 @@ async def train_ner(
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
             output_dir=tmpdir,
-            epochs=epochs,
-            batch_size=batch_size,
-            learning_rate=learning_rate,
+            epochs=EPOCHS,
+            batch_size=BATCH_SIZE,
+            learning_rate=LEARNING_RATE,
         )
 
         eval_metrics = result["eval_metrics"]
@@ -127,7 +127,7 @@ async def train_ner(
                 model=ner.model,
                 args=TrainingArguments(
                     output_dir=tmpdir,
-                    per_device_eval_batch_size=batch_size,
+                    per_device_eval_batch_size=BATCH_SIZE,
                     report_to="none",
                 ),
                 data_collator=ner.data_collator,
@@ -151,7 +151,7 @@ async def train_ner(
                     tokens,
                     truncation=True,
                     is_split_into_words=True,
-                    max_length=max_line_lenght,
+                    max_length=MAX_LINE_LENGHT,
                     return_tensors="pt",
                 )
 
@@ -289,6 +289,7 @@ async def train_ner(
         # zip_data.seek(0)  # обратно в начало
 
         return {
+            "parameters": json.dumps(parameters),
             "metrics": json.dumps(metrics),
             "graphs": json.dumps(
                 {
