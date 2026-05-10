@@ -148,7 +148,7 @@ def model_predict(
                         # Переводим в bytes
                         csv_bytes = csv_buffer.getvalue().encode("utf-8")
 
-                        url = f"http://backend:8000/projects/{project_id}/models/{model_id}/prediction_files"
+                        url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/prediction_files"
 
                         response = httpx.post(
                             url,
