@@ -1,6 +1,7 @@
 import csv
 import io
 import tempfile
+import time
 import zipfile
 import httpx
 import numpy as np
@@ -17,7 +18,7 @@ def model_predict(
     ner: NERModel,
     MAX_LINE_LENGTH: int,
     BATCH_SIZE: int,
-):
+) -> float:
     SERVER_URL = "http://backend:8000/api/v1"
 
     with httpx.Client(timeout=300) as client:
@@ -72,6 +73,7 @@ def model_predict(
 
                     # Сохраняем модель во временном каталоге, чтобы не засорять память
                     with tempfile.TemporaryDirectory() as tmpdir:
+                        start_time = time.perf_counter()
                         trainer = Trainer(
                             model=ner.model,
                             args=TrainingArguments(
@@ -81,6 +83,7 @@ def model_predict(
                             ),
                             data_collator=ner.data_collator,
                         )
+                        prediction_load_time_seconds = time.perf_counter() - start_time
 
                         predictions = trainer.predict(dataset)  # type: ignore
                         preds = np.argmax(predictions.predictions, axis=2)
@@ -166,5 +169,6 @@ def model_predict(
                             timeout=60.0,
                         )
 
-                        print(response.status_code)
-                        print(response.json())
+                        # print(response.status_code)
+                        # print(response.json())
+    return prediction_load_time_seconds

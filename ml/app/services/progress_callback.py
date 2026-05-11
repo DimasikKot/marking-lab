@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import httpx
 from transformers import TrainerCallback
 
@@ -24,10 +25,25 @@ class ProgressCallback(TrainerCallback):
                 f"{self.project_id}/models/{self.model_id}/progress"
             )
 
+            metrics_data = {
+                "F1-мера": metrics.get("f1"),
+                "Потери на обучающей выборке": metrics.get("train_loss"),
+                "Потери на валидационной выборке": metrics.get("eval_loss"),
+                "Полнота (recall)": metrics.get("recall"),
+                "Скорость обучения": metrics.get("learning_rate"),
+                "Точность (accuracy)": metrics.get("accuracy"),
+                "Точность (precision)": metrics.get("precision"),
+            }
+
+            if "epoch" in metrics:
+                metrics_data["Эпоха"] = f'{metrics["epoch"]} / {self.total_epochs}'
+
+            metrics_data = {k: v for k, v in metrics_data.items() if v is not None}
+
             request = {
                 "uuid": self.uuid,
                 "progress": progress,
-                "metrics": metrics,
+                "metrics": metrics_data,
             }
 
             print("=" * 100)
@@ -35,10 +51,16 @@ class ProgressCallback(TrainerCallback):
             print("=" * 100)
 
             with httpx.Client(timeout=100) as client:
-                client.post(url, json=request)
+                response = client.post(url, json=request)
 
-        except Exception as event:
-            print(f"Ошибка отправки прогресса: {event}")
+                if response.status_code != 200:
+                    print(f"Ошибка отправки прогресса: {response}")
+                    raise RuntimeError(f"Не удалось отправить прогресс")
+
+            return True
+
+        except Exception as _:
+            return False
 
     def _calculate_progress(self, state):
         """
@@ -58,13 +80,13 @@ class ProgressCallback(TrainerCallback):
         """
 
         if not logs:
-            return
+            return control
 
         progress = self._calculate_progress(state)
 
         # не спамим одинаковый progress
         if progress == self.last_progress:
-            return
+            return control
 
         self.last_progress = progress
 
@@ -85,10 +107,16 @@ class ProgressCallback(TrainerCallback):
         # print(logs)
         # print("^" * 100)
 
-        self._send_progress(
+        success = self._send_progress(
             progress=progress,
             metrics=metrics,
         )
+
+        if not success:
+            print(f"Ошибка отправки прогресса, остановка модели")
+            control.should_training_stop = True
+
+        return control
 
     def on_evaluate(self, args, state, control, metrics=None, **kwargs):
         if not metrics:

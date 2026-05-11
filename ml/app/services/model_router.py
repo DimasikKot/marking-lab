@@ -1,4 +1,5 @@
 import tempfile
+import time
 from datasets import Dataset
 from fastapi import BackgroundTasks, HTTPException
 import httpx
@@ -73,6 +74,7 @@ def _model_train(
 
     # Обучаем модель во временном каталоге, чтобы не засорять память
     with tempfile.TemporaryDirectory() as tmpdir:
+        start_time = time.perf_counter()
         result = ner.train(
             train_dataset=train_dataset,
             eval_dataset=validation_dataset,
@@ -83,6 +85,11 @@ def _model_train(
             project_id=project_id,
             model_id=model_id,
             uuid=uuid,
+        )
+        training_time_seconds = time.perf_counter() - start_time
+
+        prediction_load_time_seconds = model_predict(
+            project_id, model_id, uuid, ner, MAX_LINE_LENGHT, BATCH_SIZE
         )
 
         # Метрики валидационной выборки
@@ -95,6 +102,8 @@ def _model_train(
                 "Точность (precision)": validation_metrics.get("eval_precision"),
                 "Полнота (recall)": validation_metrics.get("eval_recall"),
                 "F1-мера": validation_metrics.get("eval_f1"),
+                "Время обучения (сек)": round(training_time_seconds, 2),
+                "Время предсказания (сек)": round(prediction_load_time_seconds, 2),
             }
 
             # Метрики по классам (если они есть в результате)
@@ -115,13 +124,13 @@ def _model_train(
         print(labels_metrics)
         print("+" * 100)
 
+        return_metrics.update(labels_metrics)
+
         train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
         # validation_loss_plot = loss_plot(
         #     "Потери на валидации", result["validation_loss"]
         # )
         # confusion_matrix_plot = plot_confusion_matrix(label_list)
-
-        model_predict(project_id, model_id, uuid, ner, MAX_LINE_LENGHT, BATCH_SIZE)
 
         url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/progress"
         request = {
