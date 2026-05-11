@@ -1,6 +1,6 @@
 import tempfile
 from datasets import Dataset
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, HTTPException
 import httpx
 
 from app.services.model_class import NERModel
@@ -26,9 +26,25 @@ def _model_train(
 ):
     # Список уникальных меток
     label_list = extract_labels_from_sentences(all_sentences)
+    url = (
+        f"http://backend:8000/api/v1/projects/"
+        f"{project_id}/models/{model_id}/progress"
+    )
 
     # Инициализируем модель
-    ner = NERModel(BASE_MODEL, label_list)
+    try:
+        ner = NERModel(BASE_MODEL, label_list)
+    except Exception as e:
+        with httpx.Client(timeout=5.0) as client:
+            client.post(
+                url,
+                json={
+                    "uuid": uuid,
+                    "progress": 0,
+                },
+            )
+        raise HTTPException(status_code=400, detail=str(e))
+
     tokenizer = ner.tokenizer
     label2id = ner.label2id
 
@@ -44,11 +60,6 @@ def _model_train(
         prepare_dataset(validation_sentences, tokenizer, label2id, MAX_LINE_LENGHT)
         if validation_sentences
         else None
-    )
-
-    url = (
-        f"http://backend:8000/api/v1/projects/"
-        f"{project_id}/models/{model_id}/progress"
     )
 
     with httpx.Client(timeout=5.0) as client:

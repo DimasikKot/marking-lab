@@ -132,7 +132,7 @@ export function Model() {
       <Header>
         {model && (
           <div className="flex flex-row gap-4 items-center">
-            <TextUI variant="header" maxLines={1}>
+            <TextUI variant="header" className="line-clamp-1">
               {model.name}
             </TextUI>
 
