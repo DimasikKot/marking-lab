@@ -46,44 +46,46 @@ def model_predict(
                 },
             )
 
-        with zipfile.ZipFile(zip_bytes) as zip_file:
-            for index, file_name in enumerate(zip_file.namelist()):
-                with zip_file.open(file_name) as file:
-                    with httpx.Client(timeout=5.0) as client:
-                        client.post(
-                            url,
-                            json={
-                                "uuid": uuid,
-                                "progress": int((index / len(zip_file.namelist())) * 7)
-                                + 92,
-                            },
+            # Сохраняем модель во временном каталоге, чтобы не засорять память
+        with tempfile.TemporaryDirectory() as tmpdir:
+            start_time = time.perf_counter()
+            trainer = Trainer(
+                model=ner.model,
+                args=TrainingArguments(
+                    output_dir=tmpdir,
+                    per_device_eval_batch_size=BATCH_SIZE,
+                    report_to="none",
+                ),
+                data_collator=ner.data_collator,
+            )
+            prediction_load_time_seconds = time.perf_counter() - start_time
+
+            with zipfile.ZipFile(zip_bytes) as zip_file:
+                for index, file_name in enumerate(zip_file.namelist()):
+                    with zip_file.open(file_name) as file:
+                        with httpx.Client(timeout=5.0) as client:
+                            client.post(
+                                url,
+                                json={
+                                    "uuid": uuid,
+                                    "progress": int(
+                                        (index / len(zip_file.namelist())) * 7
+                                    )
+                                    + 92,
+                                },
+                            )
+                        text = file.read().decode("utf-8")
+
+                        # Разбиваем текст
+                        validation_sentences = parse_csv_from_text(text)
+
+                        # Dataset для модели
+                        dataset = prepare_dataset(
+                            tokenizer=ner.tokenizer,
+                            label2id=ner.label2id,
+                            max_length=MAX_LINE_LENGTH,
+                            sentences=validation_sentences,
                         )
-                    text = file.read().decode("utf-8")
-
-                    # Разбиваем текст
-                    validation_sentences = parse_csv_from_text(text)
-
-                    # Dataset для модели
-                    dataset = prepare_dataset(
-                        tokenizer=ner.tokenizer,
-                        label2id=ner.label2id,
-                        max_length=MAX_LINE_LENGTH,
-                        sentences=validation_sentences,
-                    )
-
-                    # Сохраняем модель во временном каталоге, чтобы не засорять память
-                    with tempfile.TemporaryDirectory() as tmpdir:
-                        start_time = time.perf_counter()
-                        trainer = Trainer(
-                            model=ner.model,
-                            args=TrainingArguments(
-                                output_dir=tmpdir,
-                                per_device_eval_batch_size=BATCH_SIZE,
-                                report_to="none",
-                            ),
-                            data_collator=ner.data_collator,
-                        )
-                        prediction_load_time_seconds = time.perf_counter() - start_time
 
                         predictions = trainer.predict(dataset)  # type: ignore
                         preds = np.argmax(predictions.predictions, axis=2)

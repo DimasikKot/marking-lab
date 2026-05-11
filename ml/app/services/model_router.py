@@ -1,7 +1,7 @@
 import tempfile
 import time
 from datasets import Dataset
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import BackgroundTasks
 import httpx
 
 from app.services.model_class import NERModel
@@ -35,7 +35,7 @@ def _model_train(
     # Инициализируем модель
     try:
         ner = NERModel(BASE_MODEL, label_list)
-    except Exception as e:
+    except Exception as error:
         with httpx.Client(timeout=5.0) as client:
             client.post(
                 url,
@@ -44,7 +44,7 @@ def _model_train(
                     "progress": 0,
                 },
             )
-        raise HTTPException(status_code=400, detail=str(e))
+        raise RuntimeError(f"Ошибка создания модели, ошибка: {error}")
 
     tokenizer = ner.tokenizer
     label2id = ner.label2id

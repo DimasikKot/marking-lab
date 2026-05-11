@@ -114,7 +114,7 @@ class ProgressCallback(TrainerCallback):
 
         if not success:
             print(f"Ошибка отправки прогресса, остановка модели")
-            control.should_training_stop = True
+            raise RuntimeError(f"Не удалось отправить прогресс")
 
         return control
 
