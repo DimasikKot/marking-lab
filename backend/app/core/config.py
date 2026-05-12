@@ -4,7 +4,6 @@ from functools import lru_cache
 
 class _Settings(BaseSettings):
     ML_URL: str = "http://ml:8001/api/v1"
-    ML_SECRET: str = "8ZsHdCERyMmoRpbe"
 
     # Основная БД
     DB_HOST: str = "host.docker.internal"
@@ -21,10 +20,12 @@ class _Settings(BaseSettings):
     AUTH_DB_NAME: str = "marking-lab-auth"
 
     # JWT-токены
-    JWT_ACCESS_TOKEN_SECRET: str = "dAxA_hsdi_peqv_fzdrmqqu"
+    JWT_ACCESS_TOKEN_SECRET: str = "w3NWlz4BSf6j6TwwEEXK0pT5yPY4AJzt"
     JWT_ACCESS_TOKEN_EXPIRATION_HOURS: int = 240
-    # JWT_REFRESH_TOKEN_SECRET: str = "dAbzdrmqA_hwW_fsdi_pEqu"
-    # JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int = 240
+    # JWT_REFRESH_TOKEN_SECRET: str = "v4m9mCNqrIjiNdYiarb4SwUBH5mxCe4O"
+    # JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int = 720
+
+    TRAIN_ACCESS_TOKEN_SECRET: str = "r1yGRupzNCNGwEstj5fL0c5NFfjtON2B"
 
     # Хранилище файлов
     STORAGE_PATH: str = "./projects"
