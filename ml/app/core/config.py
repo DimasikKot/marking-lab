@@ -1,0 +1,20 @@
+from pydantic_settings import BaseSettings
+from functools import lru_cache
+
+
+class _Settings(BaseSettings):
+    BACKEND_URL: str = "http://backend:8001/api/v1"
+    BACKEND_SECRET: str = "8ZsHdCERyMmoRpbe"
+
+    TOKEN_HUGGINGFACE = "dAbzW_TduOkAkFbmmqA_hwQqsFGgrfsdi_pEq"
+
+    class Config:
+        env_file = ".env.local"
+
+
+@lru_cache
+def __get_settings__():
+    return _Settings()
+
+
+settings: _Settings = __get_settings__()

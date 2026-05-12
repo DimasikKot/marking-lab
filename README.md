@@ -86,33 +86,43 @@ services:
 
 `backend`
 
-```js
-ML_URL = "http://ml:8001/api/v1";
+```c#
+ML_URL="http://ml:8001/api/v1"
+ML_SECRET="8ZsHdCERyMmoRpbe"
 
-DB_HOST = "host.docker.internal";
-DB_PORT = 5432;
-DB_USERNAME = "postgres";
-DB_PASSWORD = "password";
-DB_NAME = "marking-lab";
+DB_HOST="host.docker.internal"
+DB_PORT=5432
+DB_USERNAME="postgres"
+DB_PASSWORD="password"
+DB_NAME="marking-lab"
 
-AUTH_DB_HOST = "host.docker.internal";
-AUTH_DB_PORT = 5432;
-AUTH_DB_USERNAME = "postgres";
-AUTH_DB_PASSWORD = "password";
-AUTH_DB_NAME = "marking-lab-auth";
+AUTH_DB_HOST="host.docker.internal"
+AUTH_DB_PORT=5432
+AUTH_DB_USERNAME="postgres"
+AUTH_DB_PASSWORD="password"
+AUTH_DB_NAME="marking-lab-auth"
 
-JWT_ACCESS_TOKEN_SECRET = "dAxA_hsdi_peqv_fzdrmqqu";
-JWT_ACCESS_TOKEN_EXPIRATION_HOURS = 24;
-JWT_REFRESH_TOKEN_SECRET = "dAbzdrmqA_hwW_fsdi_pEqu";
-JWT_REFRESH_TOKEN_EXPIRATION_HOURS = 240;
+JWT_ACCESS_TOKEN_SECRET="dAxA_hsdi_peqv_fzdrmqqu"
+JWT_ACCESS_TOKEN_EXPIRATION_HOURS=240
+# JWT_REFRESH_TOKEN_SECRET="dAbzdrmqA_hwW_fsdi_pEqu"
+# JWT_REFRESH_TOKEN_EXPIRATION_HOURS=240
 
-STORAGE_PATH = "./projects";
+STORAGE_PATH="./projects"
 ```
 
 `frontend`
 
-```js
-VITE_BACKEND_URL = "http://localhost:8000/api/v1";
+```c#
+VITE_BACKEND_URL="http://localhost:8000/api/v1"
+```
+
+`ml`
+
+```c#
+BACKEND_URL="http://backend:8001/api/v1"
+BACKEND_SECRET="8ZsHdCERyMmoRpbe"
+
+TOKEN_HUGGING_FACE="dAbzW_TduOkAkFbmmqA_hwQqsFGgrfsdi_pEq"
 ```
 
 ## Запуск проекта
