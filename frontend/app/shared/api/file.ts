@@ -165,3 +165,21 @@ export const updateFileByIdContent = async (
     errorValidate(error);
   }
 };
+
+
+export const fetchFileContent = async (
+  projectId: string | number,
+  fileId: string | number,
+  page: number = 1,
+  rows: number = 10,
+): Promise<GetFilePageResponse | undefined> => {
+  try {
+    const response = await api.get<GetFilePageResponse>(
+      `/projects/${projectId}/files/${fileId}`,
+      { params: { page, rows } },
+    );
+    return response.data;
+  } catch (error: unknown) {
+    errorValidate(error);
+  }
+};
