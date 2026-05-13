@@ -21,9 +21,7 @@ async def get_backend():
 async def get_ml():
     try:
         async with AsyncClient() as client:
-            response_dict = await client.get(
-                settings.ML_URL + "/echos/ml", timeout=5000
-            )
+            response_dict = await client.get(settings.GET_ECHO_URL, timeout=5000)
             response_json = response_dict.json()
         return response_json
     except Exception as error:

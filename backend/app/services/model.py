@@ -242,7 +242,7 @@ async def _train_model_request(
             db.refresh(model_db)
 
             response = await client.post(
-                settings.ML_URL + "/models/train",
+                settings.POST_TRAIN_URL,
                 data={
                     "parameters": json.dumps(model_db.parameters),
                     "train_access_token": encode_train_access_token(

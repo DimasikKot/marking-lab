@@ -31,6 +31,14 @@ class _Settings(BaseSettings):
     STORAGE_PATH: str = "./projects"
 
     @property
+    def GET_ECHO_URL(self) -> str:
+        return f"{self.ML_URL}/echos/ml"
+
+    @property
+    def POST_TRAIN_URL(self) -> str:
+        return f"{self.ML_URL}/models/train"
+
+    @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
