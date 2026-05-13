@@ -7,6 +7,7 @@ import httpx
 import numpy as np
 from transformers import Trainer, TrainingArguments
 
+from app.core.config import settings
 from app.services.model_class import NERModel
 from app.services.model_files import parse_csv_from_text, prepare_dataset
 
@@ -19,12 +20,9 @@ def model_predict(
     MAX_LINE_LENGTH: int,
     BATCH_SIZE: int,
 ) -> float:
-    SERVER_URL = "http://backend:8000/api/v1"
-
     with httpx.Client(timeout=300) as client:
-
         response = client.get(
-            f"{SERVER_URL}/projects/{project_id}/models/{model_id}/prediction_files",
+            f"{settings.BACKEND_URL}/projects/{project_id}/models/{model_id}/prediction_files",
             params={"uuid": uuid},
         )
 
@@ -32,21 +30,17 @@ def model_predict(
 
         zip_bytes = io.BytesIO(response.content)
 
-        url = (
-            f"http://backend:8000/api/v1/projects/"
-            f"{project_id}/models/{model_id}/progress"
+        url = f"{settings.BACKEND_URL}/projects/{project_id}/models/{model_id}/progress"
+
+        client.post(
+            url,
+            json={
+                "uuid": uuid,
+                "progress": 91,
+            },
         )
 
-        with httpx.Client(timeout=5.0) as client:
-            client.post(
-                url,
-                json={
-                    "uuid": uuid,
-                    "progress": 91,
-                },
-            )
-
-            # Сохраняем модель во временном каталоге, чтобы не засорять память
+        # Сохраняем модель во временном каталоге, чтобы не засорять память
         with tempfile.TemporaryDirectory() as tmpdir:
             start_time = time.perf_counter()
             trainer = Trainer(
@@ -63,17 +57,15 @@ def model_predict(
             with zipfile.ZipFile(zip_bytes) as zip_file:
                 for index, file_name in enumerate(zip_file.namelist()):
                     with zip_file.open(file_name) as file:
-                        with httpx.Client(timeout=5.0) as client:
-                            client.post(
-                                url,
-                                json={
-                                    "uuid": uuid,
-                                    "progress": int(
-                                        (index / len(zip_file.namelist())) * 7
-                                    )
-                                    + 92,
-                                },
-                            )
+                        client.post(
+                            url,
+                            json={
+                                "uuid": uuid,
+                                "progress": int((index / len(zip_file.namelist())) * 7)
+                                + 92,
+                            },
+                        )
+
                         text = file.read().decode("utf-8")
 
                         # Разбиваем текст
@@ -155,7 +147,7 @@ def model_predict(
 
                         url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/prediction_files"
 
-                        response = httpx.post(
+                        response = client.post(
                             url,
                             data={
                                 "uuid": uuid,

@@ -6,6 +6,7 @@ from app.api.v1.routers import project
 
 from app.api.v1.routers import file
 from app.api.v1.routers import model
+from app.api.v1.routers import train
 
 api_router: APIRouter = APIRouter()
 
@@ -22,3 +23,4 @@ api_router.include_router(
 api_router.include_router(
     model.router, prefix="/projects/{project_id}/models", tags=["Models"]
 )
+api_router.include_router(model.router, prefix="/train", tags=["Train"])
