@@ -23,4 +23,4 @@ api_router.include_router(
 api_router.include_router(
     model.router, prefix="/projects/{project_id}/models", tags=["Models"]
 )
-api_router.include_router(model.router, prefix="/train", tags=["Train"])
+api_router.include_router(train.router, prefix="/train", tags=["Train"])

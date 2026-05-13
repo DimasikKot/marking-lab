@@ -1,4 +1,3 @@
-from datetime import datetime
 import io
 from typing import Any
 import zipfile
@@ -34,7 +33,7 @@ class PostProgressRequest(BaseModel):
 
 
 @router.post("/progress", response_model=ModelDbResponse)
-async def set_progress_by_id(
+async def post_progress(
     data: PostProgressRequest,
     db: Session = Depends(get_db),
 ):
@@ -54,7 +53,7 @@ class GetPredictionRequest(BaseModel):
 
 
 @router.get("/prediction")
-async def get_by_id_predict(
+async def get_files_to_prediction(
     data: GetPredictionRequest,
     db: Session = Depends(get_db),
 ):
@@ -82,7 +81,7 @@ async def get_by_id_predict(
 
 
 @router.post("/prediction", response_model=FileDbResponse)
-async def post_file(
+async def post_prediction_file(
     train_access_token: str = Form(...),
     name: str = Form(...),
     file: UploadFile = File(...),
