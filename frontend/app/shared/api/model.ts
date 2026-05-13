@@ -108,20 +108,6 @@ export const updateModelById = async (
   }
 };
 
-export const deleteModelById = async (
-  projectId: string | number,
-  modelId: string | number,
-): Promise<GetEchoResponse | undefined> => {
-  try {
-    const response = await api.delete<GetEchoResponse>(
-      `/projects/${projectId}/models/${modelId}`,
-    );
-    return response.data;
-  } catch (error: unknown) {
-    errorValidate(error);
-  }
-};
-
 export const trainModelById = async (
   projectId: string | number,
   modelId: string | number,
@@ -129,6 +115,34 @@ export const trainModelById = async (
   try {
     const response = await api.get<ModelDbResponse>(
       `/projects/${projectId}/models/${modelId}/train`,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    errorValidate(error);
+  }
+};
+
+export const stopTrainModelById = async (
+  projectId: string | number,
+  modelId: string | number,
+): Promise<ModelDbResponse | undefined> => {
+  try {
+    const response = await api.delete<ModelDbResponse>(
+      `/projects/${projectId}/models/${modelId}/train`,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    errorValidate(error);
+  }
+};
+
+export const deleteModelById = async (
+  projectId: string | number,
+  modelId: string | number,
+): Promise<GetEchoResponse | undefined> => {
+  try {
+    const response = await api.delete<GetEchoResponse>(
+      `/projects/${projectId}/models/${modelId}`,
     );
     return response.data;
   } catch (error: unknown) {

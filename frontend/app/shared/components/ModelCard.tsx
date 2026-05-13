@@ -11,6 +11,7 @@ type ModelCardProps = {
   onClick?: () => void;
   onEditClick?: () => void;
   onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onStopClick?: React.MouseEventHandler<HTMLButtonElement>;
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
   dateIsCreatedAt?: boolean;
   className?: string;
@@ -21,6 +22,7 @@ export const ModelCard = ({
   onClick = () => toast.error("Обработка нажатия не настроена"),
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
   onCopyClick = () => toast.error("Обработка копирования не настроена"),
+  onStopClick = () => toast.error("Обработка остановки не настроена"),
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
@@ -55,10 +57,7 @@ export const ModelCard = ({
             </div>
 
             {model.progress !== 0 && model.progress !== 100 && (
-              <TextUI
-                variant="normal"
-                className="text-cyan-500 -mr-3"
-              >
+              <TextUI variant="normal" className="text-cyan-500 -mr-3">
                 {`${model.progress}%`}
               </TextUI>
             )}
@@ -80,6 +79,16 @@ export const ModelCard = ({
                   : "school"}
               {/* task_alt */}
             </div>
+
+            {model.progress > 0 && model.progress < 100 && (
+              <ButtonUI
+                onClick={onStopClick}
+                variant="secondary"
+                className="flex-max text-right text-red-600 hover:text-red-800"
+              >
+                <div className="-ml-3 select-none material-icons">cancel</div>
+              </ButtonUI>
+            )}
           </div>
 
           <div className="flex flex-col overflow-auto">

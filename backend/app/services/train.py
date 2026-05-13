@@ -82,7 +82,7 @@ def set_progress_model_db_by_id(
     if not model_db:
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
-    if progress == 0:
+    if model_db.progress == 0:
         raise HTTPException(
             status_code=400, detail="Модель была остановлена пользователем"
         )

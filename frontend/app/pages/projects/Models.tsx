@@ -7,6 +7,7 @@ import {
   createModel,
   updateModelById,
   deleteModelById,
+  stopTrainModelById,
 } from "@/shared/api/model";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
@@ -91,6 +92,24 @@ export function Models({
     if (response === undefined) return;
     toast.success("Модель успешно создана");
     setNewModelName("");
+    loadModels();
+  };
+
+  const handleStopClick = async (
+    model_id: number,
+    event?: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (!event || !event.shiftKey) {
+      if (!window.confirm("Вы уверены, что хотите остановить эту модель?"))
+        return;
+    }
+
+    setLoading(true);
+    const response = await stopTrainModelById(projectId, model_id);
+    setLoading(false);
+
+    if (response === undefined) return;
+    toast.success("Модель успешно остановлена");
     loadModels();
   };
 
@@ -232,6 +251,7 @@ export function Models({
               }
               onEditClick={() => handleEditClick(model)}
               onCopyClick={(event) => handleCopyClick(model, event)}
+              onStopClick={(event) => handleStopClick(model.id, event)}
               onDeleteClick={(event) => handleDeleteClick(model.id, event)}
             />
           ))}
