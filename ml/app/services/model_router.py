@@ -32,7 +32,7 @@ def _model_train(
         ner = NERModel(BASE_MODEL, label_list)
     except Exception as error:
         httpx.post(
-            settings.PROGRESS_URL,
+            settings.POST_PROGRESS_URL,
             json={"progress": 0, "train_access_token": train_access_token},
             timeout=300,
         )
@@ -56,7 +56,7 @@ def _model_train(
     )
 
     httpx.post(
-        settings.PROGRESS_URL,
+        settings.POST_PROGRESS_URL,
         json={"train_access_token": train_access_token, "progress": 10},
         timeout=300,
     )
@@ -126,7 +126,7 @@ def _model_train(
                 # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
             },
         }
-        httpx.post(settings.PROGRESS_URL, json=request, timeout=1000)
+        httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
 
 
 # router

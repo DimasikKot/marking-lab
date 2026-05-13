@@ -18,8 +18,8 @@ def model_predict(
     BATCH_SIZE: int,
 ):
     with httpx.Client(timeout=300) as client:
-        response = client.get(
-            settings.PREDICTION_URL, params={"train_access_token": train_access_token}
+        response = client.post(
+            settings.GET_FILES_URL, json={"train_access_token": train_access_token}
         )
 
         response.raise_for_status()
@@ -27,7 +27,7 @@ def model_predict(
         zip_bytes = io.BytesIO(response.content)
 
         client.post(
-            settings.PROGRESS_URL,
+            settings.POST_PROGRESS_URL,
             json={"train_access_token": train_access_token, "progress": 91},
         )
 
@@ -47,7 +47,7 @@ def model_predict(
                 for index, file_id in enumerate(zip_file.namelist()):
                     with zip_file.open(file_id) as file:
                         client.post(
-                            settings.PROGRESS_URL,
+                            settings.POST_PROGRESS_URL,
                             json={
                                 "train_access_token": train_access_token,
                                 "progress": 92
@@ -135,7 +135,7 @@ def model_predict(
                         csv_bytes = csv_buffer.getvalue().encode("utf-8")
 
                         response = client.post(
-                            settings.PREDICTION_URL,
+                            settings.POST_FILE_URL,
                             data={
                                 "train_access_token": train_access_token,
                                 "name": file_id,

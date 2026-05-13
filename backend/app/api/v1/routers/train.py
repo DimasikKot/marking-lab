@@ -32,7 +32,7 @@ class PostProgressRequest(BaseModel):
     graphs: dict[str, Any] | None = None
 
 
-@router.post("/progress", response_model=ModelDbResponse)
+@router.post("/post_progress", response_model=ModelDbResponse)
 async def post_progress(
     data: PostProgressRequest,
     db: Session = Depends(get_db),
@@ -52,7 +52,7 @@ class GetPredictionRequest(BaseModel):
     train_access_token: str
 
 
-@router.get("/prediction")
+@router.post("/get_files", response_class=StreamingResponse)
 async def get_files_to_prediction(
     data: GetPredictionRequest,
     db: Session = Depends(get_db),
@@ -80,7 +80,7 @@ async def get_files_to_prediction(
     )
 
 
-@router.post("/prediction", response_model=FileDbResponse)
+@router.post("/post_file", response_model=FileDbResponse)
 async def post_prediction_file(
     train_access_token: str = Form(...),
     name: str = Form(...),

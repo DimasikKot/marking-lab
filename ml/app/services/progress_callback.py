@@ -42,7 +42,7 @@ class ProgressCallback(TrainerCallback):
             print(request)
             print("=" * 100)
 
-            response = httpx.post(settings.PROGRESS_URL, json=request, timeout=300)
+            response = httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=300)
 
             if response.status_code != 200:
                 print(f"Ошибка отправки прогресса: {response}")
