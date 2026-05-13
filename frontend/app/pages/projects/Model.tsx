@@ -45,15 +45,11 @@ export function Model() {
   useEffect(() => {
     const loadModel = async () => {
       setLoading(true);
-
       const response = await fetchModelById(projectId, modelId);
-
       setLoading(false);
 
-      if (!response) return;
-
+      if (response === undefined) return;
       setModel(response);
-
       setEditParams(JSON.stringify(response.parameters, null, 2));
       setTrainingFilesIds(response.training_files_ids.join(", "));
       setPredictionFilesIds(response.prediction_files_ids.join(", "));

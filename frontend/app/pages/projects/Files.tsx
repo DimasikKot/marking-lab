@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -51,23 +51,6 @@ export function Files({
     if (response === undefined) return;
     setFiles(response.data);
   };
-
-  useEffect(() => {
-    const loadModels = async () => {
-      setLoading(true);
-      const response = await fetchFiles(projectId);
-      setLoading(false);
-      if (response === undefined) return;
-      setFiles(response.data);
-    };
-
-    const interval = setInterval(() => {
-      loadModels();
-    }, 10000);
-
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
 
   // Загрузка нового файла на сервер
   const handleUpload = async () => {

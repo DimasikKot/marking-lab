@@ -9,6 +9,7 @@ from transformers import (
     EarlyStoppingCallback,
 )
 
+from app.core.config import settings
 from app.services.model_metrics import compute_metrics
 from app.services.progress_callback import ProgressCallback
 
@@ -65,7 +66,7 @@ class NERModel:
             per_device_eval_batch_size=batch_size,  # размер батча для валидационной выборки
             num_train_epochs=epochs,  # кол-во эпох
             weight_decay=0.01,  # штраф за большие веса чтобы модель не переобучалась
-            logging_steps=10,  # каждые 10 шагов логируем метрики
+            logging_steps=settings.TRAIN_LOGGING_STEPS,  # каждые N шагов логируем метрики
             load_best_model_at_end=(
                 True if eval_dataset else False
             ),  # выбирает лучшую модель по метрике

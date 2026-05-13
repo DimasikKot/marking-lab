@@ -5,7 +5,8 @@ from functools import lru_cache
 class _Settings(BaseSettings):
     BACKEND_URL: str = "http://backend:8000/api/v1"
 
-    TOKEN_HUGGING_FACE: str = "dAbzW_TduOkAkFbmmqA_hwQqsFGgrfsdi_pEq"
+    TRAIN_LOGGING_STEPS: int = 8
+    # Количесво шагов, необходимое для обратной связи обучения модели
 
     @property
     def POST_PROGRESS_URL(self) -> str:

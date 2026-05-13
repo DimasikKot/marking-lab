@@ -14,7 +14,9 @@ from app.services.file_normalize import normalize_content_to_csv
 def encode_train_access_token(project_id: int, model_id: int) -> str:
     """Создаёт JWT-токен с данными из словаря и временем истечения, если указано"""
     to_encode: dict[Any, Any] = {"project_id": project_id, "model_id": model_id}
-    expire: datetime = datetime.now(tz=timezone.utc) + timedelta(hours=48)
+    expire: datetime = datetime.now(tz=timezone.utc) + timedelta(
+        hours=settings.TRAIN_JWT_ACCESS_TOKEN_EXPIRATION_HOURS
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(
         to_encode, settings.TRAIN_JWT_ACCESS_TOKEN_SECRET, algorithm="HS256"

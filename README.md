@@ -86,7 +86,7 @@ services:
 
 `backend`
 
-```c#
+```bash
 ML_URL="http://ml:8001/api/v1"
 
 DB_HOST="host.docker.internal"
@@ -107,22 +107,25 @@ USER_JWT_ACCESS_TOKEN_EXPIRATION_HOURS=240
 # USER_JWT_REFRESH_TOKEN_EXPIRATION_HOURS=720
 
 TRAIN_JWT_ACCESS_TOKEN_SECRET="r1yGRupzNCNGwEstj5fL0c5NFfjtON2B"
+TRAIN_JWT_ACCESS_TOKEN_EXPIRATION_HOURS=12
+# Также отвечает за максимальное время, которое может обучаться модель
 
 STORAGE_PATH="./projects"
 ```
 
 `frontend`
 
-```c#
+```bash
 VITE_BACKEND_URL="http://localhost:8000/api/v1"
 ```
 
 `ml`
 
-```c#
+```bash
 BACKEND_URL="http://backend:8001/api/v1"
 
-TOKEN_HUGGING_FACE="dAbzW_TduOkAkFbmmqA_hwQqsFGgrfsdi_pEq"
+TRAIN_LOGGING_STEPS=8
+# Количесво шагов, необходимое для обратной связи обучения модели
 ```
 
 ## Запуск проекта

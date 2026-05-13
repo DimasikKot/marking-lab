@@ -26,6 +26,8 @@ class _Settings(BaseSettings):
     # USER_JWT_REFRESH_TOKEN_EXPIRATION_HOURS: int = 720
 
     TRAIN_JWT_ACCESS_TOKEN_SECRET: str = "r1yGRupzNCNGwEstj5fL0c5NFfjtON2B"
+    TRAIN_JWT_ACCESS_TOKEN_EXPIRATION_HOURS: int = 12
+    # Также отвечает за максимальное время, которое может обучаться модель
 
     # Хранилище файлов
     STORAGE_PATH: str = "./projects"
