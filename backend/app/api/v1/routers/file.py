@@ -101,7 +101,8 @@ class GetFilePageResponse(BaseModel):
     page: int
     rows: list[Row]
     is_labeled: bool
-    tags: list[dict[str, str]]
+    tags: dict[str, str]
+    colors: dict[str, str]
     created_at: datetime
     updated_at: datetime
 
@@ -125,6 +126,28 @@ async def get_by_id(
     )
     total_pages = ceil(file_db.total_rows / rows)
 
+    def parse_labels(tags):
+        labels = {}
+
+        for tag in tags:
+            labels[f"B-{tag['value']}"] = tag["label"]
+
+        return labels
+
+    def decrease_tailwind_shade(color: str) -> str:
+        component, base, shade = color.split("-")
+        new_shade = max(50, int(shade) - 100)
+        return f"{component}-{base}-{new_shade}"
+
+    def parse_colors(tags):
+        colors = {}
+
+        for tag in tags:
+            colors[f"B-{tag['value']}"] = tag["color"]
+            colors[f"I-{tag['value']}"] = decrease_tailwind_shade(tag["color"])
+
+        return colors
+
     return GetFilePageResponse(
         id=file_db.id,
         name=file_db.name,
@@ -133,7 +156,8 @@ async def get_by_id(
         page=page,
         rows=page_rows,
         is_labeled=file_db.is_labeled,
-        tags=file_db.tags,
+        tags=parse_labels(file_db.tags),
+        colors=parse_colors(file_db.tags),
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
     )

@@ -90,7 +90,7 @@ async def get_user_id(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user_id = decoded_token.get("sub")
+    user_id = decoded_token.get("user_id")
     if not user_id:
         raise HTTPException(
             status_code=401,

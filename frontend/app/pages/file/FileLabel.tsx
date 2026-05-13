@@ -6,12 +6,6 @@ import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
 import { type GetFilePageResponse, type Row } from "@/shared/api/file";
-import {
-  BIO_TAGS,
-  TAG_COLORS,
-  type BioTag,
-  type NextBioTag,
-} from "@/shared/constants/tags";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
 type SelectedWord = [number, number];
@@ -128,7 +122,7 @@ export function FileLabel({
     }
   };
 
-  const assignTag = (baseTag: BioTag | NextBioTag) => {
+  const assignTag = (baseTag: string) => {
     if (selectedWords.length === 0) return;
 
     const updatedRows = [...localRows];
@@ -136,12 +130,11 @@ export function FileLabel({
     selectedWords.forEach(([lineIdx, wordIdx], index) => {
       if (!updatedRows[lineIdx]?.words[wordIdx]) return;
 
-      let newLabel: BioTag | NextBioTag = baseTag;
+      let newLabel = baseTag;
 
       if (baseTag !== "O" && selectedWords.length > 1) {
-        newLabel = (
-          index === 0 ? `B${baseTag.slice(1)}` : `I${baseTag.slice(1)}`
-        ) as BioTag;
+        newLabel =
+          index === 0 ? `B${baseTag.slice(1)}` : `I${baseTag.slice(1)}`;
       }
 
       updatedRows[lineIdx].words[wordIdx].label = newLabel;
@@ -217,7 +210,7 @@ export function FileLabel({
                         handleWordMouseDown(lineIdx, wordIdx, event)
                       }
                       className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
-                        ${TAG_COLORS[word.label] ?? ""}
+                        ${file?.colors?.[word.label] ?? ""}
                         ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
                       `}
                     >
@@ -254,38 +247,62 @@ export function FileLabel({
           onScroll={(event) => event.stopPropagation()}
         >
           <div className="py-2 w-80 h-full overflow-auto">
-            {BIO_TAGS.map((tag) => (
-              <button
-                key={tag.value}
-                className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+            {/* <button
+              onClick={() => setShowTagMenu(true)}
+              className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+            >
+              <span className="w-28 text-center material-icons">add</span>
+              <TextUI variant="normal">Добавить метку</TextUI>
+            </button> */}
+
+            <button
+              key="O"
+              onClick={() => assignTag("O")}
+              className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+            >
+              <span
+                className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
               >
-                <span
-                  className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${
-                    TAG_COLORS[tag.value]
-                  }`}
+                O
+              </span>
+
+              <TextUI variant="normal">Не сущность</TextUI>
+            </button>
+
+            {Object.entries(file?.tags ?? {}).map(([tagKey, label]) => {
+              const iTag = tagKey.replace("B-", "I-");
+
+              return (
+                <button
+                  key={tagKey}
+                  onClick={() => assignTag(tagKey)}
+                  className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
                 >
-                  {tag.value}
-                </span>
-
-                {tag.value_next && (
                   <span
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${
-                      TAG_COLORS[tag.value_next]
-                    }`}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${file?.colors?.[tagKey]}`}
                   >
-                    {tag.value_next}
+                    {tagKey}
                   </span>
-                )}
 
-                <TextUI variant="normal">{tag.label}</TextUI>
-              </button>
-            ))}
+                  <span
+                    onClick={() => assignTag(iTag)}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${file?.colors?.[iTag]}`}
+                  >
+                    {iTag}
+                  </span>
+
+                  <TextUI variant="normal">{label}</TextUI>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {showTagMenu && (
         <TagSelector
+          tags={file?.tags ?? {}}
+          colors={file?.colors ?? {}}
           onSelect={assignTag}
           onClose={() => {
             setShowTagMenu(false);

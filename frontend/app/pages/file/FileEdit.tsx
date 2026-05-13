@@ -6,7 +6,6 @@ import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { type GetFilePageResponse, type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
-import { TAG_COLORS } from "@/shared/constants/tags";
 
 export function FileEdit({
   projectId,
@@ -365,7 +364,7 @@ export function FileEdit({
                       className={`hover:ring-gray-300 hover:ring-2 focus:ring-blue-500 focus:ring-2 outline-none
                         min-w-1 font-medium text-xl mx-1 text-gray-900 transition-colors
                         flex flex-col items-center gap-1 px-2 py-0.5 rounded
-                        ${TAG_COLORS[word.label] ?? ""}`}
+                        ${file?.colors[word.label] ?? ""}`}
                       style={{
                         width: `${word.token.length + 2}ch`,
                       }}

@@ -1,12 +1,26 @@
-export const BIO_TAGS = [
-  { value: "per", label: "Человек", color: "bg-pink-300" },
-  { value: "org", label: "Организация", color: "bg-purple-300" },
-  { value: "geo", label: "Географическое место", color: "bg-green-300" },
-  { value: "gpe", label: "Страна/город (полит.)", color: "bg-emerald-400" },
-  { value: "tim", label: "Дата/время", color: "bg-blue-300" },
-  { value: "art", label: "Артефакт", color: "bg-yellow-300" },
-  { value: "eve", label: "Событие", color: "bg-orange-300" },
-  { value: "nat", label: "Природное явление", color: "bg-teal-300" },
-] as const;
-
-export type BioTag = (typeof BIO_TAGS)[number]["value"];
+export const COLORS = {
+  "1": "bg-pink-300",
+  "2": "bg-purple-300",
+  "3": "bg-green-300",
+  "4": "bg-emerald-400",
+  "5": "bg-blue-300",
+  "6": "bg-yellow-300",
+  "7": "bg-orange-300",
+  "8": "bg-teal-300",
+  "9": "bg-pink-200",
+  "10": "bg-purple-200",
+  "11": "bg-green-200",
+  "12": "bg-emerald-300",
+  "13": "bg-blue-200",
+  "14": "bg-yellow-200",
+  "15": "bg-orange-200",
+  "16": "bg-teal-200",
+  "17": "bg-pink-100",
+  "18": "bg-purple-100",
+  "19": "bg-green-100",
+  "20": "bg-emerald-200",
+  "21": "bg-blue-100",
+  "22": "bg-yellow-100",
+  "23": "bg-orange-100",
+  "24": "bg-teal-100",
+};
