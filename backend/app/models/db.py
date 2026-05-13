@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import (
     Enum,
     Integer,
@@ -14,7 +15,8 @@ from app.core.database import Base
 
 ModelFileRole = Enum(
     "training",
-    "prediction",
+    "for_prediction",
+    "predicted",
     name="model_file_role",
 )
 
@@ -26,11 +28,13 @@ class ProjectDB(Base):
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(String(255))
-    is_public: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, nullable=False, server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+        TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
     files = relationship(
@@ -56,11 +60,59 @@ class FileDB(Base):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     total_rows: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_labeled: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_labeled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    tags: Mapped[list[dict]] = mapped_column(
+        JSONB,
+        nullable=False,
+        default=[
+            {
+                "value": "per",
+                "label": "Человек",
+                "color": "bg-pink-300",
+            },
+            {
+                "value": "org",
+                "label": "Организация",
+                "color": "bg-purple-300",
+            },
+            {
+                "value": "geo",
+                "label": "Географическое место",
+                "color": "bg-green-300",
+            },
+            {
+                "value": "gpe",
+                "label": "Страна/город (полит.)",
+                "color": "bg-emerald-400",
+            },
+            {
+                "value": "tim",
+                "label": "Дата/время",
+                "color": "bg-blue-300",
+            },
+            {
+                "value": "art",
+                "label": "Артефакт",
+                "color": "bg-yellow-300",
+            },
+            {
+                "value": "eve",
+                "label": "Событие",
+                "color": "bg-orange-300",
+            },
+            {
+                "value": "nat",
+                "label": "Природное явление",
+                "color": "bg-teal-300",
+            },
+        ],
+    )
 
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, nullable=False, server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+        TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
     project = relationship("ProjectDB", back_populates="files")
@@ -69,9 +121,6 @@ class FileDB(Base):
         back_populates="file",
         cascade="all, delete-orphan",
     )
-
-
-from sqlalchemy.dialects.postgresql import JSONB
 
 
 class ModelFileDB(Base):
@@ -104,10 +153,11 @@ class ModelDB(Base):
     )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    progress: Mapped[int] = mapped_column(Integer, default=0)
+    progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     parameters: Mapped[dict] = mapped_column(
         JSONB,
+        nullable=False,
         server_default="{}",
         default={
             "Эпохи": 2,
@@ -118,12 +168,14 @@ class ModelDB(Base):
             "Максимальная длина предложения": 128,
         },
     )
-    metrics: Mapped[dict] = mapped_column(JSONB, server_default="{}")
-    graphs: Mapped[dict] = mapped_column(JSONB, server_default="{}")
+    metrics: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    graphs: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
 
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, nullable=False, server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+        TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
     )
 
     project = relationship("ProjectDB", back_populates="models")
