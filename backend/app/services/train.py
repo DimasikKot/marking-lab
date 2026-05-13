@@ -82,6 +82,11 @@ def set_progress_model_db_by_id(
     if not model_db:
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
+    if progress == 0:
+        raise HTTPException(
+            status_code=400, detail="Модель была остановлена пользователем"
+        )
+
     if metrics is not None:
         metrics_new = {}
         if 0 < progress < 100:
@@ -132,6 +137,7 @@ def create_prediction_file_by_project_id(
     train_access_token: str, name: str, file: BinaryIO, db: Session
 ) -> FileDB:
     project_id, model_id = _get_info_from_train_access_token(train_access_token)
+    # TODO Файл должен иметь пометку, что он размечен ДАННОЙ МОДЕЛЬЮ
 
     content, total_rows = normalize_content_to_csv(file)
 

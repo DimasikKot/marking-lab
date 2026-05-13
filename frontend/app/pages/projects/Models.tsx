@@ -57,8 +57,19 @@ export function Models({
       setLoading(true);
       const response = await fetchModels(projectId);
       setLoading(false);
+
       if (response === undefined) return;
       setModels(response.data);
+
+      // Есть ли хотя бы одна модель в процессе обучения
+      const hasTrainingModels = response.data.some(
+        (model: ModelDbResponse) => model.progress > 0 && model.progress < 100,
+      );
+
+      // Если ни одна модель не обучается — останавливаем polling
+      if (!hasTrainingModels) {
+        clearInterval(interval);
+      }
     };
 
     const interval = setInterval(() => {
