@@ -135,9 +135,9 @@ function ComparisonPanel({
   );
 }
 
-/**
- * Колонки для файлов с НЕЗАВИСИМОЙ пагинацией
- */
+
+ /*Колонки для файлов*/
+ 
 function FileCompareColumn({ projectId, fileId }: { projectId: string | number, fileId: number }) {
   const [data, setData] = useState<GetFilePageResponse | null>(null);
   const [page, setPage] = useState(1);
@@ -167,8 +167,9 @@ function FileCompareColumn({ projectId, fileId }: { projectId: string | number, 
           >chevron_left</button>
           <TextUI variant="label" className="text-xs">Стр. {page}</TextUI>
           <button 
+            disabled={page >= (data?.total_pages || 1)}
             onClick={() => setPage(p => p + 1)}
-            className="material-icons p-1 hover:bg-gray-200 rounded-full"
+            className="material-icons p-1 hover:bg-gray-200 rounded-full disabled:opacity-30"
           >chevron_right</button>
         </div>
       </div>
@@ -195,9 +196,8 @@ function FileCompareColumn({ projectId, fileId }: { projectId: string | number, 
   );
 }
 
-/**
- * Колонки для моделей
- */
+
+ /*Колонки для моделей*/
 function ModelCompareColumn({ projectId, modelId }: { projectId: string | number, modelId: number }) {
   const [model, setModel] = useState<ModelDbResponse | null>(null);
 
