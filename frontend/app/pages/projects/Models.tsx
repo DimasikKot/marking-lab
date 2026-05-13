@@ -100,7 +100,11 @@ export function Models({
     event?: React.MouseEvent<HTMLButtonElement>,
   ) => {
     if (!event || !event.shiftKey) {
-      if (!window.confirm("Вы уверены, что хотите остановить эту модель?"))
+      if (
+        !window.confirm(
+          "Вы уверены, что хотите остановить обучение этой модели?",
+        )
+      )
         return;
     }
 
@@ -109,7 +113,7 @@ export function Models({
     setLoading(false);
 
     if (response === undefined) return;
-    toast.success("Модель успешно остановлена");
+    toast.success("Обучение модели успешно остановлено");
     loadModels();
   };
 
@@ -167,7 +171,7 @@ export function Models({
 
     setLoading(true);
     const response = await createModel(projectId, {
-      name: `${model.name} (copy)`,
+      name: `${model.name}`,
       parameters: model.parameters,
       training_files_ids: model.training_files_ids,
       prediction_files_ids: model.prediction_files_ids,
