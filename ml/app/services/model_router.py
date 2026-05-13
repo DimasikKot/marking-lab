@@ -5,12 +5,13 @@ from fastapi import BackgroundTasks
 import httpx
 
 from app.services.model_class import NERModel
+from app.core.config import settings
 from app.services.model_metrics import loss_plot
+from app.services.model_prediction import model_predict
 from app.services.model_files import (
     extract_labels_from_sentences,
     prepare_dataset,
 )
-from app.services.model_prediction import model_predict
 
 
 def _model_train(
@@ -20,31 +21,22 @@ def _model_train(
     LEARNING_RATE: float,
     TESTING_SIZE: float,
     MAX_LINE_LENGHT: int,
-    project_id: int,
-    model_id: int,
-    uuid: str,
+    train_access_token: str,
     all_sentences: list[list[dict]],
 ):
     # Список уникальных меток
     label_list = extract_labels_from_sentences(all_sentences)
-    url = (
-        f"http://backend:8000/api/v1/projects/"
-        f"{project_id}/models/{model_id}/progress"
-    )
 
     # Инициализируем модель
     try:
         ner = NERModel(BASE_MODEL, label_list)
     except Exception as error:
-        with httpx.Client(timeout=5.0) as client:
-            client.post(
-                url,
-                json={
-                    "uuid": uuid,
-                    "progress": 0,
-                },
-            )
-        raise RuntimeError(f"Ошибка создания модели, ошибка: {error}")
+        httpx.post(
+            settings.PROGRESS_URL,
+            json={"progress": 0, "train_access_token": train_access_token},
+            timeout=300,
+        )
+        raise RuntimeError(f"Ошибка создания модели: {error}")
 
     tokenizer = ner.tokenizer
     label2id = ner.label2id
@@ -63,14 +55,11 @@ def _model_train(
         else None
     )
 
-    with httpx.Client(timeout=5.0) as client:
-        client.post(
-            url,
-            json={
-                "uuid": uuid,
-                "progress": 10,
-            },
-        )
+    httpx.post(
+        settings.PROGRESS_URL,
+        json={"train_access_token": train_access_token, "progress": 10},
+        timeout=300,
+    )
 
     # Обучаем модель во временном каталоге, чтобы не засорять память
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -82,18 +71,14 @@ def _model_train(
             epochs=EPOCHS,
             batch_size=BATCH_SIZE,
             learning_rate=LEARNING_RATE,
-            project_id=project_id,
-            model_id=model_id,
-            uuid=uuid,
+            train_access_token=train_access_token,
         )
         training_time_seconds = time.perf_counter() - start_time
 
-        prediction_load_time_seconds = model_predict(
-            project_id, model_id, uuid, ner, MAX_LINE_LENGHT, BATCH_SIZE
-        )
+        model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
 
         # Метрики валидационной выборки
-        validation_metrics: dict = result["eval_metrics"]
+        validation_metrics: dict[str, float] = result["eval_metrics"]
         return_metrics = {}
         labels_metrics = {}
         if validation_metrics:
@@ -103,7 +88,6 @@ def _model_train(
                 "Полнота (recall)": validation_metrics.get("eval_recall"),
                 "F1-мера": validation_metrics.get("eval_f1"),
                 "Время обучения (сек)": round(training_time_seconds, 2),
-                "Время предсказания (сек)": round(prediction_load_time_seconds, 2),
             }
 
             # Метрики по классам (если они есть в результате)
@@ -132,9 +116,8 @@ def _model_train(
         # )
         # confusion_matrix_plot = plot_confusion_matrix(label_list)
 
-        url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/progress"
         request = {
-            "uuid": uuid,
+            "train_access_token": train_access_token,
             "progress": 100,
             "metrics": return_metrics,
             "graphs": {
@@ -143,9 +126,7 @@ def _model_train(
                 # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
             },
         }
-
-        with httpx.Client() as client:
-            client.post(url, json=request)
+        httpx.post(settings.PROGRESS_URL, json=request, timeout=1000)
 
 
 # router
@@ -156,9 +137,7 @@ def model_router(
     LEARNING_RATE: float,
     TESTING_SIZE: float,
     MAX_LINE_LENGHT: int,
-    project_id: int,
-    model_id: int,
-    uuid: str,
+    train_access_token: str,
     all_sentences: list[list[dict]],
     background_tasks: BackgroundTasks,
 ) -> dict:
@@ -170,9 +149,7 @@ def model_router(
         LEARNING_RATE,
         TESTING_SIZE,
         MAX_LINE_LENGHT,
-        project_id,
-        model_id,
-        uuid,
+        train_access_token,
         all_sentences,
     )
 

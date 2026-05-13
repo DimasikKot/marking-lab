@@ -1,7 +1,6 @@
 import csv
 import io
 import tempfile
-import time
 import zipfile
 import httpx
 import numpy as np
@@ -13,36 +12,27 @@ from app.services.model_files import parse_csv_from_text, prepare_dataset
 
 
 def model_predict(
-    project_id: int,
-    model_id: int,
-    uuid: str,
+    train_access_token: str,
     ner: NERModel,
     MAX_LINE_LENGTH: int,
     BATCH_SIZE: int,
-) -> float:
+):
     with httpx.Client(timeout=300) as client:
         response = client.get(
-            f"{settings.BACKEND_URL}/projects/{project_id}/models/{model_id}/prediction_files",
-            params={"uuid": uuid},
+            settings.PREDICTION_URL, params={"train_access_token": train_access_token}
         )
 
         response.raise_for_status()
 
         zip_bytes = io.BytesIO(response.content)
 
-        url = f"{settings.BACKEND_URL}/projects/{project_id}/models/{model_id}/progress"
-
         client.post(
-            url,
-            json={
-                "uuid": uuid,
-                "progress": 91,
-            },
+            settings.PROGRESS_URL,
+            json={"train_access_token": train_access_token, "progress": 91},
         )
 
         # Сохраняем модель во временном каталоге, чтобы не засорять память
         with tempfile.TemporaryDirectory() as tmpdir:
-            start_time = time.perf_counter()
             trainer = Trainer(
                 model=ner.model,
                 args=TrainingArguments(
@@ -52,17 +42,16 @@ def model_predict(
                 ),
                 data_collator=ner.data_collator,
             )
-            prediction_load_time_seconds = time.perf_counter() - start_time
 
             with zipfile.ZipFile(zip_bytes) as zip_file:
-                for index, file_name in enumerate(zip_file.namelist()):
-                    with zip_file.open(file_name) as file:
+                for index, file_id in enumerate(zip_file.namelist()):
+                    with zip_file.open(file_id) as file:
                         client.post(
-                            url,
+                            settings.PROGRESS_URL,
                             json={
-                                "uuid": uuid,
-                                "progress": int((index / len(zip_file.namelist())) * 7)
-                                + 92,
+                                "train_access_token": train_access_token,
+                                "progress": 92
+                                + int((index / len(zip_file.namelist())) * 7),
                             },
                         )
 
@@ -145,24 +134,15 @@ def model_predict(
                         # Переводим в bytes
                         csv_bytes = csv_buffer.getvalue().encode("utf-8")
 
-                        url = f"http://backend:8000/api/v1/projects/{project_id}/models/{model_id}/prediction_files"
-
                         response = client.post(
-                            url,
+                            settings.PREDICTION_URL,
                             data={
-                                "uuid": uuid,
-                                "name": f"model-{model_id} file-{file_name} prediction.csv",
+                                "train_access_token": train_access_token,
+                                "name": file_id,
                             },
-                            files={
-                                "file": (
-                                    f"model-{model_id} file-{file_name} prediction.csv",
-                                    csv_bytes,
-                                    "text/csv",
-                                )
-                            },
-                            timeout=60.0,
+                            files={"file": ("NULL", csv_bytes, "text/csv")},
+                            timeout=300,
                         )
 
                         # print(response.status_code)
                         # print(response.json())
-    return prediction_load_time_seconds

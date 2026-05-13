@@ -49,9 +49,7 @@ class NERModel:
         epochs: int,
         batch_size: int,
         learning_rate: float,
-        project_id: int,
-        model_id: int,
-        uuid: str,
+        train_access_token: str,
         eval_dataset=None,
         output_dir: str = "./models",
     ) -> dict:
@@ -100,19 +98,13 @@ class NERModel:
                 [
                     EarlyStoppingCallback(early_stopping_patience=2),
                     ProgressCallback(
-                        project_id=project_id,
-                        model_id=model_id,
-                        uuid=uuid,
-                        total_epochs=epochs,
+                        train_access_token=train_access_token, total_epochs=epochs
                     ),
                 ]
                 if eval_dataset
                 else [
                     ProgressCallback(
-                        project_id=project_id,
-                        model_id=model_id,
-                        uuid=uuid,
-                        total_epochs=epochs,
+                        train_access_token=train_access_token, total_epochs=epochs
                     ),
                 ]
             ),

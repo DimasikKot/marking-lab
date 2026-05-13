@@ -1,30 +1,22 @@
-from fastapi import HTTPException
 import httpx
 from transformers import TrainerCallback
+
+from app.core.config import settings
 
 
 class ProgressCallback(TrainerCallback):
     def __init__(
         self,
-        project_id: int,
-        model_id: int,
-        uuid: str,
+        train_access_token: str,
         total_epochs: int,
     ):
-        self.project_id = project_id
-        self.model_id = model_id
-        self.uuid = uuid
+        self.train_access_token = train_access_token
         self.total_epochs = total_epochs
 
         self.last_progress = -1
 
     def _send_progress(self, progress: int, metrics: dict):
         try:
-            url = (
-                f"http://backend:8000/api/v1/projects/"
-                f"{self.project_id}/models/{self.model_id}/progress"
-            )
-
             metrics_data = {
                 "F1-мера": metrics.get("f1"),
                 "Потери на обучающей выборке": metrics.get("train_loss"),
@@ -41,7 +33,7 @@ class ProgressCallback(TrainerCallback):
             metrics_data = {k: v for k, v in metrics_data.items() if v is not None}
 
             request = {
-                "uuid": self.uuid,
+                "train_access_token": self.train_access_token,
                 "progress": progress,
                 "metrics": metrics_data,
             }
@@ -50,12 +42,11 @@ class ProgressCallback(TrainerCallback):
             print(request)
             print("=" * 100)
 
-            with httpx.Client(timeout=100) as client:
-                response = client.post(url, json=request)
+            response = httpx.post(settings.PROGRESS_URL, json=request, timeout=300)
 
-                if response.status_code != 200:
-                    print(f"Ошибка отправки прогресса: {response}")
-                    raise RuntimeError(f"Не удалось отправить прогресс")
+            if response.status_code != 200:
+                print(f"Ошибка отправки прогресса: {response}")
+                raise RuntimeError(f"Не удалось отправить прогресс")
 
             return True
 

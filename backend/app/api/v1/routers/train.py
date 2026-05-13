@@ -9,6 +9,7 @@ from fastapi import (
     APIRouter,
     Depends,
     File,
+    Form,
     HTTPException,
     UploadFile,
 )
@@ -80,20 +81,16 @@ async def get_by_id_predict(
     )
 
 
-class PostPredictionRequest(BaseModel):
-    train_access_token: str
-    name: str
-
-
 @router.post("/prediction", response_model=FileDbResponse)
 async def post_file(
-    data: PostPredictionRequest,
+    train_access_token: str = Form(...),
+    name: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
     file_db = create_prediction_file_by_project_id(
-        train_access_token=data.train_access_token,
-        name=data.name,
+        train_access_token=train_access_token,
+        name=name,
         file=file.file,
         db=db,
     )

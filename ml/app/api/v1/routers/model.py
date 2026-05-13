@@ -10,9 +10,7 @@ router = APIRouter()
 @router.post("/train")
 async def train_ner(
     parameters: str = Form(...),
-    project_id: int = Form(...),
-    model_id: int = Form(...),
-    uuid: str = Form(...),
+    train_access_token: str = Form(...),
     files: list[UploadFile] = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
@@ -31,9 +29,7 @@ async def train_ner(
         LEARNING_RATE=float(params_dict.get("Скорость обучения", 2e-5)),
         TESTING_SIZE=float(params_dict.get("Размер тренировочного набора", 0.8)),
         MAX_LINE_LENGHT=int(params_dict.get("Максимальная длина предложения", 128)),
-        project_id=project_id,
-        model_id=model_id,
-        uuid=uuid,
+        train_access_token=train_access_token,
         all_sentences=all_sentences,
         background_tasks=background_tasks,
     )
