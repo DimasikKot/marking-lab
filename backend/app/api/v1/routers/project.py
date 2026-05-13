@@ -57,7 +57,7 @@ class GetResponse(BaseModel):
 @router.get("", response_model=GetResponse)
 async def get(
     sort: SortType | None = Query(
-        "updated_at_desc",
+        "created_at_desc",
         description="Сортировка: name_asc, name_desc, created_at_asc, created_at_desc, updated_at_asc, updated_at_desc",
     ),
     search: str | None = Query(None, description="Поиск по имени проекта"),
