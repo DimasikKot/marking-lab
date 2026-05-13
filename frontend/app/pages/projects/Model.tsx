@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { fetchFiles, type FileDbResponse } from "@/shared/api/file";
+import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 import { Header } from "@/shared/components/Header";
 import { ButtonPage } from "@/shared/components/ButtonPage";
@@ -13,6 +15,7 @@ import {
   trainModelById,
   updateModelById,
 } from "@/shared/api/model";
+import { FileCard } from "@/shared/components/FileCard";
 
 export function Model() {
   const { projectId = "0", modelId = "0" } = useParams<{
@@ -25,36 +28,57 @@ export function Model() {
   const [loading, setLoading] = useState(true);
   const [isTraining, setIsTraining] = useState(false);
 
+  const [allFiles, setAllFiles] = useState<FileDbResponse[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editParams, setEditParams] = useState("");
-  const [trainingFilesIds, setTrainingFilesIds] = useState("");
-  const [predictionFilesIds, setPredictionFilesIds] = useState("");
+
+  const [trainingFilesIds, setTrainingFilesIds] = useState<number[]>([]);
+  const [predictionFilesIds, setPredictionFilesIds] = useState<number[]>([]);
 
   const loadModel = async () => {
     setLoading(true);
-    const response = await fetchModelById(projectId, modelId);
+    const [modelRes, filesRes] = await Promise.all([
+      fetchModelById(projectId, modelId),
+      fetchFiles(projectId),
+    ]);
+
     setLoading(false);
-    if (response) {
-      setModel(response);
-      setEditParams(JSON.stringify(response.parameters, null, 2));
-      setTrainingFilesIds(response.training_files_ids.join(", "));
-      setPredictionFilesIds(response.prediction_files_ids.join(", "));
+
+    if (modelRes) {
+      setModel(modelRes);
+      setEditParams(JSON.stringify(modelRes.parameters, null, 2));
+      setTrainingFilesIds(modelRes.training_files_ids);
+      setPredictionFilesIds(modelRes.prediction_files_ids);
+    }
+    if (filesRes) {
+      setAllFiles(filesRes.data);
     }
   };
 
   useEffect(() => {
     const loadModel = async () => {
       setLoading(true);
-      const response = await fetchModelById(projectId, modelId);
+      const [modelResponse, filesResponse] = await Promise.all([
+        fetchModelById(projectId, modelId),
+        fetchFiles(projectId),
+      ]);
       setLoading(false);
 
-      if (response === undefined) return;
-      setModel(response);
-      setEditParams(JSON.stringify(response.parameters, null, 2));
-      setTrainingFilesIds(response.training_files_ids.join(", "));
-      setPredictionFilesIds(response.prediction_files_ids.join(", "));
+      if (modelResponse === undefined) return;
+      setModel(modelResponse);
+      setEditParams(JSON.stringify(modelResponse.parameters, null, 2));
 
-      if (response.progress === 0 || response.progress >= 100) {
+      if (!isEditing) {
+        setEditParams(JSON.stringify(modelResponse.parameters, null, 2));
+        setTrainingFilesIds(modelResponse.training_files_ids);
+        setPredictionFilesIds(modelResponse.prediction_files_ids);
+      }
+
+      if (filesResponse) {
+        setAllFiles(filesResponse.data);
+      }
+
+      if (modelResponse.progress === 0 || modelResponse.progress >= 100) {
         clearInterval(interval);
       }
     };
@@ -66,7 +90,7 @@ export function Model() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [projectId, modelId]);
+  }, [projectId, modelId, isEditing]);
 
   const handleSaveSettings = async () => {
     let parsedParams;
@@ -78,20 +102,10 @@ export function Model() {
       return;
     }
 
-    const parsedTrainingFiles = trainingFilesIds
-      .split(",")
-      .map((id) => parseInt(id.trim()))
-      .filter((id) => !isNaN(id));
-
-    const parsedPredictionFiles = predictionFilesIds
-      .split(",")
-      .map((id) => parseInt(id.trim()))
-      .filter((id) => !isNaN(id));
-
     const response = await updateModelById(projectId, modelId, {
       parameters: parsedParams,
-      training_files_ids: parsedTrainingFiles,
-      prediction_files_ids: parsedPredictionFiles,
+      training_files_ids: trainingFilesIds,
+      prediction_files_ids: predictionFilesIds,
     });
 
     if (!response) {
@@ -121,6 +135,18 @@ export function Model() {
     setModel(response);
     toast.success("Обучение модели успешно запущено");
     setTimeout(() => window.location.reload(), 5000);
+  };
+
+  const toggleFile = (id: number, type: "training" | "for_prediction") => {
+    const setter =
+      type === "training" ? setTrainingFilesIds : setPredictionFilesIds;
+    const current = type === "training" ? trainingFilesIds : predictionFilesIds;
+
+    if (current.includes(id)) {
+      setter(current.filter((i) => i !== id));
+    } else {
+      setter([...current, id]);
+    }
   };
 
   return (
@@ -209,25 +235,53 @@ export function Model() {
             {isEditing ? (
               <div className="flex flex-col gap-4">
                 <div>
-                  <TextUI variant="title">ID файлов для обучения</TextUI>
-
-                  <TextField
-                    value={trainingFilesIds}
-                    setValue={setTrainingFilesIds}
-                    placeholder="1, 2, 3"
-                  />
+                  <TextUI variant="title" className="mb-2">
+                    Выбор файлов для обучения
+                  </TextUI>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 border border-gray-100 rounded-2xl bg-white">
+                    {allFiles.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                        onClick={() => toggleFile(file.id, "training")}
+                      >
+                        <CheckboxUI
+                          value={trainingFilesIds.includes(file.id)}
+                          onClick={() => {}}
+                        />
+                        <FileCard
+                          file={file}
+                          variant="compact"
+                          onClick={() => {}}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
-                  <TextUI variant="title">
-                    ID файлов которые будут размечены
+                  <TextUI variant="title" className="mb-2">
+                    Выбор файлов которые будут размечены
                   </TextUI>
-
-                  <TextField
-                    value={predictionFilesIds}
-                    setValue={setPredictionFilesIds}
-                    placeholder="1, 2, 3"
-                  />
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 border border-gray-100 rounded-2xl bg-white">
+                    {allFiles.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                        onClick={() => toggleFile(file.id, "for_prediction")}
+                      >
+                        <CheckboxUI
+                          value={predictionFilesIds.includes(file.id)}
+                          onClick={() => {}}
+                        />
+                        <FileCard
+                          file={file}
+                          variant="compact"
+                          onClick={() => {}}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div>

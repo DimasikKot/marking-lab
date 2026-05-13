@@ -283,7 +283,7 @@ def update_model_db_by_id(
             db=db,
             model_db=model_db,
             files_ids=prediction_files_ids,
-            role="prediction",
+            role="for_prediction",
         )
 
     db.commit()

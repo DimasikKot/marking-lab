@@ -118,7 +118,7 @@ def get_prediction_files_by_id(train_access_token: str, db: Session) -> set[Path
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
     prediction_files = [
-        link.file for link in model_db.file_links if link.role == "prediction"
+        link.file for link in model_db.file_links if link.role == "for_prediction"
     ]
 
     prediction_files_paths: set[Path] = {

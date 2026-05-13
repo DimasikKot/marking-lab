@@ -50,7 +50,7 @@ def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
     ]
 
     prediction_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "prediction"
+        link.file_id for link in model_db.file_links if link.role == "for_prediction"
     ]
 
     return ModelDbResponse(
