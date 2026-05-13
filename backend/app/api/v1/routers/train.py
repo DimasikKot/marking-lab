@@ -9,16 +9,13 @@ from fastapi import (
     APIRouter,
     Depends,
     File,
-    Form,
     HTTPException,
-    Path,
     UploadFile,
 )
 
-from app.core.config import settings
 from app.core.database import get_db
 from app.api.v1.routers.file import FileDbResponse
-from app.api.v1.routers.model import ModelDbToResponse
+from app.api.v1.routers.model import ModelDbResponse, ModelDbToResponse
 from app.services.train import (
     create_prediction_file_by_project_id,
     get_prediction_files_by_id,
@@ -28,26 +25,8 @@ from app.services.train import (
 router = APIRouter()
 
 
-class ModelDbResponse(BaseModel):
-    id: int
-    name: str
-    progress: int
-    parameters: dict[str, Any]
-    metrics: dict[str, Any]
-    graphs: dict[str, Any]
-
-    training_files_ids: list[int]
-    prediction_files_ids: list[int]
-
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
 class PostProgressRequest(BaseModel):
-    uuid: str
+    train_access_token: str
     progress: int
     metrics: dict[str, Any] | None = None
     graphs: dict[str, Any] | None = None
@@ -55,40 +34,31 @@ class PostProgressRequest(BaseModel):
 
 @router.post("/progress", response_model=ModelDbResponse)
 async def set_progress_by_id(
-    project_id: int,
-    model_id: int,
     data: PostProgressRequest,
     db: Session = Depends(get_db),
 ):
-    if data.uuid != str(project_id - model_id) + settings.TRAIN_ACCESS_TOKEN_SECRET:
-        raise HTTPException(status_code=400, detail="Неверный uuid")
-
     model_db = set_progress_model_db_by_id(
-        project_id=project_id,
-        model_id=model_id,
-        db=db,
+        train_access_token=data.train_access_token,
         progress=data.progress,
         metrics=data.metrics,
         graphs=data.graphs,
+        db=db,
     )
 
     return ModelDbToResponse(model_db=model_db)
 
 
+class GetPredictionRequest(BaseModel):
+    train_access_token: str
+
+
 @router.get("/prediction")
 async def get_by_id_predict(
-    project_id: int,
-    model_id: int,
-    uuid: str,
+    data: GetPredictionRequest,
     db: Session = Depends(get_db),
 ):
-    if uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
-        raise HTTPException(status_code=400, detail="Неверный uuid")
-
     prediction_files_paths = get_prediction_files_by_id(
-        project_id=project_id,
-        model_id=model_id,
-        db=db,
+        train_access_token=data.train_access_token, db=db
     )
 
     if not prediction_files_paths:
@@ -110,23 +80,22 @@ async def get_by_id_predict(
     )
 
 
+class PostPredictionRequest(BaseModel):
+    train_access_token: str
+    name: str
+
+
 @router.post("/prediction", response_model=FileDbResponse)
 async def post_file(
-    project_id: int = Path(...),
-    model_id: int = Path(...),
-    uuid: str = Form(...),
-    name: str = Form(...),
+    data: PostPredictionRequest,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    if uuid != str((project_id - 51) * 2 - model_id + 231) * 3:
-        raise HTTPException(status_code=400, detail="Неверный uuid")
-
     file_db = create_prediction_file_by_project_id(
-        project_id=project_id,
-        db=db,
-        name=name,
+        train_access_token=data.train_access_token,
+        name=data.name,
         file=file.file,
+        db=db,
     )
 
     return file_db

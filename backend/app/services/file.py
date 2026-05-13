@@ -47,7 +47,7 @@ def get_file_path_by_id(project_id: int, file_id: int) -> Path:
     return file_path
 
 
-def _create_file_on_disk(project_id: int, file_id: int, content: str) -> None:
+def create_file_on_disk(project_id: int, file_id: int, content: str) -> None:
     base_dir = Path(settings.STORAGE_PATH).resolve()
     file_path = base_dir / str(project_id) / "files" / f"{file_id}.csv"
     file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -185,7 +185,7 @@ def create_file_by_project_id(
     db.add(file_db)
     db.flush()
 
-    _create_file_on_disk(project_id, file_db.id, content)
+    create_file_on_disk(project_id, file_db.id, content)
 
     db.commit()
     db.refresh(file_db)

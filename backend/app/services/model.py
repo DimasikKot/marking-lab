@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.project import is_owner_of_project
 from app.services.file import get_file_path_by_id
+from app.services.train import encode_train_access_token
 
 
 def _update_files_by_role(
@@ -244,9 +245,9 @@ async def _train_model_request(
                 settings.ML_URL + "/models/train",
                 data={
                     "parameters": json.dumps(model_db.parameters),
-                    "uuid": str((model_db.project_id - 51) * 2 - model_db.id + 231) * 3,
-                    "model_id": model_db.id,
-                    "project_id": model_db.project_id,
+                    "train_access_token": encode_train_access_token(
+                        project_id=model_db.project_id, model_id=model_db.id
+                    ),
                 },
                 files=files_to_send,
                 timeout=30000,
