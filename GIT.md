@@ -135,13 +135,13 @@ git fetch --prune
 #### Посмотреть что будет удалено
 
 ```bash
-git branch -vv | Select-String ': gone]' | ForEach-Object { $_ -replace '^\*?\s*', '' -replace '\s+.*$', '' }
+git fetch --prune | git branch -vv | Select-String ': gone]' | ForEach-Object { $_ -replace '^\*?\s*', '' -replace '\s+.*$', '' }
 ```
 
 #### Удалить
 
 ```bash
-git branch -vv | Select-String ': gone]' | ForEach-Object { $branch = $_ -replace '^\*?\s*', '' -replace '\s+.*$', ''; git branch -d $branch }
+git fetch --prune | git branch -vv | Select-String ': gone]' | ForEach-Object { $branch = $_ -replace '^\*?\s*', '' -replace '\s+.*$', ''; git branch -d $branch }
 ```
 
 > Если хотите жёстко удалить такие ветки (даже не слитые в `main`) - надо поменять `-d` на `-D`.
