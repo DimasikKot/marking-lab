@@ -5,7 +5,7 @@ from datetime import datetime
 
 from app.api.v1.routers.echo import GetEchoResponse
 from app.core.database import get_db
-from app.services.get_user_id import get_user_id
+from app.services.user import get_user_id
 from app.services.project import (
     SortType,
     create_project,

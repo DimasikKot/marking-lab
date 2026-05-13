@@ -16,7 +16,9 @@ def encode_train_access_token(project_id: int, model_id: int) -> str:
     to_encode: dict[Any, Any] = {"project_id": project_id, "model_id": model_id}
     expire: datetime = datetime.now(tz=timezone.utc) + timedelta(hours=48)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.TRAIN_ACCESS_TOKEN_SECRET, algorithm="HS256")
+    return jwt.encode(
+        to_encode, settings.TRAIN_JWT_ACCESS_TOKEN_SECRET, algorithm="HS256"
+    )
 
 
 def _decode_train_access_token(token: str) -> dict[str, Any] | None:
@@ -24,7 +26,7 @@ def _decode_train_access_token(token: str) -> dict[str, Any] | None:
     try:
         payload = jwt.decode(
             token,
-            settings.TRAIN_ACCESS_TOKEN_SECRET,
+            settings.TRAIN_JWT_ACCESS_TOKEN_SECRET,
             algorithms=["HS256"],
             options={"verify_signature": True, "verify_exp": True, "require": ["exp"]},
         )

@@ -17,7 +17,7 @@ from app.models.db_auth import User
 from app.services.user import (
     create_user,
     authenticate_user,
-    encode_access_token,
+    encode_user_access_token,
 )
 
 router = APIRouter()
@@ -42,7 +42,7 @@ class PostResponse(BaseModel):
 async def post(data: PostRequest, db: Session = Depends(get_auth_db)):
     user: User = create_user(db, data.username, data.email, data.password)
 
-    access_token: str = encode_access_token({"sub": str(user.id)})
+    access_token: str = encode_user_access_token(user_id=user.id)
 
     return PostResponse(
         username=user.username, access_token=access_token, token_type="bearer"
@@ -61,7 +61,7 @@ async def post_login(data: PostLoginRequest, db: Session = Depends(get_auth_db))
     user: User = authenticate_user(db, data.login, data.password)
 
     # Создаём токен авторизации ("sub" - это стандартный параметр для задания id пользователя)
-    access_token: str = encode_access_token({"sub": str(user.id)})
+    access_token: str = encode_user_access_token(user_id=user.id)
 
     return PostResponse(
         username=user.username, access_token=access_token, token_type="bearer"
