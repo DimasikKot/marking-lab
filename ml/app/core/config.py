@@ -7,8 +7,13 @@ class _Settings(BaseSettings):
 
     TOKEN_HUGGING_FACE: str = "dAbzW_TduOkAkFbmmqA_hwQqsFGgrfsdi_pEq"
 
-    PROGRESS_URL = f"{BACKEND_URL}/train/progress"
-    PREDICTION_URL = f"{BACKEND_URL}/train/prediction"
+    @property
+    def PROGRESS_URL(self) -> str:
+        return f"{self.BACKEND_URL}/train/progress"
+
+    @property
+    def PREDICTION_URL(self) -> str:
+        return f"{self.BACKEND_URL}/train/prediction"
 
     class Config:
         env_file = ".env.local"
