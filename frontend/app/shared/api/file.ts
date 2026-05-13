@@ -77,6 +77,7 @@ export interface GetFilePageResponse {
   page: number;
   rows: Row[];
   is_labeled: boolean;
+  tags: Record<string, string>[];
   created_at: string;
   updated_at: string;
 }

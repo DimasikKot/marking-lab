@@ -32,7 +32,7 @@ class ModelDbResponse(BaseModel):
     progress: int
     parameters: dict[str, Any]
     metrics: dict[str, Any]
-    graphs: dict[str, Any]
+    graphs: dict[str, str]
 
     training_files_ids: list[int]
     prediction_files_ids: list[int]

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import JSONB
@@ -61,7 +62,7 @@ class FileDB(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     total_rows: Mapped[int] = mapped_column(Integer, nullable=False)
     is_labeled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    tags: Mapped[list[dict]] = mapped_column(
+    tags: Mapped[list[dict[str, str]]] = mapped_column(
         JSONB,
         nullable=False,
         default=[
@@ -155,7 +156,7 @@ class ModelDB(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    parameters: Mapped[dict] = mapped_column(
+    parameters: Mapped[dict[str, Any]] = mapped_column(
         JSONB,
         nullable=False,
         server_default="{}",
@@ -168,8 +169,12 @@ class ModelDB(Base):
             "Максимальная длина предложения": 128,
         },
     )
-    metrics: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
-    graphs: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    metrics: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, server_default="{}"
+    )
+    graphs: Mapped[dict[str, str]] = mapped_column(
+        JSONB, nullable=False, server_default="{}"
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.now()

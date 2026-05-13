@@ -101,6 +101,7 @@ class GetFilePageResponse(BaseModel):
     page: int
     rows: list[Row]
     is_labeled: bool
+    tags: list[dict[str, str]]
     created_at: datetime
     updated_at: datetime
 
@@ -132,6 +133,7 @@ async def get_by_id(
         page=page,
         rows=page_rows,
         is_labeled=file_db.is_labeled,
+        tags=file_db.tags,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
     )
