@@ -19,6 +19,7 @@ from app.services.model import (
     fetch_model_db_by_id,
     fetch_models_db_by_project_id,
     train_model_by_id,
+    stop_train_model_by_id,
     update_model_db_by_id,
 )
 
@@ -168,6 +169,23 @@ async def get_by_id_train(
     db: Session = Depends(get_db),
 ):
     model_db = await train_model_by_id(
+        project_id=project_id,
+        model_id=model_id,
+        user_id=user_id,
+        db=db,
+    )
+
+    return ModelDbToResponse(model_db=model_db)
+
+
+@router.delete("/{model_id}/train", response_model=ModelDbResponse)
+async def stop_train_by_id(
+    project_id: int,
+    model_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = stop_train_model_by_id(
         project_id=project_id,
         model_id=model_id,
         user_id=user_id,

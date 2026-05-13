@@ -344,7 +344,7 @@ async def train_model_by_id(
 
 
 # router
-async def ыещз_train_model_by_id(
+def stop_train_model_by_id(
     project_id: int,
     model_id: int,
     user_id: int,
