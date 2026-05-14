@@ -44,7 +44,19 @@ export const ModelCard = ({
             <div className="flex w-full flex-row gap-2">
               <TextUI variant="title" maxLines={1} className="-mt-1">
                 {model.name}
+                {/* {model.parameters["Базовая модель"] && (
+                  <> ({String(model.parameters["Базовая модель"])})</>
+                )} */}
               </TextUI>
+
+              {model.parameters["Базовая модель"] && (
+                <TextUI
+                  variant="label"
+                  className="flex items-end mt-0.75 h-min w-30" // text-orange-400
+                >
+                  {String(model.parameters["Базовая модель"])}
+                </TextUI>
+              )}
 
               {/* <TextUI
                 variant="desc"

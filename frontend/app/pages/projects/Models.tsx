@@ -171,7 +171,7 @@ export function Models({
 
     setLoading(true);
     const response = await createModel(projectId, {
-      name: `${model.name}`,
+      name: `${model.name} COPY`,
       parameters: model.parameters,
       training_files_ids: model.training_files.map((file) => file.id),
       prediction_files_ids: model.prediction_files.map((file) => file.id),
