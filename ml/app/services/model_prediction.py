@@ -134,7 +134,7 @@ def model_predict(
                         # Переводим в bytes
                         csv_bytes = csv_buffer.getvalue().encode("utf-8")
 
-                        response = client.post(
+                        client.post(
                             settings.POST_FILE_URL,
                             data={
                                 "train_access_token": train_access_token,
