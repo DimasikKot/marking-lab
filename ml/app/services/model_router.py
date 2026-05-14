@@ -148,6 +148,21 @@ def model_router(
     all_sentences: list[list[dict]],
     background_tasks: BackgroundTasks,
 ) -> dict:
+    EPOCHS = max(settings.MIN_EPOCHS, EPOCHS)
+    EPOCHS = min(settings.MAX_EPOCHS, EPOCHS)
+
+    BATCH_SIZE = max(settings.MIN_BATCH_SIZE, BATCH_SIZE)
+    BATCH_SIZE = min(settings.MAX_BATCH_SIZE, BATCH_SIZE)
+
+    LEARNING_RATE = max(settings.MIN_LEARNING_RATE, LEARNING_RATE)
+    LEARNING_RATE = min(settings.MAX_LEARNING_RATE, LEARNING_RATE)
+
+    TESTING_SIZE = max(settings.MIN_TESTING_SIZE, TESTING_SIZE)
+    TESTING_SIZE = min(settings.MAX_TESTING_SIZE, TESTING_SIZE)
+
+    MAX_LINE_LENGHT = max(settings.MIN_MAX_LINE_LENGHT, MAX_LINE_LENGHT)
+    MAX_LINE_LENGHT = min(settings.MAX_MAX_LINE_LENGHT, MAX_LINE_LENGHT)
+
     background_tasks.add_task(
         _model_train,
         EPOCHS,

@@ -20,6 +20,21 @@ class _Settings(BaseSettings):
     def POST_FILE_URL(self) -> str:
         return f"{self.BACKEND_URL}/train/post_file"
 
+    MIN_EPOCHS: int = 1
+    MAX_EPOCHS: int = 10
+
+    MIN_BATCH_SIZE: int = 8
+    MAX_BATCH_SIZE: int = 16
+
+    MIN_LEARNING_RATE: float = 1e-5
+    MAX_LEARNING_RATE: float = 1e-3
+
+    MIN_TESTING_SIZE: float = 0.1
+    MAX_TESTING_SIZE: float = 0.9
+
+    MIN_MAX_LINE_LENGHT: int = 32
+    MAX_MAX_LINE_LENGHT: int = 512
+
     class Config:
         env_file = ".env.local"
 
