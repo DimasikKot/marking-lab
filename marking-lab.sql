@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS files (
     project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,  -- если проект удаляется, удаляются и файлы
     name            VARCHAR(255)    NOT NULL,
     total_rows      INTEGER         NOT NULL,
+    origin_file_id  INTEGER,
     is_labeled      BOOLEAN         NOT NULL DEFAULT FALSE,
     tags            JSONB           NOT NULL DEFAULT '[]'::jsonb, -- метки
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,

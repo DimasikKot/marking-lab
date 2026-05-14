@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.models.db import FileDB, ModelDB
 from app.services.file import create_file_on_disk, get_file_path_by_id
 from app.services.file_normalize import normalize_content_to_csv
+from app.services.model import update_files_by_role
 
 
 def encode_train_access_token(project_id: int, model_id: int) -> str:
@@ -134,20 +135,49 @@ def get_prediction_files_by_id(train_access_token: str, db: Session) -> set[Path
 
 # router
 def create_prediction_file_by_project_id(
-    train_access_token: str, name: str, file: BinaryIO, db: Session
+    train_access_token: str, origin_file_id: int, file: BinaryIO, db: Session
 ) -> FileDB:
     project_id, model_id = _get_info_from_train_access_token(train_access_token)
-    # TODO Файл должен иметь пометку, что он размечен ДАННОЙ МОДЕЛЬЮ
+
+    model_db = (
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
+        .first()
+    )
+
+    if not model_db:
+        raise HTTPException(status_code=404, detail="Модель не найдена")
+
+    origin_file_db = (
+        db.query(FileDB)
+        .filter(FileDB.id == origin_file_id, FileDB.project_id == project_id)
+        .first()
+    )
+
+    if not origin_file_db:
+        raise HTTPException(status_code=404, detail="Файл не найден")
 
     content, total_rows = normalize_content_to_csv(file)
 
     file_db = FileDB(
-        name=name, project_id=project_id, total_rows=total_rows, is_labeled=True
+        name=origin_file_db.name,
+        project_id=project_id,
+        total_rows=total_rows,
+        origin_file_id=origin_file_db.id,
+        is_labeled=True,
     )
+
     db.add(file_db)
     db.flush()
 
     create_file_on_disk(project_id, file_db.id, content)
+
+    update_files_by_role(
+        db=db,
+        model_db=model_db,
+        files_ids=[file_db.id],
+        role="predicted",
+    )
 
     db.commit()
     db.refresh(file_db)

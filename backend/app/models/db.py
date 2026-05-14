@@ -61,6 +61,7 @@ class FileDB(Base):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     total_rows: Mapped[int] = mapped_column(Integer, nullable=False)
+    origin_file_id: Mapped[int] = mapped_column(Integer)
     is_labeled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     tags: Mapped[list[dict[str, str]]] = mapped_column(
         JSONB,

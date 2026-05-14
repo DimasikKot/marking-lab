@@ -83,13 +83,13 @@ async def get_files_to_prediction(
 @router.post("/post_file", response_model=FileDbResponse)
 async def post_prediction_file(
     train_access_token: str = Form(...),
-    name: str = Form(...),
+    origin_file_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
     file_db = create_prediction_file_by_project_id(
         train_access_token=train_access_token,
-        name=name,
+        origin_file_id=origin_file_id,
         file=file.file,
         db=db,
     )

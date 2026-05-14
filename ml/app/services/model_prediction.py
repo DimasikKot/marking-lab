@@ -138,7 +138,7 @@ def model_predict(
                             settings.POST_FILE_URL,
                             data={
                                 "train_access_token": train_access_token,
-                                "name": file_id,
+                                "origin_file_id": int(file_id),
                             },
                             files={"file": ("NULL", csv_bytes, "text/csv")},
                             timeout=300,
