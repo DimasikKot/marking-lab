@@ -15,8 +15,8 @@ export const FileCard = ({
 }: {
   file: FileDbResponse;
   onClick?: () => void;
-  onEditClick?: () => void;
-  onDeleteClick?: () => void;
+  onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
   dateIsCreatedAt?: boolean;
   className?: string;
   variant?: "normal" | "compact";

@@ -94,11 +94,17 @@ export function Projects() {
   };
 
   // Удаление проекта
-  const handleDeleteClick = async (id: number) => {
-    if (!window.confirm("Вы уверены, что хотите удалить проект?")) return;
+  const handleDeleteClick = async (
+    project_id: number,
+    event?: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (!event || !event.shiftKey) {
+      if (!window.confirm("Вы уверены, что хотите удалить этот проект?"))
+        return;
+    }
 
     setLoading(true);
-    const response = await deleteProjectById(id);
+    const response = await deleteProjectById(project_id);
     setLoading(false);
     if (response === undefined) return;
     toast.success("Проект успешно удалён");
@@ -159,9 +165,9 @@ export function Projects() {
                 <ProjectCard
                   key={project.id}
                   project={project}
+                  onClick={() => navigate(`/projects/${project.id}?tab=files`)}
                   onDeleteClick={() => handleDeleteClick(project.id)}
                   onEditClick={() => handleEditClick(project)}
-                  onClick={() => navigate(`/projects/${project.id}?tab=files`)}
                 />
               ))}
             </div>

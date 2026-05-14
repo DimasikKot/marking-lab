@@ -4,15 +4,6 @@ import type { ProjectDbResponse } from "@/shared/api/projects";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
-type ProjectCardProps = {
-  project: ProjectDbResponse;
-  onClick?: () => void;
-  onEditClick?: () => void;
-  onDeleteClick?: () => void;
-  dateIsCreatedAt?: boolean;
-  className?: string;
-};
-
 export const ProjectCard = ({
   project,
   onClick = () => toast.error("Обработка перехода не настроена"),
@@ -20,7 +11,14 @@ export const ProjectCard = ({
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
-}: ProjectCardProps) => {
+}: {
+  project: ProjectDbResponse;
+  onClick?: () => void;
+  onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
+  dateIsCreatedAt?: boolean;
+  className?: string;
+}) => {
   const date = dateIsCreatedAt ? project.created_at : project.updated_at;
 
   return (

@@ -9,7 +9,7 @@ import { ModelModalCard } from "./ModelModalCard";
 type ModelCardProps = {
   model: ModelDbResponse;
   onClick?: () => void;
-  onEditClick?: () => void;
+  onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
   onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
   onStopClick?: React.MouseEventHandler<HTMLButtonElement>;
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;

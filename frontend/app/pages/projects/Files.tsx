@@ -72,8 +72,13 @@ export function Files({
     loadFiles();
   };
 
-  const handleDeleteClick = async (file_id: number) => {
-    if (!window.confirm("Вы уверены, что хотите удалить этот файл?")) return;
+  const handleDeleteClick = async (
+    file_id: number,
+    event?: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (!event || !event.shiftKey) {
+      if (!window.confirm("Вы уверены, что хотите удалить этот файл?")) return;
+    }
 
     setLoading(true);
     const response = await deleteFileById(projectId, file_id);
