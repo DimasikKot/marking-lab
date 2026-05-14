@@ -1,5 +1,6 @@
 import api, { errorValidate } from "@/shared/api/axios";
 import type { GetEchoResponse } from "./echo";
+import type { FileDbResponse } from "./file";
 
 type JsonValue =
   | string
@@ -17,8 +18,8 @@ export interface ModelDbResponse {
   metrics: Record<string, JsonValue>;
   graphs: Record<string, string>;
 
-  training_files_ids: number[];
-  prediction_files_ids: number[];
+  training_files: FileDbResponse[];
+  prediction_files: FileDbResponse[];
 
   created_at: string;
   updated_at: string;

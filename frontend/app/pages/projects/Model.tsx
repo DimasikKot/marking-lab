@@ -47,8 +47,8 @@ export function Model() {
     if (modelRes) {
       setModel(modelRes);
       setEditParams(JSON.stringify(modelRes.parameters, null, 2));
-      setTrainingFilesIds(modelRes.training_files_ids);
-      setPredictionFilesIds(modelRes.prediction_files_ids);
+      setTrainingFilesIds(modelRes.training_files.map((file) => file.id));
+      setPredictionFilesIds(modelRes.prediction_files.map((file) => file.id));
     }
     if (filesRes) {
       setAllFiles(filesRes.data);
@@ -70,8 +70,12 @@ export function Model() {
 
       if (!isEditing) {
         setEditParams(JSON.stringify(modelResponse.parameters, null, 2));
-        setTrainingFilesIds(modelResponse.training_files_ids);
-        setPredictionFilesIds(modelResponse.prediction_files_ids);
+        setTrainingFilesIds(
+          modelResponse.training_files.map((file) => file.id),
+        );
+        setPredictionFilesIds(
+          modelResponse.prediction_files.map((file) => file.id),
+        );
       }
 
       if (filesResponse) {
@@ -122,7 +126,7 @@ export function Model() {
   const handleTrainClick = async () => {
     if (!model) return;
 
-    if (model.training_files_ids.length === 0) {
+    if (model.training_files.length === 0) {
       toast.error("Добавьте файлы для обучения");
       return;
     }
@@ -216,18 +220,26 @@ export function Model() {
 
             {!isEditing && (
               <>
-                <TextUI isSpan variant="title">
-                  Файлы для обучения:{" "}
-                  {model.training_files_ids.length > 0
-                    ? model.training_files_ids.join(", ")
-                    : "не выбраны"}
+                <TextUI variant="title" isSelectable>
+                  Файлы, на которых будет обучаться:{" "}
+                  <TextUI isSpan className="text-lg" isSelectable>
+                    {model.training_files.length > 0
+                      ? model.training_files
+                          .map((file) => file.name)
+                          .join(" , ")
+                      : "не выбраны"}
+                  </TextUI>
                 </TextUI>
 
-                <TextUI isSpan variant="title">
-                  Файлы для предсказания:{" "}
-                  {model.prediction_files_ids.length > 0
-                    ? model.prediction_files_ids.join(", ")
-                    : "не выбраны"}
+                <TextUI variant="title" isSelectable>
+                  Файлы, которые будут размечены:{" "}
+                  <TextUI isSpan className="text-lg" isSelectable>
+                    {model.prediction_files.length > 0
+                      ? model.prediction_files
+                          .map((file) => file.name)
+                          .join(" , ")
+                      : "не выбраны"}
+                  </TextUI>
                 </TextUI>
               </>
             )}
@@ -236,7 +248,7 @@ export function Model() {
               <div className="flex flex-col gap-4">
                 <div>
                   <TextUI variant="title" className="mb-2">
-                    Выбор файлов для обучения
+                    Выбор файлов, на которых будет обучаться модель
                   </TextUI>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 border border-gray-100 rounded-2xl bg-white">
                     {allFiles.map((file) => (
@@ -261,7 +273,7 @@ export function Model() {
 
                 <div>
                   <TextUI variant="title" className="mb-2">
-                    Выбор файлов которые будут размечены
+                    Выбор файлов, которые будут размечены моделью
                   </TextUI>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 border border-gray-100 rounded-2xl bg-white">
                     {allFiles.map((file) => (

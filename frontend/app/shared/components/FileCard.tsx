@@ -79,7 +79,7 @@ export const FileCard = ({
 
             <TextUI
               variant="desc"
-              className="flex-1 text-center justify-end items-end"
+              className="flex flex-1 text-center justify-center items-center"
             >
               {new Date(date).toLocaleDateString("ru-RU", {
                 month: "long",

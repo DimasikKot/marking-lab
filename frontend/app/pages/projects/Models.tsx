@@ -173,8 +173,8 @@ export function Models({
     const response = await createModel(projectId, {
       name: `${model.name}`,
       parameters: model.parameters,
-      training_files_ids: model.training_files_ids,
-      prediction_files_ids: model.prediction_files_ids,
+      training_files_ids: model.training_files.map((file) => file.id),
+      prediction_files_ids: model.prediction_files.map((file) => file.id),
     });
     setLoading(false);
 

@@ -9,6 +9,7 @@ from fastapi import (
 )
 
 from app.api.v1.routers.echo import GetEchoResponse
+from app.api.v1.routers.file import FileDbResponse
 from app.models.db import ModelDB
 from app.services.user import get_user_id
 from app.core.database import get_db
@@ -34,8 +35,8 @@ class ModelDbResponse(BaseModel):
     metrics: dict[str, Any]
     graphs: dict[str, str]
 
-    training_files_ids: list[int]
-    prediction_files_ids: list[int]
+    training_files: list[FileDbResponse]
+    prediction_files: list[FileDbResponse]
 
     created_at: datetime
     updated_at: datetime
@@ -45,12 +46,16 @@ class ModelDbResponse(BaseModel):
 
 
 def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
-    training_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "training"
+    training_files = [
+        FileDbResponse.model_validate(link.file)
+        for link in model_db.file_links
+        if link.role == "training"
     ]
 
-    prediction_files_ids = [
-        link.file_id for link in model_db.file_links if link.role == "for_prediction"
+    prediction_files = [
+        FileDbResponse.model_validate(link.file)
+        for link in model_db.file_links
+        if link.role == "for_prediction"
     ]
 
     return ModelDbResponse(
@@ -60,8 +65,8 @@ def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
         parameters=model_db.parameters,
         metrics=model_db.metrics,
         graphs=model_db.graphs,
-        training_files_ids=training_files_ids,
-        prediction_files_ids=prediction_files_ids,
+        training_files=training_files,
+        prediction_files=prediction_files,
         created_at=model_db.created_at,
         updated_at=model_db.updated_at,
     )

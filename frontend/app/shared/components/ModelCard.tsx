@@ -6,17 +6,6 @@ import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
 import { ModelModalCard } from "./ModelModalCard";
 
-type ModelCardProps = {
-  model: ModelDbResponse;
-  onClick?: () => void;
-  onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
-  onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
-  onStopClick?: React.MouseEventHandler<HTMLButtonElement>;
-  onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
-  dateIsCreatedAt?: boolean;
-  className?: string;
-};
-
 export const ModelCard = ({
   model,
   onClick = () => toast.error("Обработка нажатия не настроена"),
@@ -26,7 +15,16 @@ export const ModelCard = ({
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
-}: ModelCardProps) => {
+}: {
+  model: ModelDbResponse;
+  onClick?: () => void;
+  onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onStopClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
+  dateIsCreatedAt?: boolean;
+  className?: string;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const date = dateIsCreatedAt ? model.created_at : model.updated_at;
 
@@ -48,12 +46,12 @@ export const ModelCard = ({
                 {model.name}
               </TextUI>
 
-              <TextUI
+              {/* <TextUI
                 variant="desc"
                 className="flex items-end mt-0.5 h-min w-26"
               >
                 (id: {model.id})
-              </TextUI>
+              </TextUI> */}
             </div>
 
             {model.progress !== 0 && model.progress !== 100 && (
@@ -92,15 +90,21 @@ export const ModelCard = ({
           </div>
 
           <div className="flex flex-col overflow-auto">
-            {model.training_files_ids.length > 0 && (
-              <TextUI isSpan variant="desc">
-                Файлы для обучения: {model.training_files_ids.join(", ")}
+            {model.training_files.length > 0 && (
+              <TextUI variant="label">
+                Файлы, на которых будет обучаться:{" "}
+                <TextUI isSpan variant="desc">
+                  {model.training_files.map((file) => file.name).join(" , ")}
+                </TextUI>
               </TextUI>
             )}
 
-            {model.prediction_files_ids.length > 0 && (
-              <TextUI isSpan variant="desc">
-                Файлы для предсказания: {model.prediction_files_ids.join(", ")}
+            {model.prediction_files.length > 0 && (
+              <TextUI variant="label">
+                Файлы, которые будут размечены:{" "}
+                <TextUI isSpan variant="desc">
+                  {model.prediction_files.map((file) => file.name).join(" , ")}
+                </TextUI>
               </TextUI>
             )}
 
@@ -192,7 +196,7 @@ export const ModelCard = ({
 
           <TextUI
             variant="desc"
-            className="flex-1 text-center justify-end items-end"
+            className="flex flex-1 text-center justify-center items-center"
           >
             {new Date(date).toLocaleDateString("ru-RU", {
               month: "long",
