@@ -166,7 +166,9 @@ export function Projects() {
                   key={project.id}
                   project={project}
                   onClick={() => navigate(`/projects/${project.id}?tab=files`)}
-                  onDeleteClick={() => handleDeleteClick(project.id)}
+                  onDeleteClick={(event) =>
+                    handleDeleteClick(project.id, event)
+                  }
                   onEditClick={() => handleEditClick(project)}
                 />
               ))}

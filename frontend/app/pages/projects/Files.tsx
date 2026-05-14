@@ -38,7 +38,9 @@ export function Files({
   const [search, setSearch] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [editingFile, setEditingFile] = useState<FileDbListResponse | null>(null);
+  const [editingFile, setEditingFile] = useState<FileDbListResponse | null>(
+    null,
+  );
   const [formData, setFormData] = useState<PatchFileDbRequest>({
     name: "",
     is_labeled: false,
@@ -197,7 +199,7 @@ export function Files({
                 )
               }
               onEditClick={() => handleEditClick(file)}
-              onDeleteClick={() => handleDeleteClick(file.id)}
+              onDeleteClick={(event) => handleDeleteClick(file.id, event)}
             />
           ))}
         </div>

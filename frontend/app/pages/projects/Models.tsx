@@ -93,6 +93,8 @@ export function Models({
     toast.success("Модель успешно создана");
     setNewModelName("");
     loadModels();
+
+    navigate(`/projects/${projectId}/models/${response.id}`);
   };
 
   const handleStopClick = async (
@@ -207,9 +209,10 @@ export function Models({
                 value={newModelName}
                 setValue={setNewModelName}
                 onEnter={handleCreate}
-                placeholder="Введите имя модели..."
+                placeholder="Придумайте название для новой модели..."
               />
             </div>
+
             <ButtonUI
               onClick={handleCreate}
               disabled={!newModelName.trim() || creating}

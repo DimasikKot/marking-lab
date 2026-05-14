@@ -65,7 +65,7 @@ export const FileCard = ({
 
         {file.prediction_model && (
           <TextUI variant="desc" maxLines={1} className="mt-1">
-            Модель: {file.prediction_model.name}
+            Размечен моделью: {file.prediction_model.name}
           </TextUI>
         )}
 
