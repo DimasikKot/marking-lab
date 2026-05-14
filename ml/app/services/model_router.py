@@ -75,7 +75,14 @@ def _model_train(
         )
         training_time_seconds = time.perf_counter() - start_time
 
-        model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
+        try:
+            model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
+        except Exception as error:
+            httpx.post(
+                settings.POST_PROGRESS_URL,
+                json={"progress": 95, "train_access_token": train_access_token},
+                timeout=300,
+            )
 
         # Метрики валидационной выборки
         validation_metrics: dict[str, float] = result["eval_metrics"]

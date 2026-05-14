@@ -7,7 +7,7 @@ import {
   fetchFiles,
   updateFileById,
   uploadFile,
-  type FileDbResponse,
+  type FileDbListResponse,
 } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
@@ -25,8 +25,8 @@ export function Files({
   setLoading,
 }: {
   projectId: string | number;
-  files: FileDbResponse[];
-  setFiles: (files: FileDbResponse[]) => void;
+  files: FileDbListResponse[];
+  setFiles: (files: FileDbListResponse[]) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
 }) {
@@ -38,7 +38,7 @@ export function Files({
   const [search, setSearch] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [editingFile, setEditingFile] = useState<FileDbResponse | null>(null);
+  const [editingFile, setEditingFile] = useState<FileDbListResponse | null>(null);
   const [formData, setFormData] = useState<PatchFileDbRequest>({
     name: "",
     is_labeled: false,
@@ -89,7 +89,7 @@ export function Files({
   };
 
   // Открытие формы редактирования
-  const handleEditClick = (file: FileDbResponse) => {
+  const handleEditClick = (file: FileDbListResponse) => {
     setEditingFile(file);
     setFormData({ name: file.name, is_labeled: file.is_labeled });
     setIsFormOpen(true);

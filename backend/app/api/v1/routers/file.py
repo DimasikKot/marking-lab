@@ -14,6 +14,7 @@ from fastapi import (
 )
 
 from app.api.v1.routers.echo import GetEchoResponse
+from app.models.db import FileDB
 from app.services.user import get_user_id
 from app.core.database import get_db
 from app.services.file import (
@@ -42,6 +43,56 @@ class FileDbResponse(BaseModel):
         from_attributes = True
 
 
+class PredictionModelDbResponse(BaseModel):
+    id: int
+    name: str
+
+    training_files: list[FileDbResponse]
+
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class FileDbListResponse(FileDbResponse):
+    origin_file: FileDbResponse | None
+    prediction_model: PredictionModelDbResponse | None
+
+    class Config:
+        from_attributes = True
+
+
+def FileDbListToResponse(file_db: FileDB, db: Session) -> FileDbListResponse:
+    from app.api.v1.routers.model import ModelDbToResponse
+    prediction_model = next(
+        (
+            PredictionModelDbResponse.model_validate(ModelDbToResponse(link.model))
+            for link in file_db.model_links
+            if link.role == "predicted"
+        ),
+        None,
+    )
+
+    origin_file_db = (
+        db.query(FileDB).filter(FileDB.id == file_db.origin_file_id).first()
+    )
+
+    return FileDbListResponse(
+        id=file_db.id,
+        name=file_db.name,
+        total_rows=file_db.total_rows,
+        is_labeled=file_db.is_labeled,
+        origin_file=(
+            FileDbResponse.model_validate(origin_file_db) if origin_file_db else None
+        ),
+        prediction_model=prediction_model,
+        created_at=file_db.created_at,
+        updated_at=file_db.updated_at,
+    )
+
+
 @router.post("", response_model=FileDbResponse)
 async def post(
     project_id: int = Path(...),
@@ -66,7 +117,7 @@ async def post(
 
 
 class GetFilesResponse(BaseModel):
-    data: list[FileDbResponse]
+    data: list[FileDbListResponse]
 
 
 @router.get("", response_model=GetFilesResponse)
@@ -89,7 +140,7 @@ async def get(
     )
 
     return GetFilesResponse(
-        data=[FileDbResponse.model_validate(file_db) for file_db in files_db]
+        data=[FileDbListToResponse(file_db, db) for file_db in files_db]
     )
 
 

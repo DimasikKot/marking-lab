@@ -10,6 +10,21 @@ export interface FileDbResponse {
   updated_at: string;
 }
 
+export interface PredictionModelDbResponse {
+  id: number;
+  name: string;
+
+  training_files: FileDbResponse[];
+
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FileDbListResponse extends FileDbResponse {
+  origin_file: FileDbResponse | null;
+  prediction_model: PredictionModelDbResponse | null;
+}
+
 export const uploadFile = async (
   projectId: string | number,
   file: File,
@@ -36,7 +51,7 @@ export const uploadFile = async (
 };
 
 export interface GetFilesResponse {
-  data: FileDbResponse[];
+  data: FileDbListResponse[];
 }
 
 export const fetchFiles = async (

@@ -7,7 +7,7 @@ import { Models } from "./Models";
 import { Comparisons } from "./Comparisons";
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
-import { fetchFiles, type FileDbResponse } from "@/shared/api/file";
+import { fetchFiles, type FileDbListResponse } from "@/shared/api/file";
 import { fetchModels, type ModelDbResponse } from "@/shared/api/model";
 
 export function Project() {
@@ -21,7 +21,7 @@ export function Project() {
   // const page = searchParams.get("page") || "1";
 
   // Переменные страниц
-  const [files, setFiles] = useState<FileDbResponse[]>([]);
+  const [files, setFiles] = useState<FileDbListResponse[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
 
   const [models, setModels] = useState<ModelDbResponse[]>([]);

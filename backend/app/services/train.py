@@ -6,10 +6,9 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.db import FileDB, ModelDB
+from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.file import create_file_on_disk, get_file_path_by_id
 from app.services.file_normalize import normalize_content_to_csv
-from app.services.model import update_files_by_role
 
 
 def encode_train_access_token(project_id: int, model_id: int) -> str:
@@ -172,11 +171,12 @@ def create_prediction_file_by_project_id(
 
     create_file_on_disk(project_id, file_db.id, content)
 
-    update_files_by_role(
-        db=db,
-        model_db=model_db,
-        files_ids=[file_db.id],
-        role="predicted",
+    # Добавляем связь
+    model_db.file_links.append(
+        ModelFileDB(
+            file=file_db,
+            role="predicted",
+        )
     )
 
     db.commit()

@@ -49,13 +49,13 @@ def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
     training_files = [
         FileDbResponse.model_validate(link.file)
         for link in model_db.file_links
-        if link.role == "training"
+        if link.role == "training" and link.file is not None
     ]
 
     prediction_files = [
         FileDbResponse.model_validate(link.file)
         for link in model_db.file_links
-        if link.role == "for_prediction"
+        if link.role == "for_prediction" and link.file is not None
     ]
 
     return ModelDbResponse(

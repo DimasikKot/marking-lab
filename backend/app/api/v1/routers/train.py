@@ -69,7 +69,7 @@ async def get_files_to_prediction(
 
     with zipfile.ZipFile(zip_buffer, "w") as zipf:
         for file_path in prediction_files_paths:
-            zipf.write(file_path, arcname=file_path.name)
+            zipf.write(file_path, arcname=file_path.stem)  # Было file_path.name
 
     zip_buffer.seek(0)
 

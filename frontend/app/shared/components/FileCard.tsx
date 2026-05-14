@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 
-import type { FileDbResponse } from "@/shared/api/file";
+import type { FileDbListResponse } from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
 
@@ -13,7 +13,7 @@ export const FileCard = ({
   className = "",
   variant = "normal",
 }: {
-  file: FileDbResponse;
+  file: FileDbListResponse;
   onClick?: () => void;
   onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -58,8 +58,20 @@ export const FileCard = ({
         </div>
 
         {file.total_rows && (
-          <TextUI variant="desc" maxLines={2} className="mt-1">
+          <TextUI variant="desc" maxLines={1} className="mt-1">
             Строк: {file.total_rows}
+          </TextUI>
+        )}
+
+        {file.prediction_model && (
+          <TextUI variant="desc" maxLines={1} className="mt-1">
+            Модель: {file.prediction_model.name}
+          </TextUI>
+        )}
+
+        {file.origin_file && (
+          <TextUI variant="desc" maxLines={1} className="mt-1">
+            Исходный файл: {file.origin_file.name}
           </TextUI>
         )}
       </div>

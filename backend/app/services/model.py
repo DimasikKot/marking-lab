@@ -86,7 +86,7 @@ async def _train_model_request(
                 file_stream.close()
 
 
-def update_files_by_role(
+def _update_files_by_role(
     db: Session,
     model_db: ModelDB,
     files_ids: list[int],
@@ -150,7 +150,7 @@ def create_model(
 
     # ---------- TRAINING FILES ----------
     if training_files_ids is not None:
-        update_files_by_role(
+        _update_files_by_role(
             db=db,
             model_db=model_db,
             files_ids=training_files_ids,
@@ -159,7 +159,7 @@ def create_model(
 
     # ---------- PREDICTION FILES ----------
     if prediction_files_ids is not None:
-        update_files_by_role(
+        _update_files_by_role(
             db=db,
             model_db=model_db,
             files_ids=prediction_files_ids,
@@ -265,7 +265,7 @@ def update_model_db_by_id(
                 status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
 
-        update_files_by_role(
+        _update_files_by_role(
             db=db,
             model_db=model_db,
             files_ids=training_files_ids,
@@ -279,7 +279,7 @@ def update_model_db_by_id(
                 status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
 
-        update_files_by_role(
+        _update_files_by_role(
             db=db,
             model_db=model_db,
             files_ids=prediction_files_ids,

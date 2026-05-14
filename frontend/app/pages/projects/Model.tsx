@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { fetchFiles, type FileDbResponse } from "@/shared/api/file";
+import { fetchFiles, type FileDbListResponse } from "@/shared/api/file";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 import { Header } from "@/shared/components/Header";
@@ -28,7 +28,7 @@ export function Model() {
   const [loading, setLoading] = useState(true);
   const [isTraining, setIsTraining] = useState(false);
 
-  const [allFiles, setAllFiles] = useState<FileDbResponse[]>([]);
+  const [allFiles, setAllFiles] = useState<FileDbListResponse[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editParams, setEditParams] = useState("");
 

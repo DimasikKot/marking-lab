@@ -22,7 +22,7 @@ def model_predict(
             settings.GET_FILES_URL, json={"train_access_token": train_access_token}
         )
 
-        response.raise_for_status()
+        response.raise_for_status()  # TODO Подробнее изучить, может применить в train.py
 
         zip_bytes = io.BytesIO(response.content)
 
@@ -44,8 +44,8 @@ def model_predict(
             )
 
             with zipfile.ZipFile(zip_bytes) as zip_file:
-                for index, file_id in enumerate(zip_file.namelist()):
-                    with zip_file.open(file_id) as file:
+                for index, file_name in enumerate(zip_file.namelist()):
+                    with zip_file.open(file_name) as file:
                         client.post(
                             settings.POST_PROGRESS_URL,
                             json={
@@ -138,7 +138,7 @@ def model_predict(
                             settings.POST_FILE_URL,
                             data={
                                 "train_access_token": train_access_token,
-                                "origin_file_id": int(file_id),
+                                "origin_file_id": int(file_name),
                             },
                             files={"file": ("NULL", csv_bytes, "text/csv")},
                             timeout=300,
