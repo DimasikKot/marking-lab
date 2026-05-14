@@ -54,7 +54,7 @@ export const ModelCard = ({
                   variant="label"
                   className="mt-0.75 h-min w-40 line-clamp-1" // text-orange-400
                 >
-                  {String(model.parameters["Базовая модель"])}
+                  {String(model.parameters["Базовая модель"]).split("/").pop()}
                 </TextUI>
               )}
 

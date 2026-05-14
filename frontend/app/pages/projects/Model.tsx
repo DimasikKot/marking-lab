@@ -17,6 +17,10 @@ import {
 } from "@/shared/api/model";
 import { FileCard } from "@/shared/components/FileCard";
 
+const BASE_MODELS: string[] = JSON.parse(
+  import.meta.env.VITE_BASE_MODELS || "[]",
+);
+
 export function Model() {
   const { projectId = "0", modelId = "0" } = useParams<{
     projectId: string;
@@ -34,6 +38,31 @@ export function Model() {
 
   const [trainingFilesIds, setTrainingFilesIds] = useState<number[]>([]);
   const [predictionFilesIds, setPredictionFilesIds] = useState<number[]>([]);
+
+  const changeBaseModel = async (model: string) => {
+    try {
+      const parsed = JSON.parse(editParams || "{}");
+
+      parsed["Базовая модель"] = model;
+
+      setEditParams(JSON.stringify(parsed, null, 2));
+    } catch {
+      // если JSON невалидный — создаём новый
+      setEditParams(
+        JSON.stringify(
+          {
+            "Базовая модель": model,
+            "Скорость обучения": 0.001,
+            "Размер батча": 32,
+            Эпох: 2,
+            "Размер валидационного набора": 0.2,
+          },
+          null,
+          2,
+        ),
+      );
+    }
+  };
 
   const loadModel = async () => {
     setLoading(true);
@@ -296,6 +325,33 @@ export function Model() {
                   </div>
                 </div>
 
+                <TextUI variant="title">Выбор базовой модели</TextUI>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    marginBottom: 12,
+                  }}
+                >
+                  {BASE_MODELS.map((model) => (
+                    <button
+                      key={model}
+                      type="button"
+                      onClick={() => changeBaseModel(model)}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #ccc",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {model}
+                    </button>
+                  ))}
+                </div>
+
                 <div>
                   <TextUI variant="title">Параметры обучения</TextUI>
 
@@ -304,7 +360,13 @@ export function Model() {
                     rows={10}
                     value={editParams}
                     onChange={(e) => setEditParams(e.target.value)}
-                    placeholder={`{\n\t"Базовая модель": "albert-base-v2"\n\t"Скорость обучения": 0.001,\n\t"Размер батча": 32,\n\t"Эпох": 2,\n\t"Размер валидационного набора": 0.2,\n}`}
+                    placeholder={`{
+  "Базовая модель": "albert-base-v2",
+  "Скорость обучения": 0.001,
+  "Размер батча": 32,
+  "Эпох": 2,
+  "Размер валидационного набора": 0.2
+}`}
                   />
                 </div>
               </div>
