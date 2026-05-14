@@ -163,7 +163,7 @@ def create_model(
             db=db,
             model_db=model_db,
             files_ids=prediction_files_ids,
-            role="prediction",
+            role="for_prediction",
         )
 
     db.add(model_db)
