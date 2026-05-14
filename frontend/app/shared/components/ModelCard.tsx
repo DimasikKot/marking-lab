@@ -52,7 +52,7 @@ export const ModelCard = ({
               {model.parameters["Базовая модель"] && (
                 <TextUI
                   variant="label"
-                  className="flex items-end mt-0.75 h-min w-30" // text-orange-400
+                  className="mt-0.75 h-min w-40 line-clamp-1" // text-orange-400
                 >
                   {String(model.parameters["Базовая модель"])}
                 </TextUI>

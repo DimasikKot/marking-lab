@@ -15,7 +15,7 @@ export const TextUI = ({
 }) =>
   isSpan ? (
     <span
-      className={`line-clamp-${maxLines} leading-relaxed
+      className={`leading-relaxed
         ${isSelectable ? "select-text" : "select-none"}
         ${
           {
@@ -28,13 +28,13 @@ export const TextUI = ({
             header: "text-black text-3xl font-bold",
           }[variant]
         }
-        ${className}`}
+        ${className} line-clamp-${maxLines}`}
     >
       {children}
     </span>
   ) : (
     <p
-      className={`line-clamp-${maxLines} leading-relaxed
+      className={`leading-relaxed
         ${isSelectable ? "select-text" : "select-none"}
         ${
           {
@@ -47,7 +47,7 @@ export const TextUI = ({
             header: "text-black text-3xl font-bold",
           }[variant]
         }
-        ${className}`}
+        ${className} line-clamp-${maxLines}`}
     >
       {children}
     </p>

@@ -59,7 +59,7 @@ export const FileCard = ({
 
         {file.total_rows && (
           <TextUI variant="desc" maxLines={2} className="mt-1">
-            {file.total_rows} строк
+            Строк: {file.total_rows}
           </TextUI>
         )}
       </div>
