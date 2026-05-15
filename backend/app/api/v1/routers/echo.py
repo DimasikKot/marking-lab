@@ -25,4 +25,4 @@ async def get_ml():
             response_json = response_dict.json()
         return response_json
     except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error))
+        raise HTTPException(status_code=500, detail="ML контейнер недоступен")

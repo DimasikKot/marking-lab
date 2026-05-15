@@ -9,16 +9,20 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextField } from "@/shared/components/TextField";
-import type { ModelDbResponse } from "@/shared/api/model";
+import { FileCard } from "@/shared/components/FileCard";
+import type { JsonValue, ModelDbResponse } from "@/shared/api/model";
 import {
   fetchModelById,
   trainModelById,
   updateModelById,
 } from "@/shared/api/model";
-import { FileCard } from "@/shared/components/FileCard";
 
 const BASE_MODELS: string[] = JSON.parse(
   import.meta.env.VITE_BASE_MODELS || "[]",
+);
+
+const CLEAR_PARAMETERS: Record<string, JsonValue> = JSON.parse(
+  import.meta.env.VITE_CLEAR_PARAMETERS || "{}",
 );
 
 export function Model() {
@@ -360,13 +364,7 @@ export function Model() {
                     rows={10}
                     value={editParams}
                     onChange={(e) => setEditParams(e.target.value)}
-                    placeholder={`{
-  "Базовая модель": "albert-base-v2",
-  "Скорость обучения": 0.001,
-  "Размер батча": 32,
-  "Эпох": 2,
-  "Размер валидационного набора": 0.2
-}`}
+                    placeholder={JSON.stringify(CLEAR_PARAMETERS, null, 2)}
                   />
                 </div>
               </div>

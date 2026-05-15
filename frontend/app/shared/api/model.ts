@@ -2,7 +2,7 @@ import api, { errorValidate } from "@/shared/api/axios";
 import type { GetEchoResponse } from "./echo";
 import type { FileDbResponse } from "./file";
 
-type JsonValue =
+export type JsonValue =
   | string
   | number
   | boolean
