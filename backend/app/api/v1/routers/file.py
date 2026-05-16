@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from numpy import ceil
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -14,7 +15,7 @@ from fastapi import (
 )
 
 from app.api.v1.routers.echo import GetEchoResponse
-from app.models.db import FileDB
+from app.models.db import FileDB, ModelDB
 from app.services.user import get_user_id
 from app.core.database import get_db
 from app.services.file import (
@@ -46,6 +47,7 @@ class FileDbResponse(BaseModel):
 class PredictionModelDbResponse(BaseModel):
     id: int
     name: str
+    parameters: dict[str, Any]
 
     training_files: list[FileDbResponse]
 
@@ -65,10 +67,25 @@ class FileDbListResponse(FileDbResponse):
 
 
 def FileDbListToResponse(file_db: FileDB, db: Session) -> FileDbListResponse:
-    from app.api.v1.routers.model import ModelDbToResponse
+    def ModelDbToPredictionResponse(model_db: ModelDB) -> PredictionModelDbResponse:
+        training_files = [
+            FileDbResponse.model_validate(link.file)
+            for link in model_db.file_links
+            if link.role == "training" and link.file is not None
+        ]
+
+        return PredictionModelDbResponse(
+            id=model_db.id,
+            name=model_db.name,
+            parameters=model_db.parameters,
+            training_files=training_files,
+            created_at=model_db.created_at,
+            updated_at=model_db.updated_at,
+        )
+
     prediction_model = next(
         (
-            PredictionModelDbResponse.model_validate(ModelDbToResponse(link.model))
+            ModelDbToPredictionResponse(link.model)
             for link in file_db.model_links
             if link.role == "predicted"
         ),
