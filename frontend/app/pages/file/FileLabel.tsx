@@ -160,11 +160,11 @@ export function FileLabel({
   }, [showTagMenu]);
 
   return (
-    <>
+    <div className="relative">
       {/* Панель справа */}
-      <div className="fixed right-4 top-18 max-h-11/12 w-80">
+      <div className="absolute right-4 top-0 max-h-11/12 w-80">
         <div
-          className="bg-white shadow-2xl border border-gray-300 rounded-2xl w-80 h-full overflow-clip"
+          className="shadow-2xl border border-gray-300 rounded-2xl w-80 h-full overflow-clip bg-white"
           onClick={(event) => event.stopPropagation()}
           onScroll={(event) => event.stopPropagation()}
         >
@@ -316,6 +316,6 @@ export function FileLabel({
           />
         )}
       </div>
-    </>
+    </div>
   );
 }

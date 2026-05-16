@@ -203,7 +203,7 @@ export function Models({
         <div className="flex flex-col gap-4 mt-4">
           <TextUI variant="label">Название новой модели</TextUI>
 
-          <div className="flex flex-row gap-4 max-w-xl">
+          <div className="flex flex-col sm:flex-row gap-4 max-w-xl">
             <div className="flex-1">
               <TextField
                 value={newModelName}

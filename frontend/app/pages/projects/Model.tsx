@@ -51,20 +51,7 @@ export function Model() {
 
       setEditParams(JSON.stringify(parsed, null, 2));
     } catch {
-      // если JSON невалидный — создаём новый
-      setEditParams(
-        JSON.stringify(
-          {
-            "Базовая модель": model,
-            "Скорость обучения": 0.001,
-            "Размер батча": 32,
-            Эпох: 2,
-            "Размер валидационного набора": 0.2,
-          },
-          null,
-          2,
-        ),
-      );
+      toast.error("Некорректный JSON");
     }
   };
 
@@ -240,7 +227,7 @@ export function Model() {
 
                   {!isEditing && (
                     <ButtonUI onClick={handleTrainClick} disabled={isTraining}>
-                      {isTraining ? "Обучение..." : "Запустить обучение"}
+                      {isTraining ? "Запускается..." : "Запустить обучение"}
                     </ButtonUI>
                   )}
 
@@ -251,84 +238,8 @@ export function Model() {
               )}
             </div>
 
-            {!isEditing && (
-              <>
-                <TextUI variant="title" isSelectable>
-                  Файлы, на которых будет обучаться:{" "}
-                  <TextUI isSpan className="text-lg" isSelectable>
-                    {model.training_files.length > 0
-                      ? model.training_files
-                          .map((file) => file.name)
-                          .join(" , ")
-                      : "не выбраны"}
-                  </TextUI>
-                </TextUI>
-
-                <TextUI variant="title" isSelectable>
-                  Файлы, которые будут размечены:{" "}
-                  <TextUI isSpan className="text-lg" isSelectable>
-                    {model.prediction_files.length > 0
-                      ? model.prediction_files
-                          .map((file) => file.name)
-                          .join(" , ")
-                      : "не выбраны"}
-                  </TextUI>
-                </TextUI>
-              </>
-            )}
-
             {isEditing ? (
               <div className="flex flex-col gap-4">
-                <div>
-                  <TextUI variant="title" className="mb-2">
-                    Выбор файлов, на которых будет обучаться модель
-                  </TextUI>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 border border-gray-100 rounded-2xl bg-white">
-                    {allFiles.map((file) => (
-                      <div
-                        key={file.id}
-                        className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
-                        onClick={() => toggleFile(file.id, "training")}
-                      >
-                        <CheckboxUI
-                          value={trainingFilesIds.includes(file.id)}
-                          onClick={() => {}}
-                        />
-                        <FileCard
-                          file={file}
-                          variant="compact"
-                          onClick={() => {}}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <TextUI variant="title" className="mb-2">
-                    Выбор файлов, которые будут размечены моделью
-                  </TextUI>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 border border-gray-100 rounded-2xl bg-white">
-                    {allFiles.map((file) => (
-                      <div
-                        key={file.id}
-                        className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
-                        onClick={() => toggleFile(file.id, "for_prediction")}
-                      >
-                        <CheckboxUI
-                          value={predictionFilesIds.includes(file.id)}
-                          onClick={() => {}}
-                        />
-                        <FileCard
-                          file={file}
-                          variant="compact"
-                          onClick={() => {}}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <TextUI variant="title">Выбор базовой модели</TextUI>
 
                 <div
@@ -339,21 +250,34 @@ export function Model() {
                     marginBottom: 12,
                   }}
                 >
-                  {BASE_MODELS.map((model) => (
-                    <button
-                      key={model}
-                      type="button"
-                      onClick={() => changeBaseModel(model)}
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 8,
-                        border: "1px solid #ccc",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {model}
-                    </button>
-                  ))}
+                  {BASE_MODELS.map((model) => {
+                    let isActive = false;
+
+                    try {
+                      const parsed = JSON.parse(editParams || "{}");
+                      isActive = parsed["Базовая модель"] === model;
+                    } catch {
+                      console.error("Некорректный JSON");
+                    }
+
+                    return (
+                      <button
+                        key={model}
+                        type="button"
+                        onClick={() => changeBaseModel(model)}
+                        className={`
+                          px-3 py-1.5 rounded-lg border transition-all duration-200
+                          ${
+                            isActive
+                              ? "bg-blue-500 text-white border-blue-500 shadow-md"
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                          }
+                        `}
+                      >
+                        {model}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div>
@@ -366,6 +290,62 @@ export function Model() {
                     onChange={(e) => setEditParams(e.target.value)}
                     placeholder={JSON.stringify(CLEAR_PARAMETERS, null, 2)}
                   />
+                </div>
+
+                <div>
+                  <TextUI variant="title" className="mb-2">
+                    Выбор файлов, на которых будет обучаться модель
+                  </TextUI>
+
+                  <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-60 p-3">
+                      {allFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                          onClick={() => toggleFile(file.id, "training")}
+                        >
+                          <CheckboxUI
+                            value={trainingFilesIds.includes(file.id)}
+                            onClick={() => {}}
+                          />
+                          <FileCard
+                            file={file}
+                            variant="compact"
+                            onClick={() => {}}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <TextUI variant="title" className="mb-2">
+                    Выбор файлов, которые будут размечены моделью
+                  </TextUI>
+
+                  <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-60 p-3">
+                      {allFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                          onClick={() => toggleFile(file.id, "for_prediction")}
+                        >
+                          <CheckboxUI
+                            value={predictionFilesIds.includes(file.id)}
+                            onClick={() => {}}
+                          />
+                          <FileCard
+                            file={file}
+                            variant="compact"
+                            onClick={() => {}}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -451,6 +431,7 @@ export function Model() {
                     <TextUI className="mb-2" isSelectable>
                       {key}
                     </TextUI>
+
                     <img
                       src={value}
                       alt={key}
@@ -458,6 +439,28 @@ export function Model() {
                     />
                   </div>
                 ))}
+
+                <TextUI variant="title" isSelectable>
+                  Файлы, на которых будет обучаться:{" "}
+                  <TextUI isSpan className="text-lg" isSelectable>
+                    {model.training_files.length > 0
+                      ? model.training_files
+                          .map((file) => file.name)
+                          .join(" , ")
+                      : "не выбраны"}
+                  </TextUI>
+                </TextUI>
+
+                <TextUI variant="title" isSelectable>
+                  Файлы, которые будут размечены:{" "}
+                  <TextUI isSpan className="text-lg" isSelectable>
+                    {model.prediction_files.length > 0
+                      ? model.prediction_files
+                          .map((file) => file.name)
+                          .join(" , ")
+                      : "не выбраны"}
+                  </TextUI>
+                </TextUI>
               </div>
             )}
           </div>

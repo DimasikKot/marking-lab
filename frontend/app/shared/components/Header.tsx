@@ -10,7 +10,7 @@ import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
 import { TextUI } from "@/shared/components/TextUI";
 
 const Logo = ({ onClick }: { onClick?: () => void }) => (
-  <div onClick={onClick} className="w-2xl h-14">
+  <div onClick={onClick} className="w-full lg:w-auto h-14">
     <div className="flex items-center hover:bg-gray-400/30 transition duration-200 gap-2 w-max cursor-pointer p-1 rounded-xl">
       <img src={logo} alt="React logo" className="select-none" />
       <TextUI variant="logo" className="mb-1">
@@ -61,29 +61,29 @@ export function Header({
 
   return (
     <div
-      className={`h-16 w-full flex items-center justify-between p-1 ${className}`}
+      className={`w-full flex flex-col lg:flex-row lg:items-center lg:justify-between p-1 gap-4 ${className}`}
     >
       <Logo onClick={() => navigate("/")} />
 
       {title && (
-        <TextUI variant="header" maxLines={1} className={`w-2xl text-center`}>
+        <TextUI variant="header" maxLines={1} className={`w-full lg:flex-1 text-center`}>
           {title}
         </TextUI>
       )}
 
       {children}
 
-      <div className="flex gap-4 items-center rounded-3xl w-2xl justify-end">
+      <div className="flex flex-col sm:flex-row items-center justify-between lg:justify-end gap-4 w-full lg:w-auto">
         {/* Индикаторы состояния контейнеров */}
         <div className="flex gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <StatusIndicator status={backendStatus} />
             <TextUI variant="desc" isSpan>
               Backend
             </TextUI>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <StatusIndicator status={mlStatus} />
             <TextUI variant="desc" isSpan>
               ML
