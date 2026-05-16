@@ -160,89 +160,11 @@ export function FileLabel({
   }, [showTagMenu]);
 
   return (
-    <div className="relative max-w-6xl mx-auto m-2 mb-80">
-      <ButtonPage onClick={handleExitClick} isLoading={isSaving || isLoading} />
-
-      <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
-        {/* Header */}
-        <div className="flex justify-end">
-          <ButtonUI
-            onClick={handleSave}
-            disabled={isSaving || isLoading || !hasUnsavedChanges}
-            className="bg-emerald-600 hover:bg-emerald-700"
-          >
-            {isSaving ? "Сохранение..." : "Сохранить разметку"}
-          </ButtonUI>
-        </div>
-
-        <TextUI variant="desc" className="flex justify-center mb-2">
-          Страница {page} из {file?.total_pages}
-        </TextUI>
-
-        <PageNavigate
-          className="mb-4"
-          currentPage={page}
-          totalPages={file?.total_pages || 1}
-          onBack={handleBackClick}
-          onNext={handleNextClick}
-        />
-
-        {/* Разметка текста */}
-        <div
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <div className="space-y-6">
-            {localRows.map((line, lineIdx) => (
-              <div
-                key={lineIdx}
-                className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
-              >
-                {line.words.map((word, wordIdx) => {
-                  const isSelected = selectedWords.some(
-                    ([l, w]) => l === lineIdx && w === wordIdx,
-                  );
-
-                  return (
-                    <div
-                      key={wordIdx}
-                      onMouseDown={(event) =>
-                        handleWordMouseDown(lineIdx, wordIdx, event)
-                      }
-                      className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
-                        ${file?.colors?.[word.label] ?? ""}
-                        ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
-                      `}
-                    >
-                      <span className="font-medium text-xl text-gray-900 select-none">
-                        {word.token}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom */}
-        <TextUI variant="desc" className="flex justify-center mt-4">
-          Страница {page} из {file?.total_pages}
-        </TextUI>
-
-        <PageNavigate
-          className="mt-2"
-          currentPage={page}
-          totalPages={file?.total_pages || 1}
-          onBack={handleBackClick}
-          onNext={handleNextClick}
-        />
-      </div>
-
+    <>
       {/* Панель справа */}
       <div className="fixed right-4 top-18 max-h-11/12 w-80">
         <div
-          className="bg-white shadow-2xl border border-gray-300 rounded-2xl z-50 w-80 h-full overflow-clip"
+          className="bg-white shadow-2xl border border-gray-300 rounded-2xl w-80 h-full overflow-clip"
           onClick={(event) => event.stopPropagation()}
           onScroll={(event) => event.stopPropagation()}
         >
@@ -299,18 +221,101 @@ export function FileLabel({
         </div>
       </div>
 
-      {showTagMenu && (
-        <TagSelector
-          tags={file?.tags ?? {}}
-          colors={file?.colors ?? {}}
-          onSelect={assignTag}
-          onClose={() => {
-            setShowTagMenu(false);
-            setSelectedWords([]);
-          }}
-          position={menuPosition}
+      <div className="relative max-w-6xl mx-auto bg-white m-2 mb-80">
+        <ButtonPage
+          onClick={handleExitClick}
+          isLoading={isSaving || isLoading}
         />
-      )}
-    </div>
+
+        <div className="border border-gray-200 rounded-4xl z-100 p-6 overflow-auto">
+          {/* Header */}
+          <div className="flex justify-end">
+            <ButtonUI
+              onClick={handleSave}
+              disabled={isSaving || isLoading || !hasUnsavedChanges}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {isSaving ? "Сохранение..." : "Сохранить разметку"}
+            </ButtonUI>
+          </div>
+
+          <TextUI variant="desc" className="flex justify-center mb-2">
+            Страница {page} из {file?.total_pages}
+          </TextUI>
+
+          <PageNavigate
+            className="mb-4"
+            currentPage={page}
+            totalPages={file?.total_pages || 1}
+            onBack={handleBackClick}
+            onNext={handleNextClick}
+          />
+
+          {/* Разметка текста */}
+          <div
+            className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <div className="space-y-6">
+              {localRows.map((line, lineIdx) => (
+                <div
+                  key={lineIdx}
+                  className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
+                >
+                  {line.words.map((word, wordIdx) => {
+                    const isSelected = selectedWords.some(
+                      ([l, w]) => l === lineIdx && w === wordIdx,
+                    );
+
+                    return (
+                      <div
+                        key={wordIdx}
+                        onMouseDown={(event) =>
+                          handleWordMouseDown(lineIdx, wordIdx, event)
+                        }
+                        className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
+                        ${file?.colors?.[word.label] ?? ""}
+                        ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
+                      `}
+                      >
+                        <span className="font-medium text-xl text-gray-900 select-none">
+                          {word.token}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <TextUI variant="desc" className="flex justify-center mt-4">
+            Страница {page} из {file?.total_pages}
+          </TextUI>
+
+          <PageNavigate
+            className="mt-2"
+            currentPage={page}
+            totalPages={file?.total_pages || 1}
+            onBack={handleBackClick}
+            onNext={handleNextClick}
+          />
+        </div>
+
+        {showTagMenu && (
+          <TagSelector
+            tags={file?.tags ?? {}}
+            colors={file?.colors ?? {}}
+            onSelect={assignTag}
+            onClose={() => {
+              setShowTagMenu(false);
+              setSelectedWords([]);
+            }}
+            position={menuPosition}
+          />
+        )}
+      </div>
+    </>
   );
 }

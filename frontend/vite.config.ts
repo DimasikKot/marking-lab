@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import path from "path"
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,11 +9,13 @@ export default defineConfig({
   server: {
     host: true, // Важно для Docker
     port: 5173,
-    watch: { usePolling: true } // Для корректного отслеживания изменений в контейнере
+    allowedHosts: ["fundata.mooo.com"],
+    open: true,
+    watch: { usePolling: true }, // Для корректного отслеживания изменений в контейнере
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./app")
-    }
-  }
-})
+      "@": path.resolve(__dirname, "./app"),
+    },
+  },
+});

@@ -89,7 +89,7 @@ def set_progress_model_db_by_id(
 
     if metrics is not None:
         metrics_new = {}
-        if 0 < progress < 100:
+        if 0 < progress < 92:
             metrics_new.update(model_db.metrics)
         metrics_new.update(metrics)
         model_db.metrics = metrics_new

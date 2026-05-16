@@ -42,6 +42,6 @@ CREATE TYPE model_file_role AS ENUM ('training', 'for_prediction', 'predicted');
 CREATE TABLE IF NOT EXISTS model_files (
     model_id        INTEGER         REFERENCES models(id) ON DELETE CASCADE,    -- если модель удаляется, удаляются и связи с файлами
     file_id         INTEGER         REFERENCES files(id) ON DELETE CASCADE,     -- если файл удаляется, удаляются и связи с моделями
-        role     model_file_role NOT NULL,
+    role            model_file_role NOT NULL,
     PRIMARY KEY (model_id, file_id, role)
 );

@@ -132,7 +132,7 @@ export function Projects() {
         <div className="border border-gray-200 rounded-4xl p-6">
           <div className="mb-4 flex justify-between items-center">
             <TextUI variant="header" className="max-w-xs w-full">
-              Файлы проекта
+              Ваши проекты
             </TextUI>
 
             <ButtonUI onClick={handleCreateClick} className="max-w-xs w-full">

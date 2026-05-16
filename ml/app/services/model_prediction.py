@@ -50,8 +50,8 @@ def model_predict(
                             settings.POST_PROGRESS_URL,
                             json={
                                 "train_access_token": train_access_token,
-                                "progress": 92
-                                + int((index / len(zip_file.namelist())) * 7),
+                                "progress": 93
+                                + int((index / len(zip_file.namelist())) * 6),
                             },
                         )
 

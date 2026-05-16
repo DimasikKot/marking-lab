@@ -94,7 +94,7 @@ class FileDB(Base):
             },
             {
                 "value": "art",
-                "label": "Артефакт",
+                "label": "Иновационные проекты",
                 "color": "bg-yellow-300",
             },
             {

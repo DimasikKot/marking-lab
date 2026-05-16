@@ -75,19 +75,9 @@ def _model_train(
         )
         training_time_seconds = time.perf_counter() - start_time
 
-        try:
-            model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
-        except Exception as error:
-            httpx.post(
-                settings.POST_PROGRESS_URL,
-                json={"progress": 95, "train_access_token": train_access_token},
-                timeout=300,
-            )
-
         # Метрики валидационной выборки
         validation_metrics: dict[str, float] = result["eval_metrics"]
         return_metrics = {}
-        labels_metrics = {}
         if validation_metrics:
             return_metrics = {
                 "Точность (accuracy)": validation_metrics.get("eval_accuracy"),
@@ -97,25 +87,9 @@ def _model_train(
                 "Время обучения (сек)": round(training_time_seconds, 2),
             }
 
-            # Метрики по классам (если они есть в результате)
-            for key, value in validation_metrics.items():
-                # обычно классовые метрики идут как:
-                # "eval_PER", "eval_ORG", "eval_LOC" и т.д.
-                if key.startswith("eval_") and isinstance(value, dict):
-                    label_name = key.replace("eval_", "")
-
-                    labels_metrics[label_name] = {
-                        "Точность": value.get("precision"),
-                        "Полнота": value.get("recall"),
-                        "F1-мера": value.get("f1"),
-                    }
-
         print("+" * 100)
         print(return_metrics)
-        print(labels_metrics)
         print("+" * 100)
-
-        return_metrics.update(labels_metrics)
 
         train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
         # validation_loss_plot = loss_plot(
@@ -125,13 +99,32 @@ def _model_train(
 
         request = {
             "train_access_token": train_access_token,
-            "progress": 100,
+            "progress": 92,
             "metrics": return_metrics,
             "graphs": {
                 "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
                 # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
                 # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
             },
+        }
+        httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
+
+        try:
+            star_predict_time = time.perf_counter()
+            model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
+            predict_time_seconds = time.perf_counter() - star_predict_time
+            return_metrics["Время предсказания (сек)"] = round(predict_time_seconds, 2)
+        except Exception as error:
+            httpx.post(
+                settings.POST_PROGRESS_URL,
+                json={"progress": 95, "train_access_token": train_access_token},
+                timeout=300,
+            )
+
+        request = {
+            "train_access_token": train_access_token,
+            "progress": 100,
+            "metrics": return_metrics,
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
 
