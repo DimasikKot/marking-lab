@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Флаг --break-system-packages отключает защиту
-RUN pip install --break-system-packages torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+RUN pip install --break-system-packages torch torchvision torchaudio 
 
 COPY requirements.txt .
 RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
