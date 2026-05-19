@@ -28,11 +28,6 @@ export function Projects() {
   const [editingProject, setEditingProject] =
     useState<ProjectDbResponse | null>(null);
   const [search, setSearch] = useState("");
-  const [formData, setFormData] = useState<PatchProjectRequest>({
-    name: "",
-    description: "",
-    is_public: false,
-  });
 
   const loadProjects = async () => {
     setIsLoading(true);
@@ -58,39 +53,13 @@ export function Projects() {
   // Обработка открытия формы создания
   const handleCreateClick = () => {
     setEditingProject(null);
-    setFormData({ name: "", is_public: false, description: "" });
     setIsFormOpen(true);
   };
 
   // Обработка открытия формы редактирования
   const handleEditClick = (project: ProjectDbResponse) => {
     setEditingProject(project);
-    setFormData({
-      name: project.name,
-      description: project.description,
-      is_public: project.is_public,
-    });
     setIsFormOpen(true);
-  };
-
-  // Обработка отправки формы
-  const handleSubmitClick = async () => {
-    if (editingProject) {
-      setIsLoading(true);
-      const response = await patchProjectById(editingProject.id, formData);
-      setIsLoading(false);
-      if (response === undefined) return;
-      toast.success("Проект успешно изменён");
-    } else {
-      setIsLoading(true);
-      const response = await createProject(formData);
-      setIsLoading(false);
-      if (response === undefined) return;
-      toast.success("Проект успешно создан");
-    }
-    loadProjects();
-    setIsFormOpen(false);
-    setEditingProject(null);
   };
 
   // Удаление проекта
@@ -109,13 +78,6 @@ export function Projects() {
     if (response === undefined) return;
     toast.success("Проект успешно удалён");
     loadProjects();
-  };
-
-  // Обработка изменения полей формы
-  const handleFormChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
   const filteredProjects = projects.filter((project) =>
@@ -180,78 +142,132 @@ export function Projects() {
             </div>
           )}
 
-          {/* Модальное окно формы */}
+          {/* Форма редактирования проекта */}
           {isFormOpen && (
-            <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
-              <div
-                onClick={() => setIsFormOpen(false)}
-                className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
-              />
-
-              <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
-                <TextUI variant="title">
-                  {editingProject ? "Редактировать проект" : "Создать проект"}
-                </TextUI>
-
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <TextUI variant="label">Название</TextUI>
-
-                    <TextField
-                      name="name"
-                      value={formData.name}
-                      onChange={handleFormChange}
-                      onEnter={handleSubmitClick}
-                      onEscape={() => setIsFormOpen(false)}
-                      autoFocus
-                    />
-                  </div>
-
-                  <div>
-                    <TextUI variant="label">Описание</TextUI>
-
-                    <TextField
-                      name="description"
-                      value={formData.description}
-                      onChange={handleFormChange}
-                      onEnter={handleSubmitClick}
-                      onEscape={() => setIsFormOpen(false)}
-                      isArea
-                      rows={4}
-                    />
-                  </div>
-
-                  <CheckboxUI
-                    title="Публичный?"
-                    value={formData.is_public}
-                    onClick={() =>
-                      setFormData({
-                        ...formData,
-                        is_public: !formData.is_public,
-                      })
-                    }
-                  />
-
-                  <div className="flex justify-between items-center">
-                    <ButtonUI
-                      onClick={() => setIsFormOpen(false)}
-                      variant="secondary"
-                    >
-                      Отмена
-                    </ButtonUI>
-
-                    <ButtonUI onClick={handleSubmitClick}>
-                      {editingProject
-                        ? "Сохранить изменения"
-                        : "Создать проект"}
-                    </ButtonUI>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ProjectEditForm
+              editingProject={editingProject}
+              setIsLoading={setIsLoading}
+              onSubmitClickSuccess={() => {
+                setIsFormOpen(false);
+                setEditingProject(null);
+                loadProjects();
+              }}
+              onEscape={() => {
+                setIsFormOpen(false);
+                setEditingProject(null);
+              }}
+            />
           )}
         </div>
       </div>
     </>
   );
 }
+
+const ProjectEditForm = ({
+  editingProject,
+  setIsLoading,
+  onSubmitClickSuccess,
+  onEscape,
+}: {
+  editingProject: ProjectDbResponse | null;
+  setIsLoading: (value: boolean) => void;
+  onSubmitClickSuccess?: () => void;
+  onEscape?: () => void;
+}) => {
+  const [formData, setFormData] = useState<PatchProjectRequest>({
+    name: editingProject?.name || "",
+    description: editingProject?.description || "",
+    is_public: editingProject?.is_public || false,
+  });
+  // Обработка отправки формы
+  const handleSubmitClick = async () => {
+    if (editingProject) {
+      setIsLoading(true);
+      const response = await patchProjectById(editingProject.id, formData);
+      setIsLoading(false);
+      if (response === undefined) return;
+      toast.success("Проект успешно изменён");
+    } else {
+      setIsLoading(true);
+      const response = await createProject(formData);
+      setIsLoading(false);
+      if (response === undefined) return;
+      toast.success("Проект успешно создан");
+    }
+
+    onSubmitClickSuccess?.();
+  };
+
+  // Обработка изменения полей формы
+  const handleFormChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+      <div
+        onClick={onEscape}
+        className="fixed inset-0 flex bg-black/50 backdrop-blur-[2px]"
+      />
+
+      <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
+        <TextUI variant="title">
+          {editingProject ? "Редактировать проект" : "Создать проект"}
+        </TextUI>
+
+        <div className="flex flex-col gap-4">
+          <div>
+            <TextUI variant="label">Название</TextUI>
+
+            <TextField
+              name="name"
+              value={formData.name}
+              onChange={handleFormChange}
+              onEnter={handleSubmitClick}
+              onEscape={onEscape}
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <TextUI variant="label">Описание</TextUI>
+
+            <TextField
+              name="description"
+              value={formData.description}
+              onChange={handleFormChange}
+              onEnter={handleSubmitClick}
+              onEscape={onEscape}
+              isArea
+              rows={4}
+            />
+          </div>
+
+          <CheckboxUI
+            title="Публичный?"
+            value={formData.is_public}
+            onClick={() =>
+              setFormData({
+                ...formData,
+                is_public: !formData.is_public,
+              })
+            }
+          />
+
+          <div className="flex justify-between items-center">
+            <ButtonUI onClick={onEscape} variant="secondary">
+              Отмена
+            </ButtonUI>
+
+            <ButtonUI onClick={handleSubmitClick}>
+              {editingProject ? "Сохранить изменения" : "Создать проект"}
+            </ButtonUI>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

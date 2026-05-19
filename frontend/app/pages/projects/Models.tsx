@@ -14,7 +14,10 @@ import { TextUI } from "@/shared/components/TextUI";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { ModelCard } from "@/shared/components/ModelCard";
-import type { ModelListResponse } from "@/shared/api/model";
+import type {
+  ModelListResponse,
+  PatchModelFullRequest,
+} from "@/shared/api/model";
 
 export function Models({
   projectId,
@@ -43,7 +46,6 @@ export function Models({
   const [editingModel, setEditingModel] = useState<ModelListResponse | null>(
     null,
   );
-  const [formData, setFormData] = useState({ name: "" });
 
   const loadModels = async () => {
     setIsLoading(true);
@@ -141,25 +143,7 @@ export function Models({
   // Открытие формы редактирования
   const handleEditClick = (model: ModelListResponse) => {
     setEditingModel(model);
-    setFormData({ name: model.name });
     setIsFormOpen(true);
-  };
-
-  // Отправка формы редактирования
-  const handleSubmitClick = async () => {
-    if (!editingModel || !projectId) return;
-
-    setIsLoading(true);
-    const response = await updateModelById(projectId, editingModel.id, {
-      name: formData.name,
-    });
-    setIsLoading(false);
-
-    if (response === undefined) return;
-    toast.success("Модель успешно изменена");
-    setIsFormOpen(false);
-    setEditingModel(null);
-    loadModels();
   };
 
   const filteredModels = models.filter((model) =>
@@ -174,7 +158,7 @@ export function Models({
 
     setIsLoading(true);
     const response = await createModel(projectId, {
-      name: `${model.name} COPY`,
+      name: `${model.name} Copy`,
       parameters: model.parameters,
       training_files_ids: model.training_files.map((file) => file.id),
       prediction_files_ids: model.prediction_files.map((file) => file.id),
@@ -269,55 +253,95 @@ export function Models({
         </div>
       </div>
 
-      {/* Модальное окно редактирования */}
+      {/* Форма редактирования модели */}
       {isFormOpen && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
-          <div
-            onClick={() => setIsFormOpen(false)}
-            className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
-          />
-
-          <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
-            <TextUI variant="title">Редактировать модель</TextUI>
-
-            <div className="flex flex-col gap-4">
-              <div>
-                <TextUI variant="label">Новое название модели</TextUI>
-                <TextField
-                  value={formData.name}
-                  onChange={(event) =>
-                    setFormData({ ...formData, name: event.target.value })
-                  }
-                  onEnter={handleSubmitClick}
-                  onEscape={() => {
-                    setIsFormOpen(false);
-                    setEditingModel(null);
-                  }}
-                  autoFocus
-                  name="name"
-                  placeholder="Новое имя..."
-                />
-              </div>
-
-              <div className="flex justify-between items-center">
-                <ButtonUI
-                  onClick={() => {
-                    setIsFormOpen(false);
-                    setEditingModel(null);
-                  }}
-                  variant="secondary"
-                >
-                  Отмена
-                </ButtonUI>
-
-                <ButtonUI onClick={handleSubmitClick}>
-                  Сохранить изменения
-                </ButtonUI>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ModelEditForm
+          projectId={projectId}
+          editingModel={editingModel}
+          setIsLoading={setIsLoading}
+          onSubmitClickSuccess={() => {
+            setIsFormOpen(false);
+            setEditingModel(null);
+            loadModels();
+          }}
+          onEscape={() => {
+            setIsFormOpen(false);
+            setEditingModel(null);
+          }}
+        />
       )}
     </div>
   );
 }
+
+const ModelEditForm = ({
+  projectId,
+  editingModel,
+  setIsLoading,
+  onSubmitClickSuccess,
+  onEscape,
+}: {
+  projectId: string | number;
+  editingModel: ModelListResponse | null;
+  setIsLoading: (value: boolean) => void;
+  onSubmitClickSuccess?: () => void;
+  onEscape?: () => void;
+}) => {
+  const [formData, setFormData] = useState<PatchModelFullRequest>({
+    name: editingModel?.name || "",
+  });
+
+  // Отправка формы редактирования
+  const handleSubmitClick = async () => {
+    if (!editingModel || !projectId) return;
+
+    setIsLoading(true);
+    const response = await updateModelById(projectId, editingModel.id, {
+      name: formData.name,
+    });
+    setIsLoading(false);
+
+    if (response === undefined) return;
+    toast.success("Модель успешно изменена");
+    onSubmitClickSuccess?.();
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+      <div
+        onClick={onEscape}
+        className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
+      />
+
+      <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
+        <TextUI variant="title">Редактировать модель</TextUI>
+
+        <div className="flex flex-col gap-4">
+          <div>
+            <TextUI variant="label">Новое название модели</TextUI>
+
+            <TextField
+              value={formData.name || ""}
+              onChange={(event) =>
+                setFormData({ ...formData, name: event.target.value })
+              }
+              onEnter={handleSubmitClick}
+              onEscape={onEscape}
+              autoFocus
+              name="name"
+              placeholder="Новое имя..."
+            />
+          </div>
+
+          <div className="flex justify-between items-center">
+            <ButtonUI onClick={onEscape} variant="secondary">
+              Отмена
+            </ButtonUI>
+
+            <ButtonUI onClick={handleSubmitClick}>Сохранить изменения</ButtonUI>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

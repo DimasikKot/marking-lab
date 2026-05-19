@@ -39,10 +39,6 @@ export function Files({
 
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingFile, setEditingFile] = useState<FileListResponse | null>(null);
-  const [formData, setFormData] = useState<PatchFileListRequest>({
-    name: "",
-    is_labeled: false,
-  });
 
   const loadFiles = async () => {
     setIsLoading(true);
@@ -91,23 +87,7 @@ export function Files({
   // Открытие формы редактирования
   const handleEditClick = (file: FileListResponse) => {
     setEditingFile(file);
-    setFormData({ name: file.name, is_labeled: file.is_labeled });
     setIsFormOpen(true);
-  };
-
-  // Отправка формы редактирования файла
-  const handleSubmitClick = async () => {
-    if (!editingFile || !projectId) return;
-
-    setIsLoading(true);
-    const response = await updateFileById(projectId, editingFile.id, formData);
-    setIsLoading(false);
-
-    if (response === undefined) return;
-    toast.success("Файл успешно изменён");
-    setIsFormOpen(false);
-    setEditingFile(null);
-    loadFiles();
   };
 
   const filteredFiles = files.filter((file) =>
@@ -204,62 +184,102 @@ export function Files({
         </div>
       </div>
 
+      {/* Форма редактирования файла */}
       {isFormOpen && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
-          <div
-            onClick={() => setIsFormOpen(false)}
-            className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
-          />
-
-          <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
-            <TextUI variant="title">Редактировать файл</TextUI>
-
-            <div className="flex flex-col gap-4">
-              <div>
-                <TextUI variant="label">Имя файла</TextUI>
-                <TextField
-                  value={formData.name}
-                  onChange={(event) =>
-                    setFormData({ ...formData, name: event.target.value })
-                  }
-                  onEnter={handleSubmitClick}
-                  onEscape={() => {
-                    setIsFormOpen(false);
-                    setEditingFile(null);
-                  }}
-                  autoFocus
-                  name="name"
-                  placeholder="Новое имя файла..."
-                />
-              </div>
-
-              <CheckboxUI
-                title="Уже размечен?"
-                value={formData.is_labeled}
-                onClick={() =>
-                  setFormData({ ...formData, is_labeled: !formData.is_labeled })
-                }
-              />
-
-              <div className="flex justify-between items-center">
-                <ButtonUI
-                  onClick={() => {
-                    setIsFormOpen(false);
-                    setEditingFile(null);
-                  }}
-                  variant="secondary"
-                >
-                  Отмена
-                </ButtonUI>
-
-                <ButtonUI onClick={handleSubmitClick}>
-                  Сохранить изменения
-                </ButtonUI>
-              </div>
-            </div>
-          </div>
-        </div>
+        <FileEditForm
+          projectId={projectId}
+          editingFile={editingFile}
+          setIsLoading={setIsLoading}
+          onSubmitClickSuccess={() => {
+            setIsFormOpen(false);
+            setEditingFile(null);
+            loadFiles();
+          }}
+          onEscape={() => {
+            setIsFormOpen(false);
+            setEditingFile(null);
+          }}
+        />
       )}
     </div>
   );
 }
+
+const FileEditForm = ({
+  projectId,
+  editingFile,
+  setIsLoading,
+  onSubmitClickSuccess,
+  onEscape,
+}: {
+  projectId: string | number;
+  editingFile: FileListResponse | null;
+  setIsLoading: (value: boolean) => void;
+  onSubmitClickSuccess?: () => void;
+  onEscape?: () => void;
+}) => {
+  const [formData, setFormData] = useState<PatchFileListRequest>({
+    name: editingFile?.name || "",
+    is_labeled: editingFile?.is_labeled || false,
+  });
+
+  // Отправка формы редактирования файла
+  const handleSubmitClick = async () => {
+    if (!editingFile || !projectId) return;
+
+    setIsLoading(true);
+    const response = await updateFileById(projectId, editingFile.id, formData);
+    setIsLoading(false);
+
+    if (response === undefined) return;
+    toast.success("Файл успешно изменён");
+    onSubmitClickSuccess?.();
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+      <div
+        onClick={onEscape}
+        className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
+      />
+
+      <div className="flex flex-col gap-4 bg-white rounded-3xl shadow-xl w-xl p-6 z-10">
+        <TextUI variant="title">Редактировать файл</TextUI>
+
+        <div className="flex flex-col gap-4">
+          <div>
+            <TextUI variant="label">Имя файла</TextUI>
+
+            <TextField
+              value={formData.name}
+              onChange={(event) =>
+                setFormData({ ...formData, name: event.target.value })
+              }
+              onEnter={handleSubmitClick}
+              onEscape={onEscape}
+              autoFocus
+              name="name"
+              placeholder="Новое имя файла..."
+            />
+          </div>
+
+          <CheckboxUI
+            title="Уже размечен?"
+            value={formData.is_labeled}
+            onClick={() =>
+              setFormData({ ...formData, is_labeled: !formData.is_labeled })
+            }
+          />
+
+          <div className="flex justify-between items-center">
+            <ButtonUI onClick={onEscape} variant="secondary">
+              Отмена
+            </ButtonUI>
+
+            <ButtonUI onClick={handleSubmitClick}>Сохранить изменения</ButtonUI>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
