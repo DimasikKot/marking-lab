@@ -160,7 +160,9 @@ export const deleteFileById = async (
 };
 
 export interface PatchFileFullRequest {
-  new_rows: Row[];
+  new_tags: Record<string, string> | null;
+  new_colors: Record<string, string> | null;
+  new_rows: Row[] | null;
 }
 
 export const updateFileByIdContent = async (

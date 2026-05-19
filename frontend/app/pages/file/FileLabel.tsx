@@ -5,7 +5,7 @@ import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
-import { type FileFullResponse, type Row } from "@/shared/api/file";
+import { type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { RightPanel } from "@/shared/components/RightPanel";
 
@@ -15,7 +15,11 @@ export function FileLabel({
   projectId,
   fileId,
   page,
-  file,
+  totalPages,
+  localTags,
+  setLocalTags,
+  localColors,
+  setLocalColors,
   localRows,
   setLocalRows,
   isLoading,
@@ -27,7 +31,11 @@ export function FileLabel({
   projectId: string | number;
   fileId: string | number;
   page: number;
-  file: FileFullResponse | null;
+  totalPages: number;
+  localTags: Record<string, string>;
+  setLocalTags: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  localColors: Record<string, string>;
+  setLocalColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   localRows: Row[];
   setLocalRows: React.Dispatch<React.SetStateAction<Row[]>>;
   isLoading: boolean;
@@ -187,7 +195,7 @@ export function FileLabel({
           <TextUI variant="normal">Не сущность</TextUI>
         </button>
 
-        {Object.entries(file?.tags ?? {}).map(([tagKey, label]) => {
+        {Object.entries(localTags).map(([tagKey, label]) => {
           const iTag = tagKey.replace("B-", "I-");
 
           return (
@@ -197,14 +205,14 @@ export function FileLabel({
               className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
             >
               <span
-                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${file?.colors?.[tagKey]}`}
+                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
               >
                 {tagKey}
               </span>
 
               <span
                 onClick={() => assignTag(iTag)}
-                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${file?.colors?.[iTag]}`}
+                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
               >
                 {iTag}
               </span>
@@ -228,15 +236,13 @@ export function FileLabel({
         </div>
 
         <TextUI variant="desc" className="flex justify-center mb-2">
-          Страница{" "}
-          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
-          {file?.total_pages}
+          Страница {page > totalPages ? totalPages : page} из {totalPages}
         </TextUI>
 
         <PageNavigate
           className="mb-4"
           currentPage={page}
-          totalPages={file?.total_pages || 1}
+          totalPages={totalPages}
           onBack={handleBackClick}
           onNext={handleNextClick}
         />
@@ -264,7 +270,7 @@ export function FileLabel({
                         handleWordMouseDown(lineIdx, wordIdx, event)
                       }
                       className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
-                        ${file?.colors?.[word.label] ?? ""}
+                        ${localColors[word.label] ?? ""}
                         ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
                       `}
                     >
@@ -281,15 +287,13 @@ export function FileLabel({
 
         {/* Bottom */}
         <TextUI variant="desc" className="flex justify-center mt-4">
-          Страница{" "}
-          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
-          {file?.total_pages}
+          Страница {page > totalPages ? totalPages : page} из {totalPages}
         </TextUI>
 
         <PageNavigate
           className="mt-2"
           currentPage={page}
-          totalPages={file?.total_pages || 1}
+          totalPages={totalPages}
           onBack={handleBackClick}
           onNext={handleNextClick}
         />
@@ -297,8 +301,8 @@ export function FileLabel({
 
       {showTagMenu && (
         <TagSelector
-          tags={file?.tags ?? {}}
-          colors={file?.colors ?? {}}
+          tags={localTags}
+          colors={localColors}
           onSelect={assignTag}
           onClose={() => {
             setShowTagMenu(false);

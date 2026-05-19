@@ -4,14 +4,19 @@ import { useRef } from "react";
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
-import { type FileFullResponse, type Row } from "@/shared/api/file";
+import { type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
+import { RightPanel } from "@/shared/components/RightPanel";
 
 export function FileEdit({
   projectId,
   fileId,
   page,
-  file,
+  totalPages,
+  localTags,
+  setLocalTags,
+  localColors,
+  setLocalColors,
   localRows,
   setLocalRows,
   isLoading,
@@ -23,7 +28,11 @@ export function FileEdit({
   projectId: string | number;
   fileId: string | number;
   page: number;
-  file: FileFullResponse | null;
+  totalPages: number;
+  localTags: Record<string, string>;
+  setLocalTags: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  localColors: Record<string, string>;
+  setLocalColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   localRows: Row[];
   setLocalRows: React.Dispatch<React.SetStateAction<Row[]>>;
   isLoading: boolean;
@@ -315,6 +324,46 @@ export function FileEdit({
     <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
       <ButtonPage onClick={handleExitClick} isLoading={isLoading} />
 
+      <RightPanel>
+        <button
+          key="O"
+          className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+        >
+          <span
+            className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
+          >
+            O
+          </span>
+
+          <TextUI variant="normal">Не сущность</TextUI>
+        </button>
+
+        {Object.entries(localTags).map(([tagKey, label]) => {
+          const iTag = tagKey.replace("B-", "I-");
+
+          return (
+            <button
+              key={tagKey}
+              className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+            >
+              <span
+                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
+              >
+                {tagKey}
+              </span>
+
+              <span
+                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
+              >
+                {iTag}
+              </span>
+
+              <TextUI variant="normal">{label}</TextUI>
+            </button>
+          );
+        })}
+      </RightPanel>
+
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
         {/* Header */}
         <div className="flex justify-end">
@@ -328,15 +377,13 @@ export function FileEdit({
         </div>
 
         <TextUI variant="desc" className="flex justify-center mb-2">
-          Страница{" "}
-          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
-          {file?.total_pages}
+          Страница {page > totalPages ? totalPages : page} из {totalPages}
         </TextUI>
 
         <PageNavigate
           className="mb-4"
           currentPage={page}
-          totalPages={file?.total_pages || 1}
+          totalPages={totalPages}
           onBack={handleBackClick}
           onNext={handleNextClick}
         />
@@ -366,7 +413,7 @@ export function FileEdit({
                       className={`hover:ring-gray-300 hover:ring-2 focus:ring-blue-500 focus:ring-2 outline-none
                         min-w-1 font-normal text-xl mx-1 transition-colors
                         flex flex-col items-center gap-1 px-2 py-0.5 rounded
-                        ${file?.colors[word.label] ?? ""}`}
+                        ${localColors[word.label] ?? ""}`}
                       style={{
                         width: `${word.token.length + 2}ch`,
                       }}
@@ -380,15 +427,13 @@ export function FileEdit({
 
         {/* Bottom */}
         <TextUI variant="desc" className="flex justify-center mt-4">
-          Страница{" "}
-          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
-          {file?.total_pages}
+          Страница {page > totalPages ? totalPages : page} из {totalPages}
         </TextUI>
 
         <PageNavigate
           className="mt-2"
           currentPage={page}
-          totalPages={file?.total_pages || 1}
+          totalPages={totalPages}
           onBack={handleBackClick}
           onNext={handleNextClick}
         />

@@ -30,6 +30,10 @@ export function File() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Переменные меток
+  const [localTags, setLocalTags] = useState<Record<string, string>>({});
+  const [localColors, setLocalColors] = useState<Record<string, string>>({});
+
   useEffect(() => {
     const loadPage = async () => {
       setLoading(true);
@@ -39,6 +43,8 @@ export function File() {
       if (response === undefined) return;
       setFile(response);
       setPage(response.page);
+      setLocalTags(response.tags);
+      setLocalColors(response.colors);
       setLocalRows(response.rows);
       setHasUnsavedChanges(false);
     };
@@ -53,7 +59,11 @@ export function File() {
     const response = await updateFileByIdContent(
       projectId,
       fileId,
-      { new_rows: localRows },
+      {
+        new_tags: localTags,
+        new_colors: localColors,
+        new_rows: localRows,
+      },
       page,
     );
     setIsSaving(false);
@@ -69,6 +79,8 @@ export function File() {
       if (response === undefined) return;
       setFile(response);
       setPage(response.page);
+      setLocalTags(response.tags);
+      setLocalColors(response.colors);
       setLocalRows(response.rows);
       setHasUnsavedChanges(false);
     };
@@ -122,7 +134,11 @@ export function File() {
           projectId={projectId}
           fileId={fileId}
           page={page}
-          file={file}
+          totalPages={file?.total_pages || 1}
+          localTags={localTags}
+          setLocalTags={setLocalTags}
+          localColors={localColors}
+          setLocalColors={setLocalColors}
           localRows={localRows}
           setLocalRows={setLocalRows}
           isLoading={isLoading}
@@ -138,7 +154,11 @@ export function File() {
           projectId={projectId}
           fileId={fileId}
           page={page}
-          file={file}
+          totalPages={file?.total_pages || 1}
+          localTags={localTags}
+          setLocalTags={setLocalTags}
+          localColors={localColors}
+          setLocalColors={setLocalColors}
           localRows={localRows}
           setLocalRows={setLocalRows}
           isLoading={isLoading}
