@@ -327,7 +327,7 @@ export function FileEdit({
       <RightPanel>
         <button
           key="O"
-          className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+          className="w-full px-2 py-2.5 text-left flex items-center gap-3 transition-colors"
         >
           <span
             className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
@@ -344,7 +344,7 @@ export function FileEdit({
           return (
             <button
               key={tagKey}
-              className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+              className="w-full px-2 py-2.5 text-left flex items-center gap-3 transition-colors"
             >
               <span
                 className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
