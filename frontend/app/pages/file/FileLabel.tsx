@@ -164,7 +164,6 @@ export function FileLabel({
     <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
       <ButtonPage onClick={handleExitClick} isLoading={isSaving || isLoading} />
 
-      {/* Панель справа */}
       <RightPanel>
         {/* <button
               onClick={() => setShowTagMenu(true)}
@@ -229,7 +228,9 @@ export function FileLabel({
         </div>
 
         <TextUI variant="desc" className="flex justify-center mb-2">
-          Страница {page} из {file?.total_pages}
+          Страница{" "}
+          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
+          {file?.total_pages}
         </TextUI>
 
         <PageNavigate
@@ -280,7 +281,9 @@ export function FileLabel({
 
         {/* Bottom */}
         <TextUI variant="desc" className="flex justify-center mt-4">
-          Страница {page} из {file?.total_pages}
+          Страница{" "}
+          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
+          {file?.total_pages}
         </TextUI>
 
         <PageNavigate

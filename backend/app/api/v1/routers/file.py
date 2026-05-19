@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Any
-from numpy import ceil
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi import (
@@ -187,15 +186,15 @@ async def get_by_id(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
-    file_db, page_rows = get_page_by_id(
+    file_db, page_rows, real_page = get_page_by_id(
         project_id=project_id,
         file_id=file_id,
         user_id=user_id,
         db=db,
-        page=page,
+        page=max(1, page),
         limit=limit,
     )
-    total_pages = ceil(file_db.total_rows / limit)
+    total_pages = file_db.total_rows // limit + 1
 
     def parse_labels(tags):
         labels = {}
@@ -237,7 +236,7 @@ async def get_by_id(
         name=file_db.name,
         total_rows=file_db.total_rows,
         total_pages=total_pages,
-        page=page,
+        page=real_page,
         origin_file=(
             FileDbResponse.model_validate(origin_file_db) if origin_file_db else None
         ),

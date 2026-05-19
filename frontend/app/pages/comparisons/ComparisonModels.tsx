@@ -73,7 +73,7 @@ const ModelInfoRow = ({
   model2: ModelFullResponse;
 }) => {
   return (
-    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-52 lg:top-20 self-start">
+    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-47 lg:top-15 self-start">
       <ModelInfoElement model={model1} />
       <ModelInfoElement model={model2} />
     </div>
@@ -82,7 +82,7 @@ const ModelInfoRow = ({
 
 const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
   return (
-    <div className="flex-1 h-full flex-col p-6 -m-2 border border-gray-300 rounded-2xl bg-white">
+    <div className="flex-1 flex-col p-4 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">
         <div className="flex w-full flex-row gap-2">
           <TextUI variant="title" maxLines={1} className="-mt-1">

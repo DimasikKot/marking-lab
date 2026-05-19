@@ -278,7 +278,7 @@ def get_page_by_id(
     db: Session,
     page: int,
     limit: int,
-) -> tuple[FileDB, list[Row]]:
+) -> tuple[FileDB, list[Row], int]:
     file_db = _fetch_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
     )
@@ -287,7 +287,17 @@ def get_page_by_id(
 
     page_rows = list(_get_file_rows(file_path, page=page, limit=limit))
 
-    return file_db, page_rows
+    real_page = page
+
+    if page_rows == []:
+        real_page = file_db.total_rows // limit + 1
+        page_rows = list(
+            _get_file_rows(
+                file_path, page=(file_db.total_rows // limit + 1), limit=limit
+            )
+        )
+
+    return file_db, page_rows, real_page
 
 
 # router

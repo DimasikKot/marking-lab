@@ -12,6 +12,7 @@ import {
   type Row,
   type Word,
 } from "@/shared/api/file";
+import { RightPanel } from "@/shared/components/RightPanel";
 
 export function ComparisonFiles() {
   const navigate = useNavigate();
@@ -24,6 +25,16 @@ export function ComparisonFiles() {
   const [file1, setFile1] = useState<FileFullResponse | null>(null);
   const [file2, setFile2] = useState<FileFullResponse | null>(null);
   const [isLoadingFiles, setIsLoadingFiles] = useState(true);
+
+  const mergedTags = {
+    ...(file1?.tags ?? {}),
+    ...(file2?.tags ?? {}),
+  };
+
+  const mergedColors = {
+    ...(file1?.colors ?? {}),
+    ...(file2?.colors ?? {}),
+  };
 
   useEffect(() => {
     const loadFiles = async () => {
@@ -48,11 +59,38 @@ export function ComparisonFiles() {
     <>
       <Header title="Сравнение файлов" />
 
-      <div className="max-w-7xl mx-auto m-6 mb-80">
+      <div className="max-w-6xl mx-auto m-6 mb-80">
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=files`)}
           isLoading={isLoadingFiles}
         />
+
+        <RightPanel>
+          {Object.entries(mergedTags).map(([tagKey, label]) => {
+            const iTag = tagKey.replace("B-", "I-");
+
+            return (
+              <button
+                key={tagKey}
+                className="w-full px-2 py-2.5 text-left flex items-center gap-3 transition-colors"
+              >
+                <span
+                  className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${mergedColors[tagKey]}`}
+                >
+                  {tagKey}
+                </span>
+
+                <span
+                  className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${mergedColors[iTag]}`}
+                >
+                  {iTag}
+                </span>
+
+                <TextUI variant="normal">{label}</TextUI>
+              </button>
+            );
+          })}
+        </RightPanel>
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {file1 && file2 ? (
@@ -84,7 +122,7 @@ const FileInfoRow = ({
   file2: FileFullResponse;
 }) => {
   return (
-    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-52 lg:top-20 self-start">
+    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-47 lg:top-15 self-start">
       <FileInfoElement file={file1} />
       <FileInfoElement file={file2} />
     </div>
@@ -93,7 +131,7 @@ const FileInfoRow = ({
 
 const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
   return (
-    <div className="flex-1 h-full flex-col p-6 -m-2 border border-gray-300 rounded-2xl bg-white">
+    <div className="flex-1 flex-col p-4 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">
         <div className="flex w-full flex-row gap-2">
           <TextUI variant="title" maxLines={1} className="-mt-1">
@@ -210,24 +248,21 @@ const FileRowsRow = ({
   };
 
   return (
-    <div className="flex flex-col w-full gap-6">
+    <div className="flex flex-col w-full gap-4 mt-2">
       {isLinked && (
-        <div>
-          <CheckboxUI
-            value={onlyDiff}
-            title={"Показывать только различия"}
-            onClick={() => setOnlyDiff((prev) => !prev)}
-          />
-
-          <PageNavigate
-            className="mb-4"
-            currentPage={page}
-            totalPages={file1.total_pages}
-            onBack={handleBackClick}
-            onNext={handleNextClick}
-          />
-        </div>
+        <CheckboxUI
+          value={onlyDiff}
+          title={"Показывать только различия"}
+          onClick={() => setOnlyDiff((prev) => !prev)}
+        />
       )}
+
+      <PageNavigate
+        currentPage={page}
+        totalPages={Math.max(file1.total_pages, file2.total_pages)}
+        onBack={handleBackClick}
+        onNext={handleNextClick}
+      />
 
       <div className="grid grid-cols-2 gap-6">
         <FileRowsElement
@@ -236,6 +271,7 @@ const FileRowsRow = ({
           syncedRows={syncedRows}
           side="left"
           onlyDiff={onlyDiff}
+          isLinked={isLinked}
         />
 
         <FileRowsElement
@@ -244,8 +280,16 @@ const FileRowsRow = ({
           syncedRows={syncedRows}
           side="right"
           onlyDiff={onlyDiff}
+          isLinked={isLinked}
         />
       </div>
+
+      <PageNavigate
+        currentPage={page}
+        totalPages={Math.max(file1.total_pages, file2.total_pages)}
+        onBack={handleBackClick}
+        onNext={handleNextClick}
+      />
     </div>
   );
 };
@@ -256,17 +300,20 @@ const FileRowsElement = ({
   syncedRows,
   side,
   onlyDiff,
+  isLinked,
 }: {
   file: FileFullResponse;
   page: number;
   syncedRows: SyncedRow[];
   side: "left" | "right";
   onlyDiff: boolean;
+  isLinked: boolean;
 }) => {
   return (
     <div>
       <TextUI variant="desc" className="flex justify-center mb-2">
-        Страница {page} из {file?.total_pages}
+        Страница {page > file.total_pages ? file.total_pages : page} из{" "}
+        {file.total_pages}
       </TextUI>
 
       <div
@@ -277,35 +324,44 @@ const FileRowsElement = ({
           const row = side === "left" ? item.row1 : item.row2;
 
           return (
-            <div
-              className={`pb-6 last:border-none last:pb-0 border-b
+            <>
+              {row?.words?.length > 0 && (
+                <div
+                  className={`pb-6 last:border-none last:pb-0 border-b
                 ${onlyDiff ? "border-orange-200" : "border-gray-200"}
               `}
-            >
-              <div
-                key={item.index}
-                className={`rounded-2xl p-2 -m-2
-                ${item.isDifferent && !onlyDiff && "bg-orange-50"}
+                >
+                  <div
+                    key={item.index}
+                    className={`rounded-2xl p-2 -m-2
+                ${isLinked && item.isDifferent && !onlyDiff && "bg-orange-50"}
               `}
-              >
-                <div className="flex flex-wrap gap-1">
-                  {row?.words?.map((word: Word, idx: number) => (
-                    <span
-                      key={idx}
-                      className={`
+                  >
+                    <div className="flex flex-wrap gap-1">
+                      {row?.words?.map((word: Word, idx: number) => (
+                        <span
+                          key={idx}
+                          className={`
                         px-2 py-1 rounded-lg font-normal text-xl
                         ${file.colors?.[word.label] || ""}
                       `}
-                    >
-                      {word.token}
-                    </span>
-                  ))}
+                        >
+                          {word.token}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
+            </>
           );
         })}
       </div>
+
+      <TextUI variant="desc" className="flex justify-center mt-2">
+        Страница {page > file.total_pages ? file.total_pages : page} из{" "}
+        {file.total_pages}
+      </TextUI>
     </div>
   );
 };

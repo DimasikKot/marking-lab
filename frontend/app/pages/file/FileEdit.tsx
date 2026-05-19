@@ -328,7 +328,9 @@ export function FileEdit({
         </div>
 
         <TextUI variant="desc" className="flex justify-center mb-2">
-          Страница {page} из {file?.total_pages}
+          Страница{" "}
+          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
+          {file?.total_pages}
         </TextUI>
 
         <PageNavigate
@@ -378,7 +380,9 @@ export function FileEdit({
 
         {/* Bottom */}
         <TextUI variant="desc" className="flex justify-center mt-4">
-          Страница {page} из {file?.total_pages}
+          Страница{" "}
+          {page > (file?.total_pages || 1) ? file?.total_pages || 1 : page} из{" "}
+          {file?.total_pages}
         </TextUI>
 
         <PageNavigate

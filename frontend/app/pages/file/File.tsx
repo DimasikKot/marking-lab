@@ -20,7 +20,8 @@ export function File() {
   const [searchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "label";
   const [selectedIndex, setSelectedIndex] = useState(tab === "label" ? 1 : 0);
-  const page = searchParams.get("page") || "1";
+  const page_param = searchParams.get("page") || "1";
+  const [page, setPage] = useState(Number(page_param));
 
   // Переменные страниц
   const [file, setFile] = useState<FileFullResponse | null>(null);
@@ -32,17 +33,18 @@ export function File() {
   useEffect(() => {
     const loadPage = async () => {
       setLoading(true);
-      const response = await fetchFileById(projectId, fileId, page);
+      const response = await fetchFileById(projectId, fileId, page_param);
       setLoading(false);
 
       if (response === undefined) return;
       setFile(response);
+      setPage(response.page);
       setLocalRows(response.rows);
       setHasUnsavedChanges(false);
     };
 
     loadPage();
-  }, [fileId, page, projectId]);
+  }, [fileId, page_param, projectId]);
 
   const handleSave = async () => {
     if (!hasUnsavedChanges) return;
@@ -61,11 +63,12 @@ export function File() {
 
     const loadPage = async () => {
       setLoading(true);
-      const response = await fetchFileById(projectId, fileId, page);
+      const response = await fetchFileById(projectId, fileId, page_param);
       setLoading(false);
 
       if (response === undefined) return;
       setFile(response);
+      setPage(response.page);
       setLocalRows(response.rows);
       setHasUnsavedChanges(false);
     };
@@ -118,7 +121,7 @@ export function File() {
         <FileEdit
           projectId={projectId}
           fileId={fileId}
-          page={parseInt(page)}
+          page={page}
           file={file}
           localRows={localRows}
           setLocalRows={setLocalRows}
@@ -134,7 +137,7 @@ export function File() {
         <FileLabel
           projectId={projectId}
           fileId={fileId}
-          page={parseInt(page)}
+          page={page}
           file={file}
           localRows={localRows}
           setLocalRows={setLocalRows}

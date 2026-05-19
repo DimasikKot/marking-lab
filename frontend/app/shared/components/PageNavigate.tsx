@@ -23,7 +23,7 @@ export const PageNavigate = ({
       <div className={`flex justify-center gap-3 ${className}`}>
         <ButtonUI
           onClick={onBack}
-          hidden={currentPage === 1}
+          hidden={currentPage <= 1}
           variant="secondary"
         >
           ← Предыдущая
@@ -31,7 +31,7 @@ export const PageNavigate = ({
 
         <ButtonUI
           onClick={onNext}
-          hidden={currentPage === totalPages}
+          hidden={currentPage >= totalPages}
           variant="secondary"
         >
           Следующая →
