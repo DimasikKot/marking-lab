@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { ButtonPage } from "@/shared/components/ButtonPage";
-import { fetchFileById, type FileFullResponse } from "@/shared/api/file";
+import {
+  fetchFileById,
+  type FileFullResponse,
+  type Row,
+  type Word,
+} from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
+import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 export function ComparisonFiles() {
+  const navigate = useNavigate();
   const { projectId = "0" } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
   const ids_param: string = searchParams.get("ids") || "0,0";
@@ -39,8 +46,10 @@ export function ComparisonFiles() {
     <>
       <Header title="Сравнение файлов" />
 
-      <div className="max-w-6xl mx-auto m-2">
-        <ButtonPage onClick={() => window.history.back()} />
+      <div className="max-w-6xl mx-auto m-6 mb-80">
+        <ButtonPage
+          onClick={() => navigate(`/projects/${projectId}?tab=files`)}
+        />
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {file1 && file2 ? (
@@ -67,7 +76,7 @@ const FileInfoRow = ({
   file2: FileFullResponse;
 }) => {
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-52 lg:top-20 self-start">
       <FileInfoElement file={file1} />
       <FileInfoElement file={file2} />
     </div>
@@ -76,7 +85,7 @@ const FileInfoRow = ({
 
 const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
   return (
-    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
+    <div className="flex-1 h-full flex-col p-6 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">
         <div className="flex w-full flex-row gap-2">
           <TextUI variant="title" maxLines={1} className="-mt-1">
@@ -123,6 +132,13 @@ const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
   );
 };
 
+interface SyncedRow {
+  index: number;
+  row1: Row;
+  row2: Row;
+  isDifferent: boolean;
+}
+
 const FileRowsRow = ({
   file1,
   file2,
@@ -130,203 +146,133 @@ const FileRowsRow = ({
   file1: FileFullResponse;
   file2: FileFullResponse;
 }) => {
-  return (
-    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
-      <FileRowsElement file={file1} />
-      <FileRowsElement file={file2} />
-    </div>
-  );
-};
-
-const FileRowsElement = ({ file }: { file: FileFullResponse }) => {
-  return (
-    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
-      <TextUI variant="title" maxLines={1} className="-mt-1">
-        {file.name}
-      </TextUI>
-    </div>
-  );
-};
-
-/*Контейнер для синхронизации двух файлов*/
-function FilesCompareContainer({
-  file1,
-  file2,
-}: {
-  file1: FileFullResponse;
-  file2: FileFullResponse;
-}) {
-  const [page, setPage] = useState(1);
-
-  // Состояние чекбокса: true — только измененные, false — оба файла целиком
-  const [onlyChanged, setOnlyChanged] = useState(false);
+  const [onlyDiff, setOnlyDiff] = useState(false);
 
   const originId1 = file1.origin_file?.id;
   const originId2 = file2.origin_file?.id;
+
   const isLinked = originId1 === file2.id || originId2 === file1.id;
 
-  let rows1 = file1?.rows || [];
-  let rows2 = file2?.rows || [];
+  const rows1 = file1.rows;
+  const rows2 = file2.rows;
 
-  // Фильтрация применяется только если файлы связаны И включен чекбокс onlyChanged
-  if (isLinked && onlyChanged && file1 && file2) {
-    const isFile1Annotated = originId1 === file2.id;
-    const annotatedRows = isFile1Annotated ? file1.rows : file2.rows;
+  /**
+   * Формируем синхронный массив строк
+   */
+  const syncedRows: SyncedRow[] = useMemo(() => {
+    const maxLength = Math.max(rows1.length, rows2.length);
 
-    // Находим индексы строк, где есть слова с тегом (label !== "O")
-    const validIndices = annotatedRows.reduce(
-      (acc: number[], row: any, idx: number) => {
-        if (row.words.some((w: any) => w.label !== "O")) {
-          acc.push(idx);
-        }
-        return acc;
-      },
-      [],
-    );
+    const result = [];
 
-    // Оставляем только отфильтрованные строки
-    rows1 = validIndices.map((idx) => file1.rows[idx]).filter(Boolean);
-    rows2 = validIndices.map((idx) => file2.rows[idx]).filter(Boolean);
-  }
+    for (let i = 0; i < maxLength; i++) {
+      const row1 = rows1[i];
+      const row2 = rows2[i];
 
-  const totalPages = Math.max(file1?.total_pages || 1, file2?.total_pages || 1);
+      const text1 = row1?.words?.map((w) => w.token).join(" ") || "";
+
+      const text2 = row2?.words?.map((w) => w.token).join(" ") || "";
+
+      const labels1 = row1?.words?.map((w) => w.label).join("|") || "";
+
+      const labels2 = row2?.words?.map((w) => w.label).join("|") || "";
+
+      /**
+       * Строка отличается:
+       * - разный текст
+       * - разные labels
+       */
+      const isDifferent = text1 !== text2 || labels1 !== labels2;
+
+      result.push({
+        index: i,
+        row1,
+        row2,
+        isDifferent,
+      });
+    }
+
+    if (onlyDiff) {
+      return result.filter((row) => row.isDifferent);
+    }
+
+    return result;
+  }, [rows1, rows2, onlyDiff]);
 
   return (
     <div className="w-full space-y-4">
-      {/* Отображаем переключатель только если файлы связаны */}
       {isLinked && (
-        <div className="flex items-center gap-3 bg-white px-5 py-3 border border-gray-200 rounded-3xl shadow-sm max-w-max">
+        <div className="flex items-center gap-3 bg-white px-5 py-3 border border-gray-200 rounded-3xl shadow-sm w-fit">
           <CheckboxUI
-            value={onlyChanged}
-            onClick={() => setOnlyChanged(!onlyChanged)}
+            value={onlyDiff}
+            onClick={() => setOnlyDiff((prev) => !prev)}
           />
+
           <span
-            className="text-sm font-medium text-gray-600 cursor-pointer select-none"
-            onClick={() => setOnlyChanged(!onlyChanged)}
+            className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+            onClick={() => setOnlyDiff((prev) => !prev)}
           >
-            Показывать только измененные строки
+            Показывать только различия
           </span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <FileCompareColumn
-          file={file1}
-          dataName={file1?.name}
-          rows={rows1}
-          page={page}
-          totalPages={totalPages}
-          setPage={setPage}
-          loading={loading}
-          scrollRef={scrollRef1}
-          onScroll={handleScroll1}
-        />
-        <FileCompareColumn
-          file={file2}
-          dataName={file2?.name}
-          rows={rows2}
-          page={page}
-          totalPages={totalPages}
-          setPage={setPage}
-          loading={loading}
-          scrollRef={scrollRef2}
-          onScroll={handleScroll2}
-        />
+      <div className="grid grid-cols-2 gap-6">
+        <FileRowsElement file={file1} syncedRows={syncedRows} side="left" />
+
+        <FileRowsElement file={file2} syncedRows={syncedRows} side="right" />
       </div>
     </div>
   );
-}
+};
 
-/* Колонка для файла */
-function FileCompareColumn({
+const FileRowsElement = ({
   file,
-  dataName,
-  rows,
-  page,
-  totalPages,
-  setPage,
-  loading,
-  scrollRef,
-  onScroll,
+  syncedRows,
+  side,
 }: {
-  file: FileDbResponse;
-  dataName?: string;
-  rows: any[];
-  page: number;
-  totalPages: number;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
-  loading: boolean;
-  scrollRef: React.RefObject<HTMLDivElement>;
-  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
-}) {
-  if (!dataName && loading)
-    return <div className="p-10 text-center">Загрузка...</div>;
-
+  file: FileFullResponse;
+  syncedRows: SyncedRow[];
+  side: "left" | "right";
+}) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-4xl overflow-hidden shadow-sm flex flex-col h-200">
-      <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-        <TextUI variant="title" className="text-sm truncate max-w-50">
-          {dataName || file.name || `ID: ${file.id}`}
-        </TextUI>
-        <div className="flex items-center gap-2">
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="material-icons p-1 hover:bg-gray-200 rounded-full disabled:opacity-30"
-          >
-            chevron_left
-          </button>
-          <TextUI variant="label" className="text-xs">
-            Стр. {page}
-          </TextUI>
-          <button
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className="material-icons p-1 hover:bg-gray-200 rounded-full disabled:opacity-30"
-          >
-            chevron_right
-          </button>
-        </div>
+    <div className="flex flex-col border border-gray-200 rounded-3xl overflow-hidden bg-white">
+      <div className="border-b border-gray-100 px-6 py-4">
+        <TextUI variant="title">{file.name}</TextUI>
       </div>
 
-      <div
-        ref={scrollRef}
-        onScroll={onScroll}
-        className="p-4 overflow-y-auto flex-1 space-y-3"
-      >
-        {rows.map((row, idx) => (
-          <div
-            key={idx}
-            className="p-3 border border-gray-100 rounded-2xl hover:border-blue-200 transition-colors bg-white"
-          >
-            <div className="flex flex-wrap gap-x-1 gap-y-2">
-              {row.words.map((w: any, wIdx: number) => (
-                <div key={wIdx} className="flex flex-col items-center">
-                  {w.label !== "O" && (
-                    <span className="text-[10px] font-bold text-blue-500 leading-none mb-0.5">
-                      {w.label}
-                    </span>
-                  )}
+      <div className="p-6 space-y-4">
+        {syncedRows.map((item) => {
+          const row = side === "left" ? item.row1 : item.row2;
+
+          return (
+            <div
+              key={item.index}
+              className={`
+                rounded-2xl border p-4 transition-all
+                ${
+                  item.isDifferent
+                    ? "border-orange-300 bg-orange-50"
+                    : "border-gray-100"
+                }
+              `}
+            >
+              <div className="flex flex-wrap gap-2">
+                {row?.words?.map((word: Word, idx: number) => (
                   <span
-                    className={`px-1.5 py-0.5 rounded-md text-sm ${
-                      w.label !== "O"
-                        ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
-                        : "text-gray-700"
-                    }`}
+                    key={idx}
+                    className={`
+                        px-2 py-1 rounded-lg text-sm
+                        ${file.colors?.[word.label] || ""}
+                      `}
                   >
-                    {w.token}
+                    {word.token}
                   </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-        {rows.length === 0 && !loading && (
-          <div className="text-center text-gray-400 py-10">
-            Нет строк для отображения
-          </div>
-        )}
+          );
+        })}
       </div>
     </div>
   );
-}
+};

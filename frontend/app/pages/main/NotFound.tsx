@@ -6,7 +6,7 @@ export function NotFound() {
     <>
       <Header title="Страница не найдена" />
 
-      <div className="max-w-6xl mx-auto m-2 items-center flex flex-col">
+      <div className="max-w-6xl mx-auto m-6 items-center flex flex-col bg-white">
         <ButtonUI onClick={() => (window.location.href = "/")}>
           На главную
         </ButtonUI>

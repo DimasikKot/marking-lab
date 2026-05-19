@@ -221,7 +221,7 @@ export function FileLabel({
         </div>
       </div>
 
-      <div className="relative max-w-6xl mx-auto bg-white m-2 mb-80">
+      <div className="relative max-w-6xl mx-auto m-6 mb-80 bg-white">
         <ButtonPage
           onClick={handleExitClick}
           isLoading={isSaving || isLoading}

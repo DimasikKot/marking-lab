@@ -158,7 +158,7 @@ export function Model() {
         )}
       </Header>
 
-      <div className="max-w-6xl mx-auto m-2 mb-80">
+      <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=models`)}
           isLoading={isLoading}

@@ -88,7 +88,7 @@ export function Projects() {
     <>
       <Header title="Проекты" />
 
-      <div className="max-w-6xl mx-auto m-2 mb-80">
+      <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
         <ButtonPage onClick={() => navigate("/")} isLoading={isLoading} />
 
         <div className="border border-gray-200 rounded-4xl p-6">

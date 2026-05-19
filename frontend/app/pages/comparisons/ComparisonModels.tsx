@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { fetchModelById, type ModelFullResponse } from "@/shared/api/model";
@@ -7,6 +7,7 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TextUI } from "@/shared/components/TextUI";
 
 export function ComparisonModels() {
+  const navigate = useNavigate();
   const { projectId = "0" } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
   const ids_param: string = searchParams.get("ids") || "0,0";
@@ -39,8 +40,10 @@ export function ComparisonModels() {
     <>
       <Header title="Сравнение моделей" />
 
-      <div className="max-w-7xl mx-auto m-2">
-        <ButtonPage onClick={() => window.history.back()} />
+      <div className="max-w-6xl mx-auto m-6 mb-80">
+        <ButtonPage
+          onClick={() => navigate(`/projects/${projectId}?tab=models`)}
+        />
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {model1 && model2 ? (
@@ -70,7 +73,7 @@ const ModelInfoRow = ({
   model2: ModelFullResponse;
 }) => {
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-52 lg:top-20 self-start">
       <ModelInfoElement model={model1} />
       <ModelInfoElement model={model2} />
     </div>
@@ -79,7 +82,7 @@ const ModelInfoRow = ({
 
 const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
   return (
-    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
+    <div className="flex-1 h-full flex-col p-6 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">
         <div className="flex w-full flex-row gap-2">
           <TextUI variant="title" maxLines={1} className="-mt-1">
@@ -150,7 +153,7 @@ const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
 //   model2: ModelFullResponse;
 // }) => {
 //   return (
-//     <div className="grid md:grid-cols-2 gap-8">
+//     <div className="grid grid-cols-2 gap-8">
 //       <ModelFilesElement model={model1} />
 //       <ModelFilesElement model={model2} />
 //     </div>
@@ -189,7 +192,7 @@ const ModelParametersRow = ({
   model2: ModelFullResponse;
 }) => {
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-2 gap-8">
       <ModelParametersElement model={model1} />
       <ModelParametersElement model={model2} />
     </div>
@@ -240,7 +243,7 @@ const ModelMetricsRow = ({
   model2: ModelFullResponse;
 }) => {
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-2 gap-8">
       <ModelMetricsElement model={model1} />
       <ModelMetricsElement model={model2} />
     </div>
@@ -298,7 +301,7 @@ const ModelGraphsRow = ({
   model2: ModelFullResponse;
 }) => {
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-2 gap-8">
       <ModelGraphsElement model={model1} />
       <ModelGraphsElement model={model2} />
     </div>

@@ -312,7 +312,7 @@ export function FileEdit({
   };
 
   return (
-    <div className="max-w-6xl mx-auto m-2 mb-80">
+    <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
       <ButtonPage onClick={handleExitClick} isLoading={isLoading} />
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">

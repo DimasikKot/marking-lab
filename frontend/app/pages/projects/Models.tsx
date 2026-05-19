@@ -187,7 +187,7 @@ export function Models({
   };
 
   return (
-    <div className="max-w-6xl mx-auto m-2 mb-80">
+    <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
       <ButtonPage
         onClick={() => navigate("/projects")}
         isLoading={isLoading || isCreating}
