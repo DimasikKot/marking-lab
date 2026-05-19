@@ -18,6 +18,7 @@ import type {
   ModelListResponse,
   PatchModelFullRequest,
 } from "@/shared/api/model";
+import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 export function Models({
   projectId,
@@ -47,12 +48,24 @@ export function Models({
     null,
   );
 
+  // Состояния для сравнения
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
   const loadModels = async () => {
     setIsLoading(true);
     const response = await fetchModels(projectId);
     setIsLoading(false);
     if (response === undefined) return;
     setModels(response.data);
+  };
+
+  const toggleSelection = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((i) => i !== id));
+    } else if (selectedIds.length < 2) {
+      setSelectedIds([...selectedIds, id]);
+    }
   };
 
   useEffect(() => {
@@ -188,7 +201,7 @@ export function Models({
         <div className="flex flex-col gap-4 mt-4">
           <TextUI variant="label">Название новой модели</TextUI>
 
-          <div className="flex flex-col sm:flex-row gap-4 max-w-xl">
+          <div className="flex flex-col items-center sm:flex-row gap-4 max-w-xl">
             <div className="flex-1">
               <TextField
                 value={newModelName}
@@ -202,7 +215,7 @@ export function Models({
               onClick={handleCreate}
               disabled={!newModelName.trim() || isCreating}
             >
-              {isCreating ? "Создание..." : "Создать"}
+              {isCreating ? "Создание..." : "Создать новую модель"}
             </ButtonUI>
           </div>
         </div>
@@ -210,16 +223,40 @@ export function Models({
 
       {/* Список моделей */}
       <div className="border border-gray-200 rounded-4xl p-6">
-        <div className="mb-4 flex justify-between items-center">
+        <div className="mb-4 grid grid-cols-3 items-center gap-4">
           <TextUI variant="header">Модели проекта</TextUI>
 
-          <div className="max-w-xs w-full">
-            <TextField
-              name="searchModel"
-              value={search}
-              setValue={setSearch}
-              placeholder="Поиск по имени..."
-            />
+          <TextField
+            name="searchModel"
+            value={search}
+            setValue={setSearch}
+            placeholder="Поиск по имени..."
+          />
+
+          <div className="flex justify-end items-center gap-4">
+            {isCompareMode && (
+              <ButtonUI
+                disabled={selectedIds.length !== 2}
+                onClick={() => {
+                  navigate(
+                    `/projects/${projectId}/models/compare?ids=${selectedIds.join(",")}`,
+                  );
+                }}
+                className="w-fit whitespace-nowrap"
+              >
+                Сравнить ({selectedIds.length}/2)
+              </ButtonUI>
+            )}
+
+            <ButtonUI
+              variant={isCompareMode ? "secondary" : "primary"}
+              onClick={() => {
+                setIsCompareMode(!isCompareMode);
+                setSelectedIds([]);
+              }}
+            >
+              {isCompareMode ? "Отменить" : "Сравнение"}
+            </ButtonUI>
           </div>
         </div>
 
@@ -234,22 +271,46 @@ export function Models({
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredModels.map((model) => (
-            <Link
-              key={model.id}
-              to={`/projects/${projectId}/models/${model.id}`}
-              className="flex"
-            >
-              <ModelCard
-                key={model.id}
-                model={model}
-                onEditClick={() => handleEditClick(model)}
-                onCopyClick={(event) => handleCopyClick(model, event)}
-                onStopClick={(event) => handleStopClick(model.id, event)}
-                onDeleteClick={(event) => handleDeleteClick(model.id, event)}
-              />
-            </Link>
-          ))}
+          {filteredModels.map((model) => {
+            const isSelected = selectedIds.includes(model.id);
+
+            return (
+              <div key={model.id} className="flex">
+                {isCompareMode ? (
+                  <div
+                    key={model.id}
+                    className="flex items-start gap-2 p-2 w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
+                    onClick={() => toggleSelection(model.id)}
+                  >
+                    <CheckboxUI value={isSelected} onClick={() => {}} />
+                    <ModelCard
+                      model={model}
+                      variant="compact"
+                      className="h-fit"
+                    />
+                  </div>
+                ) : (
+                  <Link
+                    key={model.id}
+                    to={`/projects/${projectId}/models/${model.id}`}
+                    className="flex p-2 items-start w-full"
+                  >
+                    <ModelCard
+                      key={model.id}
+                      model={model}
+                      onEditClick={() => handleEditClick(model)}
+                      onCopyClick={(event) => handleCopyClick(model, event)}
+                      onStopClick={(event) => handleStopClick(model.id, event)}
+                      onDeleteClick={(event) =>
+                        handleDeleteClick(model.id, event)
+                      }
+                      className="h-full"
+                    />
+                  </Link>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

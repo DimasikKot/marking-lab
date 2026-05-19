@@ -12,6 +12,7 @@ export const TextUI = ({
     | "label"
     | "error"
     | "normal"
+    | "subtitle"
     | "title"
     | "logo"
     | "header";
@@ -32,12 +33,13 @@ export const TextUI = ({
             label: "text-gray-700 text-sm font-medium",
             error: "text-red-600 text-sm font-medium",
             normal: "text-base font-medium",
+            subtitle: "text-lg font-medium",
             title: "text-xl font-bold",
             logo: "text-2xl font-bold",
             header: "text-3xl font-bold",
           }[variant]
         }
-        ${className} line-clamp-${maxLines}`}
+        ${className} ${maxLines && `line-clamp-${maxLines}`}`}
     >
       {children}
     </span>
@@ -52,12 +54,13 @@ export const TextUI = ({
             label: "text-gray-700 text-sm font-medium",
             error: "text-red-600 text-sm font-medium",
             normal: "text-base font-medium",
+            subtitle: "text-base font-bold",
             title: "text-xl font-bold",
             logo: "text-2xl font-bold",
             header: "text-3xl font-bold",
           }[variant]
         }
-        ${className} line-clamp-${maxLines}`}
+        ${className} ${maxLines && `line-clamp-${maxLines}`}`}
     >
       {children}
     </p>

@@ -146,7 +146,7 @@ export const ModelSettings = ({
                   value={trainingFilesIds.includes(file.id)}
                   onClick={() => {}}
                 />
-                <FileCard file={file} variant="compact" onClick={() => {}} />
+                <FileCard file={file} variant="compact" />
               </div>
             ))}
           </div>
@@ -170,7 +170,7 @@ export const ModelSettings = ({
                   value={predictionFilesIds.includes(file.id)}
                   onClick={() => {}}
                 />
-                <FileCard file={file} variant="compact" onClick={() => {}} />
+                <FileCard file={file} variant="compact" />
               </div>
             ))}
           </div>

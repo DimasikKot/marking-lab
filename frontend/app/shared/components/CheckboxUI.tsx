@@ -16,7 +16,7 @@ export const CheckboxUI = ({
       type="button"
       onClick={onClick}
       // flex и items-center выравнивают иконку и текст в одну линию
-      className={`flex items-center w-max cursor-pointer gap-2 p-2 ${title && "px-4"}  hover:bg-gray-100 rounded-full transition-colors ${className}`}
+      className={`flex items-center w-max cursor-pointer gap-2 p-2 ${title && "px-4"}  hover:bg-gray-200 rounded-full transition-colors ${className}`}
     >
       {/* Иконка из библиотеки Material Icons */}
       <span

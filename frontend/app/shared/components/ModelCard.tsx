@@ -13,6 +13,7 @@ export const ModelCard = ({
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
+  variant = "normal",
 }: {
   model: ModelListResponse;
   onClick?: () => void;
@@ -22,6 +23,7 @@ export const ModelCard = ({
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
   dateIsCreatedAt?: boolean;
   className?: string;
+  variant?: "normal" | "compact";
 }) => {
   const date = dateIsCreatedAt ? model.created_at : model.updated_at;
 
@@ -30,7 +32,7 @@ export const ModelCard = ({
       onClick={onClick}
       className={`
         bg-white border border-gray-300 rounded-2xl p-4 gap-3
-        hover:border-gray-400 hover:shadow-md transition-all duration-200
+        ${variant === "normal" && "hover:border-gray-400 hover:shadow-md"} transition-all duration-200
         cursor-pointer flex flex-col justify-between w-full
         ${className}
       `}
@@ -127,7 +129,7 @@ export const ModelCard = ({
                     className="flex justify-between px-1 border-b border-orange-200"
                   >
                     <TextUI
-                      variant="desc"
+                      variant="label"
                       className="text-orange-400 w-[45%] overflow-hidden"
                       maxLines={1}
                     >
@@ -155,7 +157,7 @@ export const ModelCard = ({
                     className="flex justify-between px-1 border-b border-emerald-300"
                   >
                     <TextUI
-                      variant="desc"
+                      variant="label"
                       className="text-green-500/90 w-[45%] overflow-hidden"
                       maxLines={1}
                     >
@@ -178,52 +180,63 @@ export const ModelCard = ({
         </div>
       </div>
 
-      <div className="w-full flex-1 border-b border-gray-300" />
+      {variant === "normal" && (
+        <>
+          <div className="w-full flex-1 border-b border-gray-300" />
 
-      <div className="flex justify-between -mb-1 gap-3">
-        <div className="flex flex-max gap-3">
-          <ButtonUI onClick={onEditClick} variant="icon" className="text-left">
-            <div className="select-none material-icons">edit</div>
-          </ButtonUI>
+          <div className="flex justify-between -mb-1 gap-3">
+            <div className="flex flex-max gap-3">
+              <ButtonUI
+                onClick={onEditClick}
+                variant="icon"
+                className="text-left"
+              >
+                <div className="select-none material-icons">edit</div>
+              </ButtonUI>
 
-          <ButtonUI onClick={(event) => onCopyClick?.(event)} variant="icon">
-            <div className="select-none material-icons">copy_all</div>
-          </ButtonUI>
+              <ButtonUI
+                onClick={(event) => onCopyClick?.(event)}
+                variant="icon"
+              >
+                <div className="select-none material-icons">copy_all</div>
+              </ButtonUI>
 
-          {/* {Object.keys(model.metrics).length > 0 && (
+              {/* {Object.keys(model.metrics).length > 0 && (
               <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
                 <div className="select-none material-icons">insert_chart</div>
               </ButtonUI>
             )} */}
-        </div>
-
-        <TextUI
-          variant="desc"
-          className="flex flex-1 text-center justify-center items-center"
-        >
-          {new Date(date).toLocaleDateString("ru-RU", {
-            month: "long",
-            day: "numeric",
-            hour: "numeric",
-            minute: "numeric",
-          })}
-        </TextUI>
-
-        <div className="ml-9">
-          <ButtonUI
-            onClick={onDeleteClick}
-            variant="icon"
-            className="flex-max text-right text-red-600 hover:text-red-800"
-          >
-            <div
-              // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
-              className="select-none material-icons"
-            >
-              delete
             </div>
-          </ButtonUI>
-        </div>
-      </div>
+
+            <TextUI
+              variant="desc"
+              className="flex flex-1 text-center justify-center items-center"
+            >
+              {new Date(date).toLocaleDateString("ru-RU", {
+                month: "long",
+                day: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+              })}
+            </TextUI>
+
+            <div className="ml-9">
+              <ButtonUI
+                onClick={onDeleteClick}
+                variant="icon"
+                className="flex-max text-right text-red-600 hover:text-red-800"
+              >
+                <div
+                  // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
+                  className="select-none material-icons"
+                >
+                  delete
+                </div>
+              </ButtonUI>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

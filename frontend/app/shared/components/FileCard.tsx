@@ -28,7 +28,7 @@ export const FileCard = ({
       onClick={onClick}
       className={`
         bg-white border border-gray-300 rounded-2xl p-4 gap-3
-        hover:border-gray-400 hover:shadow-md transition-all duration-200
+        ${variant === "normal" && "hover:border-gray-400 hover:shadow-md"} transition-all duration-200
         cursor-pointer flex flex-col justify-between w-full
         ${className}
       `}
@@ -36,11 +36,7 @@ export const FileCard = ({
       <div className="flex-1 h-full">
         <div className="flex flex-row justify-between gap-4">
           <div className="flex w-full flex-row gap-2">
-            <TextUI
-              variant={variant === "compact" ? `label` : `title`}
-              maxLines={1}
-              className="-mt-1"
-            >
+            <TextUI variant="title" maxLines={1} className="-mt-1">
               {file.name}
             </TextUI>
 
@@ -59,29 +55,25 @@ export const FileCard = ({
 
         {file.total_rows && (
           <TextUI variant="desc" maxLines={1} className="mt-1">
-            Строк: {file.total_rows}
+            <strong>Строк:</strong> {file.total_rows}
           </TextUI>
         )}
 
         {file.prediction_model && (
           <TextUI variant="desc" maxLines={1} className="mt-1">
-            Размечен моделью: {file.prediction_model.name}{" "}
-            {file.prediction_model.parameters["Базовая модель"] && (
-              <TextUI
-                variant="label"
-                className="mt-0.75 h-min w-40 line-clamp-1" // text-orange-400
-              >
-                {String(file.prediction_model.parameters["Базовая модель"])
-                  .split("/")
-                  .pop()}
-              </TextUI>
-            )}
+            <strong>Размечен моделью:</strong> {file.prediction_model.name}
+            {" ("}
+            {file.prediction_model.parameters["Базовая модель"] &&
+              String(file.prediction_model.parameters["Базовая модель"])
+                .split("/")
+                .pop()}
+            {")"}
           </TextUI>
         )}
 
         {file.origin_file && (
           <TextUI variant="desc" maxLines={1} className="mt-1">
-            Исходный файл: {file.origin_file.name}
+            <strong>Исходный файл:</strong> {file.origin_file.name}
           </TextUI>
         )}
       </div>

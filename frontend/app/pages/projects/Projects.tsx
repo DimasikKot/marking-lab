@@ -92,22 +92,18 @@ export function Projects() {
         <ButtonPage onClick={() => navigate("/")} isLoading={isLoading} />
 
         <div className="border border-gray-200 rounded-4xl p-6">
-          <div className="mb-4 flex justify-between items-center">
-            <TextUI variant="header" className="max-w-xs w-full">
-              Ваши проекты
-            </TextUI>
+          <div className="mb-4 grid grid-cols-3 items-center gap-4">
+            <TextUI variant="header">Ваши проекты</TextUI>
 
-            <ButtonUI onClick={handleCreateClick} className="max-w-xs w-full">
-              + Новый проект
-            </ButtonUI>
+            <TextField
+              name="searchProject"
+              value={search}
+              setValue={setSearch}
+              placeholder="Поиск по названию проекта..."
+            />
 
-            <div className="max-w-xs w-full">
-              <TextField
-                name="searchProject"
-                value={search}
-                setValue={setSearch}
-                placeholder="Поиск по названию проекта..."
-              />
+            <div className="flex justify-end items-center">
+              <ButtonUI onClick={handleCreateClick}>+ Новый проект</ButtonUI>
             </div>
           </div>
 

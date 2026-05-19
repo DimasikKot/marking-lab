@@ -203,32 +203,25 @@ export function Files({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
           {filteredFiles.map((file) => {
             const isSelected = selectedIds.includes(file.id);
 
             return (
-              <div key={file.id} className="relative flex">
-                {isCompareMode && (
-                  <div className="absolute top-3 left-3 z-10">
-                    <CheckboxUI
-                      value={isSelected}
-                      onClick={() => toggleSelection(file.id)}
-                    />
-                  </div>
-                )}
-
+              <div key={file.id} className="flex">
                 {isCompareMode ? (
-                  <FileCard
-                    file={file}
-                    variant="compact"
-                    onEditClick={() => handleEditClick(file)}
-                    onDeleteClick={(event) => handleDeleteClick(file.id, event)}
-                  />
+                  <div
+                    key={file.id}
+                    className="flex items-start gap-2 p-2 w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
+                    onClick={() => toggleSelection(file.id)}
+                  >
+                    <CheckboxUI value={isSelected} onClick={() => {}} />
+                    <FileCard file={file} variant="compact" className="h-fit" />
+                  </div>
                 ) : (
                   <Link
                     to={`/projects/${projectId}/files/${file.id}?tab=label&page=1`}
-                    className="flex w-full"
+                    className="w-full p-2 items-start flex"
                   >
                     <FileCard
                       file={file}
@@ -236,6 +229,7 @@ export function Files({
                       onDeleteClick={(event) =>
                         handleDeleteClick(file.id, event)
                       }
+                      className="h-full"
                     />
                   </Link>
                 )}

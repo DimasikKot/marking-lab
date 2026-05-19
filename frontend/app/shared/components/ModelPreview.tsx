@@ -20,6 +20,7 @@ export const ModelPreview = ({ model }: { model: ModelFullResponse }) => {
                 className="flex justify-between py-1 border-b border-orange-200"
               >
                 <TextUI
+                  variant="subtitle"
                   className="text-orange-400 w-[45%] overflow-hidden"
                   isSelectable
                 >
@@ -56,6 +57,7 @@ export const ModelPreview = ({ model }: { model: ModelFullResponse }) => {
                 className="flex justify-between py-1 border-b border-emerald-300"
               >
                 <TextUI
+                  variant="subtitle"
                   className="text-emerald-500 w-[45%] overflow-hidden"
                   isSelectable
                 >
