@@ -92,23 +92,26 @@ export const ModelPreview = ({ model }: { model: ModelFullResponse }) => {
         </div>
       ))}
 
-      <TextUI variant="title" isSelectable>
-        Файлы, на которых будет обучаться:{" "}
-        <TextUI isSpan className="text-lg" isSelectable>
-          {model.training_files.length > 0
-            ? model.training_files.map((file) => file.name).join(" , ")
-            : "не выбраны"}
+      {/* Файлы */}
+      <div className="flex flex-col p-6 border border-gray-300 rounded-2xl">
+        <TextUI variant="title" isSelectable className="h-50%">
+          Файлы, на которых будет обучаться:{" "}
+          <TextUI isSpan className="text-lg" isSelectable>
+            {model.training_files.length > 0
+              ? model.training_files.map((file) => file.name).join(" , ")
+              : "не выбраны"}
+          </TextUI>
         </TextUI>
-      </TextUI>
 
-      <TextUI variant="title" isSelectable>
-        Файлы, которые будут размечены:{" "}
-        <TextUI isSpan className="text-lg" isSelectable>
-          {model.prediction_files.length > 0
-            ? model.prediction_files.map((file) => file.name).join(" , ")
-            : "не выбраны"}
+        <TextUI variant="title" isSelectable className="h-50%">
+          Файлы, которые будут размечены:{" "}
+          <TextUI isSpan className="text-lg" isSelectable>
+            {model.prediction_files.length > 0
+              ? model.prediction_files.map((file) => file.name).join(" , ")
+              : "не выбраны"}
+          </TextUI>
         </TextUI>
-      </TextUI>
+      </div>
     </div>
   );
 };
