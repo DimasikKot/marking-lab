@@ -93,6 +93,7 @@ export interface FileFullResponse {
   total_pages: number;
   page: number;
   origin_file: FileDbResponse | null;
+  prediction_model: PredictionModelDbResponse | null;
   is_labeled: boolean;
   tags: Record<string, string>;
   colors: Record<string, string>;

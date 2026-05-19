@@ -44,7 +44,10 @@ export function ComparisonFiles() {
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {file1 && file2 ? (
-            <FilesCompareContainer file1={file1} file2={file2} />
+            <div className="flex flex-col gap-6">
+              <FileInfoRow file1={file1} file2={file2} />
+              <FileRowsRow file1={file1} file2={file2} />
+            </div>
           ) : isLoadingFiles ? (
             <TextUI>Загрузка...</TextUI>
           ) : (
@@ -56,7 +59,7 @@ export function ComparisonFiles() {
   );
 }
 
-const FilesCompareContainer = ({
+const FileInfoRow = ({
   file1,
   file2,
 }: {
@@ -65,127 +68,91 @@ const FilesCompareContainer = ({
 }) => {
   return (
     <div className="grid md:grid-cols-2 gap-8">
-      <TextUI variant="title" className="mb-4">
-        {file1.name}
-      </TextUI>
+      <FileInfoElement file={file1} />
+      <FileInfoElement file={file2} />
+    </div>
+  );
+};
 
-      <TextUI variant="title" className="mb-4">
-        {file2.name}
+const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
+  return (
+    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
+      <div className="flex flex-row justify-between gap-4">
+        <div className="flex w-full flex-row gap-2">
+          <TextUI variant="title" maxLines={1} className="-mt-1">
+            {file.name}
+          </TextUI>
+
+          {/* <TextUI variant="desc" className="flex items-end mt-0.5 h-min w-26">
+              (id: {file.id})
+            </TextUI> */}
+        </div>
+
+        <div
+          className={`flex items-center justify-center select-none material-icons 
+            ${file.is_labeled ? "text-green-500" : "text-gray-500"}`}
+        >
+          {file.is_labeled ? "sell" : "help_outline"}
+        </div>
+      </div>
+
+      {file.total_rows && (
+        <TextUI variant="desc" maxLines={1} className="mt-1">
+          <strong>Строк:</strong> {file.total_rows}
+        </TextUI>
+      )}
+
+      {file.prediction_model && (
+        <TextUI variant="desc" maxLines={1} className="mt-1">
+          <strong>Размечен моделью:</strong> {file.prediction_model.name}
+          {" ("}
+          {file.prediction_model.parameters["Базовая модель"] &&
+            String(file.prediction_model.parameters["Базовая модель"])
+              .split("/")
+              .pop()}
+          {")"}
+        </TextUI>
+      )}
+
+      {file.origin_file && (
+        <TextUI variant="desc" maxLines={1} className="mt-1">
+          <strong>Исходный файл:</strong> {file.origin_file.name}
+        </TextUI>
+      )}
+    </div>
+  );
+};
+
+const FileRowsRow = ({
+  file1,
+  file2,
+}: {
+  file1: FileFullResponse;
+  file2: FileFullResponse;
+}) => {
+  return (
+    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
+      <FileRowsElement file={file1} />
+      <FileRowsElement file={file2} />
+    </div>
+  );
+};
+
+const FileRowsElement = ({ file }: { file: FileFullResponse }) => {
+  return (
+    <div className="flex-1 h-full flex-col p-6 border border-gray-300 rounded-2xl">
+      <TextUI variant="title" maxLines={1} className="-mt-1">
+        {file.name}
       </TextUI>
     </div>
   );
 };
 
-function ComparisonPanel({ projectId }: { projectId: string | number }) {
-  const [search, setSearch] = useState("");
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [isComparing, setIsComparing] = useState(false);
-
-  const toggleSelection = (id: number) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((i) => i !== id));
-    } else if (selectedIds.length < 2) {
-      setSelectedIds([...selectedIds, id]);
-    }
-  };
-
-  const items = type === "files" ? files : models;
-  const filteredItems = items.filter((i) =>
-    i.name.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  // Находим выбранные файлы для передачи в контейнер сравнения
-  const file1 = files.find((f) => f.id === selectedIds[0]);
-  const file2 = files.find((f) => f.id === selectedIds[1]);
-
-  return (
-    <>
-      {!isComparing ? (
-        <div className="border border-gray-200 rounded-4xl p-8 bg-white shadow-sm">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <TextUI variant="header">
-                Сравнение {type === "files" ? "файлов" : "моделей"}
-              </TextUI>
-              <TextUI variant="desc">
-                Выберите ровно 2 объекта для параллельного просмотра
-              </TextUI>
-            </div>
-            <div className="flex gap-4 items-center">
-              <TextField
-                value={search}
-                setValue={setSearch}
-                placeholder="Поиск по названию..."
-                name="search"
-              />
-              <ButtonUI
-                disabled={selectedIds.length !== 2}
-                onClick={() => setIsComparing(true)}
-              >
-                Сравнить выбранное ({selectedIds.length}/2)
-              </ButtonUI>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => toggleSelection(item.id)}
-                className={`p-5 border-2 rounded-3xl cursor-pointer transition-all flex items-center gap-4 ${
-                  selectedIds.includes(item.id)
-                    ? "border-blue-500 bg-blue-50/30"
-                    : "border-gray-100 hover:border-gray-300"
-                }`}
-              >
-                <CheckboxUI
-                  value={selectedIds.includes(item.id)}
-                  onClick={() => toggleSelection(item.id)}
-                />
-                <div className="overflow-hidden">
-                  <TextUI variant="title" className="truncate text-base">
-                    {item.name}
-                  </TextUI>
-                  <TextUI variant="desc" className="text-xs">
-                    ID: {item.id}
-                  </TextUI>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <>
-          {type === "files" && file1 && file2 ? (
-            <FilesCompareContainer
-              projectId={projectId}
-              file1={file1}
-              file2={file2}
-            />
-          ) : type === "models" ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              <ModelCompareColumn
-                projectId={projectId}
-                modelId={selectedIds[0]}
-              />
-              <ModelCompareColumn
-                projectId={projectId}
-                modelId={selectedIds[1]}
-              />
-            </div>
-          ) : null}
-        </>
-      )}
-    </>
-  );
-}
-
 /*Контейнер для синхронизации двух файлов*/
-function FilesCompareContainerOld({
+function FilesCompareContainer({
   file1,
   file2,
 }: {
-  projectId: string | number;
   file1: FileFullResponse;
   file2: FileFullResponse;
 }) {

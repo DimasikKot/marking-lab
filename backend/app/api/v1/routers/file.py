@@ -66,23 +66,24 @@ class FileListResponse(FileDbResponse):
         from_attributes = True
 
 
+def ToPredictionModelResponse(model_db: ModelDB) -> PredictionModelResponse:
+    training_files = [
+        FileDbResponse.model_validate(link.file)
+        for link in model_db.file_links
+        if link.role == "training" and link.file is not None
+    ]
+
+    return PredictionModelResponse(
+        id=model_db.id,
+        name=model_db.name,
+        parameters=model_db.parameters,
+        training_files=training_files,
+        created_at=model_db.created_at,
+        updated_at=model_db.updated_at,
+    )
+
+
 def ToFileListResponse(file_db: FileDB, db: Session) -> FileListResponse:
-    def ToPredictionModelResponse(model_db: ModelDB) -> PredictionModelResponse:
-        training_files = [
-            FileDbResponse.model_validate(link.file)
-            for link in model_db.file_links
-            if link.role == "training" and link.file is not None
-        ]
-
-        return PredictionModelResponse(
-            id=model_db.id,
-            name=model_db.name,
-            parameters=model_db.parameters,
-            training_files=training_files,
-            created_at=model_db.created_at,
-            updated_at=model_db.updated_at,
-        )
-
     prediction_model = next(
         (
             ToPredictionModelResponse(link.model)
@@ -168,6 +169,7 @@ class GetFileFullResponse(BaseModel):
     total_pages: int
     page: int
     origin_file: FileDbResponse | None
+    prediction_model: PredictionModelResponse | None
     is_labeled: bool
     tags: dict[str, str]
     colors: dict[str, str]
@@ -221,6 +223,15 @@ async def get_by_id(
         db.query(FileDB).filter(FileDB.id == file_db.origin_file_id).first()
     )
 
+    prediction_model = next(
+        (
+            ToPredictionModelResponse(link.model)
+            for link in file_db.model_links
+            if link.role == "predicted"
+        ),
+        None,
+    )
+
     return GetFileFullResponse(
         id=file_db.id,
         name=file_db.name,
@@ -230,6 +241,7 @@ async def get_by_id(
         origin_file=(
             FileDbResponse.model_validate(origin_file_db) if origin_file_db else None
         ),
+        prediction_model=prediction_model,
         is_labeled=file_db.is_labeled,
         tags=parse_labels(file_db.tags),
         colors=parse_colors(file_db.tags),
