@@ -113,7 +113,7 @@ export function Login() {
         buttonText={buttonText}
         onButtonClick={onClick}
         isLoading={isLoading}
-        hasAccountLink={{
+        descriptionLink={{
           text: "Нет аккаунта?",
           onClick: () => navigate("/register"),
         }}

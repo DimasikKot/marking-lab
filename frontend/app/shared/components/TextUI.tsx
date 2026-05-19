@@ -6,7 +6,15 @@ export const TextUI = ({
   isSpan = false,
   children,
 }: {
-  variant?: "desc" | "label" | "error" | "normal" | "title" | "logo" | "header";
+  variant?:
+    | "desc"
+    | "link"
+    | "label"
+    | "error"
+    | "normal"
+    | "title"
+    | "logo"
+    | "header";
   className?: string;
   maxLines?: number;
   isSelectable?: boolean;
@@ -20,12 +28,13 @@ export const TextUI = ({
         ${
           {
             desc: "text-gray-600 text-sm font-normal",
+            link: "text-blue-600 hover:text-blue-800 text-sm font-medium",
             label: "text-gray-700 text-sm font-medium",
             error: "text-red-600 text-sm font-medium",
-            normal: "text-black text-base font-medium",
-            title: "text-black text-xl font-bold",
-            logo: "text-black text-2xl font-bold",
-            header: "text-black text-3xl font-bold",
+            normal: "text-base font-medium",
+            title: "text-xl font-bold",
+            logo: "text-2xl font-bold",
+            header: "text-3xl font-bold",
           }[variant]
         }
         ${className} line-clamp-${maxLines}`}
@@ -39,12 +48,13 @@ export const TextUI = ({
         ${
           {
             desc: "text-gray-600 text-sm font-normal",
+            link: "text-blue-600 hover:text-blue-800 text-sm font-normal",
             label: "text-gray-700 text-sm font-medium",
             error: "text-red-600 text-sm font-medium",
-            normal: "text-black text-base font-medium",
-            title: "text-black text-xl font-bold",
-            logo: "text-black text-2xl font-bold",
-            header: "text-black text-3xl font-bold",
+            normal: "text-base font-medium",
+            title: "text-xl font-bold",
+            logo: "text-2xl font-bold",
+            header: "text-3xl font-bold",
           }[variant]
         }
         ${className} line-clamp-${maxLines}`}

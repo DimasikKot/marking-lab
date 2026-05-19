@@ -11,7 +11,7 @@ export function LoginRegisterCard({
   buttonText,
   onButtonClick,
   isLoading = false,
-  hasAccountLink,
+  descriptionLink,
   backButton,
 }: {
   title: string;
@@ -21,7 +21,7 @@ export function LoginRegisterCard({
   onButtonClick: () => void;
   isLoading?: boolean;
   error?: string | null;
-  hasAccountLink?: {
+  descriptionLink?: {
     text: string;
     onClick: () => void;
   };
@@ -54,10 +54,13 @@ export function LoginRegisterCard({
 
           <div className="flex-1">
             <div>{children}</div>
-            {hasAccountLink && (
+
+            {descriptionLink && (
               <div className="flex justify-start mt-4">
-                <ButtonUI onClick={hasAccountLink.onClick} variant="link">
-                  {hasAccountLink.text}
+                <ButtonUI onClick={descriptionLink.onClick} variant="link">
+                  <TextUI variant="link" className="text-blue-600">
+                    {descriptionLink.text}
+                  </TextUI>
                 </ButtonUI>
               </div>
             )}

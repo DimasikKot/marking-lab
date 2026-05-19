@@ -159,7 +159,7 @@ export function Register() {
         buttonText={buttonText}
         onButtonClick={onClick}
         isLoading={isLoading}
-        hasAccountLink={{
+        descriptionLink={{
           text: "Уже есть аккаунт?",
           onClick: () => navigate("/login"),
         }}

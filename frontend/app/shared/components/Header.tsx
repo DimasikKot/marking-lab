@@ -66,7 +66,11 @@ export function Header({
       <Logo onClick={() => navigate("/")} />
 
       {title && (
-        <TextUI variant="header" maxLines={1} className={`w-full lg:flex-1 text-center`}>
+        <TextUI
+          variant="header"
+          maxLines={1}
+          className={`w-full lg:flex-1 text-center`}
+        >
           {title}
         </TextUI>
       )}
@@ -107,7 +111,7 @@ export function Header({
               {/* Меню */}
               <MenuItems
                 className="absolute right-0 mt-3 px-4 py-3 w-56 flex flex-col items-start
-                          gap-2 bg-white rounded-2xl shadow-xl border border-gray-300 z-20 focus:outline-none"
+                          gap-2 bg-white rounded-2xl shadow-xl border border-gray-300 z-100 focus:outline-none"
               >
                 <TextUI isSelectable>{username}</TextUI>
 
@@ -116,10 +120,10 @@ export function Header({
                 <MenuItem>
                   <ButtonUI
                     onClick={logoutUser}
-                    variant="secondary"
-                    className={`text-red-600 w-full`}
+                    variant="link"
+                    className={`text-red-600 hover:text-red-800 w-full z-10`}
                   >
-                    Выйти
+                    <TextUI>Выход</TextUI>
                   </ButtonUI>
                 </MenuItem>
               </MenuItems>

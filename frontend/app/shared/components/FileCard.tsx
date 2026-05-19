@@ -93,7 +93,7 @@ export const FileCard = ({
           <div className="flex justify-between -mb-1 gap-3">
             <ButtonUI
               onClick={onEditClick}
-              variant="secondary"
+              variant="icon"
               className="flex-max text-left"
             >
               <div className="select-none material-icons">edit</div>
@@ -113,7 +113,7 @@ export const FileCard = ({
 
             <ButtonUI
               onClick={onDeleteClick}
-              variant="secondary"
+              variant="icon"
               className="flex-max text-right text-red-600 hover:text-red-800"
             >
               <div className="select-none material-icons">delete</div>

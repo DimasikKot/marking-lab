@@ -37,8 +37,13 @@ export function Files({
   const [isUploading, setIsUploading] = useState(false);
   const [search, setSearch] = useState("");
 
+  // Состояния для редактирования
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingFile, setEditingFile] = useState<FileListResponse | null>(null);
+
+  // Состояния для сравнения
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const loadFiles = async () => {
     setIsLoading(true);
@@ -46,6 +51,14 @@ export function Files({
     setIsLoading(false);
     if (response === undefined) return;
     setFiles(response.data);
+  };
+
+  const toggleSelection = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((i) => i !== id));
+    } else if (selectedIds.length < 2) {
+      setSelectedIds([...selectedIds, id]);
+    }
   };
 
   // Загрузка нового файла на сервер
@@ -143,16 +156,40 @@ export function Files({
 
       {/* Список файлов */}
       <div className="border border-gray-200 rounded-4xl p-6">
-        <div className="mb-4 flex justify-between items-center">
+        <div className="mb-4 grid grid-cols-3 items-center gap-4">
           <TextUI variant="header">Файлы проекта</TextUI>
 
-          <div className="max-w-xs w-full">
-            <TextField
-              name="searchFile"
-              value={search}
-              setValue={setSearch}
-              placeholder="Поиск по имени файла..."
-            />
+          <TextField
+            name="searchFile"
+            value={search}
+            setValue={setSearch}
+            placeholder="Поиск по имени файла..."
+          />
+
+          <div className="flex justify-end items-center gap-4">
+            {isCompareMode && (
+              <ButtonUI
+                disabled={selectedIds.length !== 2}
+                onClick={() => {
+                  navigate(
+                    `/projects/${projectId}/files/compare?ids=${selectedIds.join(",")}`,
+                  );
+                }}
+                className="w-fit whitespace-nowrap"
+              >
+                Сравнить ({selectedIds.length}/2)
+              </ButtonUI>
+            )}
+
+            <ButtonUI
+              variant={isCompareMode ? "secondary" : "primary"}
+              onClick={() => {
+                setIsCompareMode(!isCompareMode);
+                setSelectedIds([]);
+              }}
+            >
+              {isCompareMode ? "Отменить" : "Сравнение"}
+            </ButtonUI>
           </div>
         </div>
 
@@ -167,20 +204,44 @@ export function Files({
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredFiles.map((file) => (
-            <Link
-              key={file.id}
-              to={`/projects/${projectId}/files/${file.id}?tab=label&page=1`}
-              className="flex"
-            >
-              <FileCard
-                key={file.id}
-                file={file}
-                onEditClick={() => handleEditClick(file)}
-                onDeleteClick={(event) => handleDeleteClick(file.id, event)}
-              />
-            </Link>
-          ))}
+          {filteredFiles.map((file) => {
+            const isSelected = selectedIds.includes(file.id);
+
+            return (
+              <div key={file.id} className="relative flex">
+                {isCompareMode && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <CheckboxUI
+                      value={isSelected}
+                      onClick={() => toggleSelection(file.id)}
+                    />
+                  </div>
+                )}
+
+                {isCompareMode ? (
+                  <FileCard
+                    file={file}
+                    variant="compact"
+                    onEditClick={() => handleEditClick(file)}
+                    onDeleteClick={(event) => handleDeleteClick(file.id, event)}
+                  />
+                ) : (
+                  <Link
+                    to={`/projects/${projectId}/files/${file.id}?tab=label&page=1`}
+                    className="flex w-full"
+                  >
+                    <FileCard
+                      file={file}
+                      onEditClick={() => handleEditClick(file)}
+                      onDeleteClick={(event) =>
+                        handleDeleteClick(file.id, event)
+                      }
+                    />
+                  </Link>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

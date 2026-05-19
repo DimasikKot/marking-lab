@@ -219,6 +219,10 @@ export function Components() {
                 title="Unchecked"
                 onClick={() => setCheckboxValue(!checkboxValue)}
               />
+              <CheckboxUI
+                value={checkboxValue}
+                onClick={() => setCheckboxValue(!checkboxValue)}
+              />
             </div>
           </div>
 
@@ -380,7 +384,7 @@ export function Components() {
               subtitle="Введите данные для входа в систему"
               buttonText="Войти"
               onButtonClick={() => toast.success("Попытка входа")}
-              hasAccountLink={{
+              descriptionLink={{
                 text: "Нет аккаунта? Зарегистрироваться",
                 onClick: () => toast.success("Переход на регистрацию"),
               }}

@@ -78,23 +78,8 @@ const FilesCompareContainer = ({
 
 function ComparisonPanel({ projectId }: { projectId: string | number }) {
   const [search, setSearch] = useState("");
-  const [files, setFiles] = useState<FileDbResponse[]>([]);
-  const [models, setModels] = useState<ModelDbResponse[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isComparing, setIsComparing] = useState(false);
-
-  useEffect(() => {
-    const loadList = async () => {
-      if (type === "files") {
-        const res = await fetchFiles(projectId);
-        if (res) setFiles(res.data);
-      } else {
-        const res = await fetchModels(projectId);
-        if (res) setModels(res.data);
-      }
-    };
-    loadList();
-  }, [type, projectId]);
 
   const toggleSelection = (id: number) => {
     if (selectedIds.includes(id)) {

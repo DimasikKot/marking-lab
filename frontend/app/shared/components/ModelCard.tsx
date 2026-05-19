@@ -87,13 +87,15 @@ export const ModelCard = ({
           </div>
 
           {model.progress > 0 && model.progress < 100 && (
-            <ButtonUI
-              onClick={onStopClick}
-              variant="secondary"
-              className="flex-max text-right text-red-600 hover:text-red-800"
-            >
-              <div className="-ml-3 select-none material-icons">cancel</div>
-            </ButtonUI>
+            <div className="-ml-3">
+              <ButtonUI
+                onClick={onStopClick}
+                variant="icon"
+                className="flex-max text-right text-red-600 hover:text-red-800"
+              >
+                <div className="select-none material-icons">cancel</div>
+              </ButtonUI>
+            </div>
           )}
         </div>
 
@@ -180,18 +182,11 @@ export const ModelCard = ({
 
       <div className="flex justify-between -mb-1 gap-3">
         <div className="flex flex-max gap-3">
-          <ButtonUI
-            onClick={onEditClick}
-            variant="secondary"
-            className="text-left"
-          >
+          <ButtonUI onClick={onEditClick} variant="icon" className="text-left">
             <div className="select-none material-icons">edit</div>
           </ButtonUI>
 
-          <ButtonUI
-            onClick={(event) => onCopyClick?.(event)}
-            variant="secondary"
-          >
+          <ButtonUI onClick={(event) => onCopyClick?.(event)} variant="icon">
             <div className="select-none material-icons">copy_all</div>
           </ButtonUI>
 
@@ -214,18 +209,20 @@ export const ModelCard = ({
           })}
         </TextUI>
 
-        <ButtonUI
-          onClick={onDeleteClick}
-          variant="secondary"
-          className="flex-max text-right text-red-600 hover:text-red-800"
-        >
-          <div
-            // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
-            className="ml-9 select-none material-icons"
+        <div className="ml-9">
+          <ButtonUI
+            onClick={onDeleteClick}
+            variant="icon"
+            className="flex-max text-right text-red-600 hover:text-red-800"
           >
-            delete
-          </div>
-        </ButtonUI>
+            <div
+              // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
+              className="select-none material-icons"
+            >
+              delete
+            </div>
+          </ButtonUI>
+        </div>
       </div>
     </div>
   );
