@@ -6,7 +6,7 @@ import httpx
 
 from app.services.model_class import NERModel
 from app.core.config import settings
-from app.services.model_metrics import loss_plot
+from app.services.model_metrics import loss_plot, plot_confusion_matrix
 from app.services.model_prediction import model_predict
 from app.services.model_files import (
     extract_labels_from_sentences,
@@ -77,25 +77,38 @@ def _model_train(
 
         # Метрики валидационной выборки
         validation_metrics: dict[str, float] = result["eval_metrics"]
+
+        # Получаем истинные и предсказанные метки из результата
+        true_labels = result.get("true_labels", [])
+        pred_labels = result.get("pred_labels", [])
+
         return_metrics = {}
         if validation_metrics:
+            # Убираем метки из словаря метрик, если они там есть
+            clean_metrics = {
+                k: v
+                for k, v in validation_metrics.items()
+                if not k.startswith("eval_true") and not k.startswith("eval_pred")
+            }
             return_metrics = {
-                "Точность (accuracy)": validation_metrics.get("eval_accuracy"),
-                "Точность (precision)": validation_metrics.get("eval_precision"),
-                "Полнота (recall)": validation_metrics.get("eval_recall"),
-                "F1-мера": validation_metrics.get("eval_f1"),
+                "Точность (accuracy)": clean_metrics.get("eval_accuracy"),
+                "Точность (precision)": clean_metrics.get("eval_precision"),
+                "Полнота (recall)": clean_metrics.get("eval_recall"),
+                "F1-мера": clean_metrics.get("eval_f1"),
                 "Время обучения (сек)": round(training_time_seconds, 2),
             }
 
-        print("+" * 100)
-        print(return_metrics)
-        print("+" * 100)
+        # print("+" * 100)
+        # print(return_metrics)
+        # print(f"Всего меток для матрицы ошибок: {len(true_labels)}")
+        # print("+" * 100)
 
         train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
-        # validation_loss_plot = loss_plot(
-        #     "Потери на валидации", result["validation_loss"]
-        # )
-        # confusion_matrix_plot = plot_confusion_matrix(label_list)
+
+        # Создаем матрицу ошибок с реальными данными
+        confusion_matrix_plot = plot_confusion_matrix(
+            label_list, true_labels, pred_labels
+        )
 
         request = {
             "train_access_token": train_access_token,
@@ -103,8 +116,7 @@ def _model_train(
             "metrics": return_metrics,
             "graphs": {
                 "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
-                # "Потери на валидации": f"data:image/png;base64,{validation_loss_plot}",
-                # "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
+                "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
             },
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)

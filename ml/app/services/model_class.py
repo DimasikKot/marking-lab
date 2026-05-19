@@ -1,4 +1,5 @@
 import gc
+from typing import Union
 import torch
 from transformers import (
     AutoTokenizer,
@@ -122,20 +123,44 @@ class NERModel:
         log_history = trainer.state.log_history
         train_loss = []
         eval_metrics = {}
+        true_labels: list = []
+        pred_labels: list = []
         for entry in log_history:
             if "loss" in entry and "epoch" in entry:
                 train_loss.append((entry["epoch"], entry["loss"]))
             if "eval_f1" in entry:
                 eval_metrics = entry
+                if "eval_true_labels" in entry:
+                    raw_true = entry.get("eval_true_labels", [])
+                    raw_pred = entry.get("eval_pred_labels", [])
 
-        print("-" * 100)
-        print(eval_metrics)
-        print(log_history[-5:])
-        print("-" * 100)
+                    true_labels = raw_true if isinstance(raw_true, list) else [raw_true]
+                    pred_labels = raw_pred if isinstance(raw_pred, list) else [raw_pred]
+
+        # Если метки не сохранились в log_history, получаем их через predict
+        if not true_labels and eval_dataset:
+            # Делаем предсказание на валидационной выборке
+            predictions = trainer.predict(eval_dataset)
+            metrics_with_labels = compute_metrics(
+                (predictions.predictions, eval_dataset["labels"]), self.label_list
+            )
+            true_labels = metrics_with_labels.get("true_labels", [])
+            pred_labels = metrics_with_labels.get("pred_labels", [])
+
+        # Преобразуем список списков в плоские списки для матрицы ошибок
+        flat_true_labels = [label for sublist in true_labels for label in sublist]
+        flat_pred_labels = [label for sublist in pred_labels for label in sublist]
+
+        # print("-" * 100)
+        # print(eval_metrics)
+        # print(log_history[-5:])
+        # print("-" * 100)
         return {
             "train_loss": train_loss,
             "eval_metrics": eval_metrics,
             "model_dir": output_dir,
+            "true_labels": flat_true_labels,  # добавляем
+            "pred_labels": flat_pred_labels,  # добавляем
         }
 
     def load(self, model_dir: str):
