@@ -20,6 +20,7 @@ export const ButtonUI = ({
   !hidden && (
     <button
       onClick={(event) => {
+        event.preventDefault(); // Отменяем дефолтное поведение
         event.stopPropagation(); // Останавливаем всплытие
         onClick?.(event);
       }}

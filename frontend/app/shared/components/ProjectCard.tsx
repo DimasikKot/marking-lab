@@ -6,7 +6,7 @@ import { ButtonUI } from "@/shared/components/ButtonUI";
 
 export const ProjectCard = ({
   project,
-  onClick = () => toast.error("Обработка перехода не настроена"),
+  onClick,
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
@@ -27,7 +27,7 @@ export const ProjectCard = ({
       className={`
         bg-white border border-gray-300 rounded-2xl p-4 gap-3
         hover:border-gray-400 hover:shadow-md transition-all duration-200
-        cursor-pointer flex flex-col justify-between
+        cursor-pointer flex flex-col justify-between w-full
         ${className}
       `}
     >

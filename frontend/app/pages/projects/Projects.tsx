@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import {
@@ -162,15 +162,20 @@ export function Projects() {
           {filteredProjects.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredProjects.map((project) => (
-                <ProjectCard
+                <Link
                   key={project.id}
-                  project={project}
-                  onClick={() => navigate(`/projects/${project.id}?tab=files`)}
-                  onDeleteClick={(event) =>
-                    handleDeleteClick(project.id, event)
-                  }
-                  onEditClick={() => handleEditClick(project)}
-                />
+                  to={`/projects/${project.id}?tab=files`}
+                  className="flex"
+                >
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    onDeleteClick={(event) =>
+                      handleDeleteClick(project.id, event)
+                    }
+                    onEditClick={() => handleEditClick(project)}
+                  />
+                </Link>
               ))}
             </div>
           )}

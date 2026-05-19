@@ -6,7 +6,7 @@ import { ButtonUI } from "./ButtonUI";
 
 export const FileCard = ({
   file,
-  onClick = () => toast.error("Обработка нажатия не настроена"),
+  onClick,
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
@@ -65,7 +65,17 @@ export const FileCard = ({
 
         {file.prediction_model && (
           <TextUI variant="desc" maxLines={1} className="mt-1">
-            Размечен моделью: {file.prediction_model.name}
+            Размечен моделью: {file.prediction_model.name}{" "}
+            {file.prediction_model.parameters["Базовая модель"] && (
+              <TextUI
+                variant="label"
+                className="mt-0.75 h-min w-40 line-clamp-1" // text-orange-400
+              >
+                {String(file.prediction_model.parameters["Базовая модель"])
+                  .split("/")
+                  .pop()}
+              </TextUI>
+            )}
           </TextUI>
         )}
 

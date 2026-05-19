@@ -8,7 +8,7 @@ import { ModelModalCard } from "./ModelModalCard";
 
 export const ModelCard = ({
   model,
-  onClick = () => toast.error("Обработка нажатия не настроена"),
+  onClick,
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
   onCopyClick = () => toast.error("Обработка копирования не настроена"),
   onStopClick = () => toast.error("Обработка остановки не настроена"),
@@ -35,7 +35,7 @@ export const ModelCard = ({
         className={`
         bg-white border border-gray-300 rounded-2xl p-4 gap-3
         hover:border-gray-400 hover:shadow-md transition-all duration-200
-        cursor-pointer flex flex-col justify-between
+        cursor-pointer flex flex-col justify-between w-full
         ${className}
       `}
       >

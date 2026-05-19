@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import {
@@ -190,17 +190,18 @@ export function Files({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredFiles.map((file) => (
-            <FileCard
+            <Link
               key={file.id}
-              file={file}
-              onClick={() =>
-                navigate(
-                  `/projects/${projectId}/files/${file.id}?tab=label&page=1`,
-                )
-              }
-              onEditClick={() => handleEditClick(file)}
-              onDeleteClick={(event) => handleDeleteClick(file.id, event)}
-            />
+              to={`/projects/${projectId}/files/${file.id}?tab=label&page=1`}
+              className="flex"
+            >
+              <FileCard
+                key={file.id}
+                file={file}
+                onEditClick={() => handleEditClick(file)}
+                onDeleteClick={(event) => handleDeleteClick(file.id, event)}
+              />
+            </Link>
           ))}
         </div>
       </div>

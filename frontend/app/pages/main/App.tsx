@@ -50,12 +50,12 @@ export function App() {
             />
 
             <Route
-              path="/projects/:projectId/ComparisonFiles/compare=:ids"
+              path="/projects/:projectId/files/compare"
               element={<ComparisonFiles />}
             />
 
             <Route
-              path="/projects/:projectId/ComparisonModels/compare=:ids"
+              path="/projects/:projectId/models/compare"
               element={<ComparisonModels />}
             />
           </Route>
