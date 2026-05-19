@@ -10,34 +10,41 @@ export function ComparisonModels() {
   const navigate = useNavigate();
   const { projectId = "0" } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
-  const ids_param: string = searchParams.get("ids") || "0,0";
+  const ids_param: string = searchParams.get("ids") || "";
 
   // Переменные страницы
-  const [model1, setModel1] = useState<ModelFullResponse | null>(null);
-  const [model2, setModel2] = useState<ModelFullResponse | null>(null);
+  const [models, setModels] = useState<ModelFullResponse[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(true);
 
   useEffect(() => {
     const loadModels = async () => {
       const ids = ids_param
-        .split(",") // Разделение на массив
-        .map((id) => Number(id)) // Преобразование в число
-        .slice(0, 2); // Максимум 2 модели
+        .split(",")
+        .map((id) => Number(id))
+        .filter((id) => !Number.isNaN(id) && id > 0);
+
+      if (ids.length === 0) {
+        setModels([]);
+        return;
+      }
 
       setIsLoadingModels(true);
-      const response1 = await fetchModelById(projectId, ids[0]);
-      const response2 = await fetchModelById(projectId, ids[1]);
-      setIsLoadingModels(false);
-      if (response1 === undefined || response2 === undefined) return;
-      setModel1(response1);
-      setModel2(response2);
 
-      const hasTrainingModels = [response1, response2].some(
-        (model: ModelFullResponse) =>
-          model.progress > 0 && model.progress < 100,
+      const responses = await Promise.all(
+        ids.map((id) => fetchModelById(projectId, id)),
       );
 
-      // Если ни одна модель не обучается — останавливаем polling
+      const validModels = responses.filter(
+        (model): model is ModelFullResponse => model !== undefined,
+      );
+
+      setModels(validModels);
+      setIsLoadingModels(false);
+
+      const hasTrainingModels = validModels.some(
+        (model) => model.progress > 0 && model.progress < 100,
+      );
+
       if (!hasTrainingModels) {
         clearInterval(interval);
       }
@@ -56,19 +63,20 @@ export function ComparisonModels() {
     <>
       <Header title="Сравнение моделей" />
 
-      <div className="max-w-6xl mx-auto m-6 mb-80">
+      <div
+        className={`${models.length > 2 ? "max-w-10/12" : "max-w-6xl"} mx-auto m-6 mb-80`}
+      >
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=models`)}
         />
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
-          {model1 && model2 ? (
+          {models.length > 0 ? (
             <div className="flex flex-col gap-6">
-              <ModelInfoRow model1={model1} model2={model2} />
-              {/* <ModelFilesRow model1={model1} model2={model2} /> */}
-              <ModelParametersRow model1={model1} model2={model2} />
-              <ModelMetricsRow model1={model1} model2={model2} />
-              <ModelGraphsRow model1={model1} model2={model2} />
+              <ModelInfoRow models={models} />
+              <ModelParametersRow models={models} />
+              <ModelMetricsRow models={models} />
+              <ModelGraphsRow models={models} />
             </div>
           ) : isLoadingModels ? (
             <TextUI>Загрузка...</TextUI>
@@ -81,17 +89,17 @@ export function ComparisonModels() {
   );
 }
 
-const ModelInfoRow = ({
-  model1,
-  model2,
-}: {
-  model1: ModelFullResponse;
-  model2: ModelFullResponse;
-}) => {
+const ModelInfoRow = ({ models }: { models: ModelFullResponse[] }) => {
   return (
-    <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-47 lg:top-15 self-start">
-      <ModelInfoElement model={model1} />
-      <ModelInfoElement model={model2} />
+    <div
+      className="w-full grid gap-8 sticky sm:top-47 lg:top-15 self-start"
+      style={{
+        gridTemplateColumns: `repeat(${models.length}, minmax(0, 1fr))`,
+      }}
+    >
+      {models.map((model) => (
+        <ModelInfoElement key={model.id} model={model} />
+      ))}
     </div>
   );
 };
@@ -200,17 +208,17 @@ const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
 //   );
 // };
 
-const ModelParametersRow = ({
-  model1,
-  model2,
-}: {
-  model1: ModelFullResponse;
-  model2: ModelFullResponse;
-}) => {
+const ModelParametersRow = ({ models }: { models: ModelFullResponse[] }) => {
   return (
-    <div className="grid grid-cols-2 gap-8">
-      <ModelParametersElement model={model1} />
-      <ModelParametersElement model={model2} />
+    <div
+      className="grid gap-8"
+      style={{
+        gridTemplateColumns: `repeat(${models.length}, minmax(0, 1fr))`,
+      }}
+    >
+      {models.map((model) => (
+        <ModelParametersElement key={model.id} model={model} />
+      ))}
     </div>
   );
 };
@@ -251,24 +259,24 @@ const ModelParametersElement = ({ model }: { model: ModelFullResponse }) => {
   );
 };
 
-const ModelMetricsRow = ({
-  model1,
-  model2,
-}: {
-  model1: ModelFullResponse;
-  model2: ModelFullResponse;
-}) => {
+const ModelMetricsRow = ({ models }: { models: ModelFullResponse[] }) => {
   return (
-    <div className="grid grid-cols-2 gap-8">
-      <ModelMetricsElement model={model1} />
-      <ModelMetricsElement model={model2} />
+    <div
+      className="grid gap-8"
+      style={{
+        gridTemplateColumns: `repeat(${models.length}, minmax(0, 1fr))`,
+      }}
+    >
+      {models.map((model) => (
+        <ModelMetricsElement key={model.id} model={model} />
+      ))}
     </div>
   );
 };
 
 const ModelMetricsElement = ({ model }: { model: ModelFullResponse }) => {
   return (
-    <>
+    <div>
       {Object.entries(model.metrics).length > 0 && (
         <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-2xl">
           <TextUI
@@ -305,21 +313,21 @@ const ModelMetricsElement = ({ model }: { model: ModelFullResponse }) => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
-const ModelGraphsRow = ({
-  model1,
-  model2,
-}: {
-  model1: ModelFullResponse;
-  model2: ModelFullResponse;
-}) => {
+const ModelGraphsRow = ({ models }: { models: ModelFullResponse[] }) => {
   return (
-    <div className="grid grid-cols-2 gap-8">
-      <ModelGraphsElement model={model1} />
-      <ModelGraphsElement model={model2} />
+    <div
+      className="grid gap-8"
+      style={{
+        gridTemplateColumns: `repeat(${models.length}, minmax(0, 1fr))`,
+      }}
+    >
+      {models.map((model) => (
+        <ModelGraphsElement key={model.id} model={model} />
+      ))}
     </div>
   );
 };

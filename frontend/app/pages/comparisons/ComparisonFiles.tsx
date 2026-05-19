@@ -319,7 +319,7 @@ const FileRowsElement = ({
 }) => {
   return (
     <div>
-      <TextUI variant="desc" className="flex justify-center mb-2">
+      <TextUI variant="desc" className="flex justify-center mb-4">
         Страница {page > file.total_pages ? file.total_pages : page} из{" "}
         {file.total_pages}
       </TextUI>
@@ -366,7 +366,7 @@ const FileRowsElement = ({
         })}
       </div>
 
-      <TextUI variant="desc" className="flex justify-center mt-2">
+      <TextUI variant="desc" className="flex justify-center mt-4">
         Страница {page > file.total_pages ? file.total_pages : page} из{" "}
         {file.total_pages}
       </TextUI>

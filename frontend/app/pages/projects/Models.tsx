@@ -66,7 +66,7 @@ export function Models({
   const toggleSelection = (id: number) => {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((i) => i !== id));
-    } else if (selectedIds.length < 2) {
+    } else if (selectedIds.length < 4) {
       setSelectedIds([...selectedIds, id]);
     }
   };
@@ -235,7 +235,7 @@ export function Models({
           <div className="flex justify-end items-center gap-4">
             {isCompareMode && (
               <ButtonUI
-                disabled={selectedIds.length !== 2}
+                disabled={selectedIds.length < 2 || selectedIds.length > 4}
                 onClick={() => {
                   navigate(
                     `/projects/${projectId}/models/compare?ids=${selectedIds.join(",")}`,
@@ -243,7 +243,7 @@ export function Models({
                 }}
                 className="w-fit whitespace-nowrap"
               >
-                Сравнить ({selectedIds.length}/2)
+                Сравнить ({selectedIds.length}/4)
               </ButtonUI>
             )}
 

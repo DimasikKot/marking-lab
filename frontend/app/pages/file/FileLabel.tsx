@@ -235,17 +235,17 @@ export function FileLabel({
           </ButtonUI>
         </div>
 
-        <TextUI variant="desc" className="flex justify-center mb-2">
-          Страница {page > totalPages ? totalPages : page} из {totalPages}
-        </TextUI>
-
         <PageNavigate
-          className="mb-4"
+          className="mb-2"
           currentPage={page}
           totalPages={totalPages}
           onBack={handleBackClick}
           onNext={handleNextClick}
         />
+
+        <TextUI variant="desc" className="flex justify-center mb-4">
+          Страница {page > totalPages ? totalPages : page} из {totalPages}
+        </TextUI>
 
         {/* Разметка текста */}
         <div
