@@ -88,17 +88,19 @@ export const ModelCard = ({
             {/* task_alt */}
           </div>
 
-          {model.progress > 0 && model.progress < 100 && (
-            <div className="-ml-3">
-              <ButtonUI
-                onClick={onStopClick}
-                variant="icon"
-                className="flex-max text-right text-red-600 hover:text-red-800"
-              >
-                <div className="select-none material-icons">cancel</div>
-              </ButtonUI>
-            </div>
-          )}
+          {variant === "normal" &&
+            model.progress > 0 &&
+            model.progress < 100 && (
+              <div className="-ml-3">
+                <ButtonUI
+                  onClick={onStopClick}
+                  variant="icon"
+                  className="flex-max text-right text-red-600 hover:text-red-800"
+                >
+                  <div className="select-none material-icons">cancel</div>
+                </ButtonUI>
+              </div>
+            )}
         </div>
 
         <div className="flex flex-col overflow-auto">
