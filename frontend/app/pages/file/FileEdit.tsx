@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
@@ -44,6 +44,74 @@ export function FileEdit({
   const navigate = useNavigate();
 
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
+
+  // Состояния для создания метки
+  const [newTagName, setNewTagName] = useState("");
+  const [selectedColor, setSelectedColor] = useState("bg-blue-200");
+
+  const colorPalette = [
+    "bg-red-200",
+    "bg-orange-200",
+    "bg-amber-200",
+    "bg-yellow-200",
+    "bg-lime-200",
+    "bg-green-200",
+    "bg-emerald-200",
+    "bg-teal-200",
+    "bg-cyan-200",
+    "bg-sky-200",
+    "bg-blue-200",
+    "bg-indigo-200",
+    "bg-violet-200",
+    "bg-purple-200",
+    "bg-pink-200",
+    "bg-rose-200",
+  ];
+
+  const handleAddTag = () => {
+    if (!newTagName.trim()) return;
+
+    const normalized = newTagName.trim().toLowerCase();
+
+    const bTag = `B-${normalized}`;
+    const iTag = `I-${normalized}`;
+
+    setLocalTags((prev) => ({
+      ...prev,
+      [bTag]: normalized,
+    }));
+
+    setLocalColors((prev) => ({
+      ...prev,
+      [bTag]: selectedColor,
+      [iTag]: selectedColor,
+    }));
+
+    setNewTagName("");
+    setHasUnsavedChanges(true);
+  };
+
+  const handleChangeColor = (tagKey: string, color: string) => {
+    const iTag = tagKey.replace("B-", "I-");
+
+    // bg-red-200 -> bg-red-100
+    const iColor = color.replace(/-\d+$/, "-100");
+
+    setLocalColors((prev) => ({
+      ...prev,
+      [tagKey]: color,
+      [iTag]: iColor,
+    }));
+
+    setHasUnsavedChanges(true);
+  };
+
+  const handleRenameTag = (tagKey: string, label: string) => {
+    setLocalTags((prev) => ({
+      ...prev,
+      [tagKey]: label,
+    }));
+  };
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
@@ -325,6 +393,35 @@ export function FileEdit({
       <ButtonPage onClick={handleExitClick} isLoading={isLoading} />
 
       <RightPanel>
+        <div className="border-b border-gray-200 pb-4 mb-4 space-y-3">
+          <input
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+            placeholder="Новая метка"
+            className="w-full rounded px-3 py-2 text-sm"
+          />
+
+          <div className="flex flex-wrap gap-1 px-2">
+            {colorPalette.map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={`
+                            w-6 h-6 rounded-full border
+                            ${color}
+                          `}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={handleAddTag}
+            className="w-full bg-black text-white rounded py-2 hover:opacity-90 transition"
+          >
+            Добавить метку
+          </button>
+        </div>
+
         <button
           key="O"
           className="w-full px-2 py-2.5 text-left flex items-center gap-3 transition-colors"
@@ -342,24 +439,47 @@ export function FileEdit({
           const iTag = tagKey.replace("B-", "I-");
 
           return (
-            <button
-              key={tagKey}
-              className="w-full px-2 py-2.5 text-left flex items-center gap-3 transition-colors"
-            >
-              <span
-                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
+            <>
+              <button
+                key={tagKey}
+                className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
               >
-                {tagKey}
-              </span>
+                <span
+                  className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
+                >
+                  {tagKey}
+                </span>
 
-              <span
-                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
-              >
-                {iTag}
-              </span>
+                <span
+                  className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
+                >
+                  {iTag}
+                </span>
 
-              <TextUI variant="normal">{label}</TextUI>
-            </button>
+                <input
+                  defaultValue={label}
+                  onBlur={(e) => handleRenameTag(tagKey, e.target.value)}
+                  className="border rounded px-2 py-1 text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </button>
+
+              <div className="flex flex-wrap gap-1 px-2">
+                {colorPalette.map((color) => (
+                  <button
+                    key={color}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleChangeColor(tagKey, color);
+                    }}
+                    className={`
+                                w-6 h-6 rounded-full border
+                                ${color}
+                              `}
+                  />
+                ))}
+              </div>
+            </>
           );
         })}
       </RightPanel>

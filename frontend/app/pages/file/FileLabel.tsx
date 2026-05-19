@@ -17,9 +17,9 @@ export function FileLabel({
   page,
   totalPages,
   localTags,
-  setLocalTags,
+  // setLocalTags,
   localColors,
-  setLocalColors,
+  // setLocalColors,
   localRows,
   setLocalRows,
   isLoading,
@@ -173,14 +173,6 @@ export function FileLabel({
       <ButtonPage onClick={handleExitClick} isLoading={isSaving || isLoading} />
 
       <RightPanel>
-        {/* <button
-              onClick={() => setShowTagMenu(true)}
-              className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
-            >
-              <span className="w-28 text-center material-icons">add</span>
-              <TextUI variant="normal">Добавить метку</TextUI>
-            </button> */}
-
         <button
           key="O"
           onClick={() => assignTag("O")}
