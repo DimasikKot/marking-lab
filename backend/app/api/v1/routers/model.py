@@ -33,7 +33,6 @@ class ModelDbResponse(BaseModel):
     progress: int
     parameters: dict[str, Any]
     metrics: dict[str, Any]
-    graphs: dict[str, str]
 
     training_files: list[FileDbResponse]
     prediction_files: list[FileDbResponse]
@@ -45,7 +44,7 @@ class ModelDbResponse(BaseModel):
         from_attributes = True
 
 
-def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
+def ToModelDbResponse(model_db: ModelDB) -> ModelDbResponse:
     training_files = [
         FileDbResponse.model_validate(link.file)
         for link in model_db.file_links
@@ -64,11 +63,34 @@ def ModelDbToResponse(model_db: ModelDB) -> ModelDbResponse:
         progress=model_db.progress,
         parameters=model_db.parameters,
         metrics=model_db.metrics,
-        graphs=model_db.graphs,
         training_files=training_files,
         prediction_files=prediction_files,
         created_at=model_db.created_at,
         updated_at=model_db.updated_at,
+    )
+
+
+class ModelResponse(ModelDbResponse):
+    graphs: dict[str, str]
+
+    class Config:
+        from_attributes = True
+
+
+def ToModelResponse(model_db: ModelDB) -> ModelResponse:
+    model_db_response = ToModelDbResponse(model_db)
+
+    return ModelResponse(
+        id=model_db_response.id,
+        name=model_db_response.name,
+        progress=model_db_response.progress,
+        parameters=model_db_response.parameters,
+        metrics=model_db_response.metrics,
+        graphs=model_db.graphs,
+        training_files=model_db_response.training_files,
+        prediction_files=model_db_response.prediction_files,
+        created_at=model_db_response.created_at,
+        updated_at=model_db_response.updated_at,
     )
 
 
@@ -96,7 +118,7 @@ async def post(
         prediction_files_ids=data.prediction_files_ids,
     )
 
-    return ModelDbToResponse(model_db=model_db)
+    return ToModelDbResponse(model_db=model_db)
 
 
 class GetModelsResponse(BaseModel):
@@ -119,11 +141,11 @@ async def get(
     )
 
     return GetModelsResponse(
-        data=[ModelDbToResponse(model_db=model_db) for model_db in models_db]
+        data=[ToModelDbResponse(model_db=model_db) for model_db in models_db]
     )
 
 
-@router.get("/{model_id}", response_model=ModelDbResponse)
+@router.get("/{model_id}", response_model=ModelResponse)
 async def get_by_id(
     project_id: int,
     model_id: int,
@@ -134,7 +156,7 @@ async def get_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    return ModelDbToResponse(model_db=model_db)
+    return ToModelResponse(model_db=model_db)
 
 
 class PatchModelDbRequest(BaseModel):
@@ -144,7 +166,7 @@ class PatchModelDbRequest(BaseModel):
     prediction_files_ids: list[int] | None = None
 
 
-@router.patch("/{model_id}", response_model=ModelDbResponse)
+@router.patch("/{model_id}", response_model=ModelResponse)
 async def patch_by_id(
     project_id: int,
     model_id: int,
@@ -163,10 +185,10 @@ async def patch_by_id(
         prediction_files_ids=data.prediction_files_ids,
     )
 
-    return ModelDbToResponse(model_db=model_db)
+    return ToModelResponse(model_db=model_db)
 
 
-@router.get("/{model_id}/train", response_model=ModelDbResponse)
+@router.get("/{model_id}/train", response_model=ModelResponse)
 async def get_by_id_train(
     project_id: int,
     model_id: int,
@@ -180,10 +202,10 @@ async def get_by_id_train(
         db=db,
     )
 
-    return ModelDbToResponse(model_db=model_db)
+    return ToModelResponse(model_db=model_db)
 
 
-@router.delete("/{model_id}/train", response_model=ModelDbResponse)
+@router.delete("/{model_id}/train", response_model=ModelResponse)
 async def stop_train_by_id(
     project_id: int,
     model_id: int,
@@ -197,7 +219,7 @@ async def stop_train_by_id(
         db=db,
     )
 
-    return ModelDbToResponse(model_db=model_db)
+    return ToModelResponse(model_db=model_db)
 
 
 @router.delete("/{model_id}", response_model=GetEchoResponse)

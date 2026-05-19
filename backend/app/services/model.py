@@ -13,6 +13,20 @@ from app.services.file import get_file_path_by_id
 from app.services.train import encode_train_access_token
 
 
+def is_owner_of_model(
+    project_id: int, model_id: int, user_id: int, db: Session
+) -> None:
+    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
+
+    if (
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
+        .first()
+        is None
+    ):
+        raise HTTPException(status_code=404, detail=f"Нет доступа к модели {model_id}")
+
+
 async def _train_model_request(
     training_files_paths: set[Path], model_db: ModelDB, db: Session
 ):
@@ -78,7 +92,7 @@ async def _train_model_request(
 
             raise HTTPException(
                 status_code=500,
-                detail=f"Ошибка при страрте обучения модели: {error}",
+                detail=f"Ошибка при страрте обучения модели: {model_db.id}",
             )
 
         finally:
@@ -115,20 +129,6 @@ def _update_files_by_role(
                     role=role,
                 )
             )
-
-
-def is_owner_of_model(
-    project_id: int, model_id: int, user_id: int, db: Session
-) -> None:
-    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
-
-    if (
-        db.query(ModelDB)
-        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
-        .first()
-        is None
-    ):
-        raise HTTPException(status_code=404, detail="Нет доступа к модели")
 
 
 # router

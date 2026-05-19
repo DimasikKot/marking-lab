@@ -22,7 +22,7 @@ def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) 
         .first()
         is None
     ):
-        raise HTTPException(status_code=403, detail="Нет доступа к файлу")
+        raise HTTPException(status_code=403, detail=f"Нет доступа к файлу {file_id}")
 
 
 def _fetch_file_db_by_id(
@@ -32,7 +32,7 @@ def _fetch_file_db_by_id(
 
     file_db = db.query(FileDB).filter(FileDB.id == file_id).first()
     if not file_db:
-        raise HTTPException(status_code=404, detail="Файл не найден")
+        raise HTTPException(status_code=404, detail=f"Файл {file_id} не найден")
 
     return file_db
 
@@ -42,7 +42,7 @@ def get_file_path_by_id(project_id: int, file_id: int) -> Path:
     file_path = base_dir / str(project_id) / "files" / f"{file_id}.csv"
 
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Файл не найден на диске")
+        raise HTTPException(status_code=404, detail=f"Файл {file_id} не найден")
 
     return file_path
 

@@ -36,10 +36,12 @@ def is_owner_of_project(project_id: int, user_id: int, db: Session) -> None:
     project_db = db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
 
     if project_db is None:
-        raise HTTPException(status_code=404, detail="Проект не найден")
+        raise HTTPException(status_code=404, detail=f"Проект {project_id} не найден")
 
     if project_db.user_id != user_id and not project_db.is_public:
-        raise HTTPException(status_code=403, detail="Нет доступа к проекту")
+        raise HTTPException(
+            status_code=403, detail=f"Нет доступа к проекту {project_id}"
+        )
 
 
 # router

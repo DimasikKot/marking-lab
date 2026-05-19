@@ -16,13 +16,16 @@ export interface ModelDbResponse {
   progress: number;
   parameters: Record<string, JsonValue>;
   metrics: Record<string, JsonValue>;
-  graphs: Record<string, string>;
 
   training_files: FileDbResponse[];
   prediction_files: FileDbResponse[];
 
   created_at: string;
   updated_at: string;
+}
+
+export interface ModelResponse extends ModelDbResponse {
+  graphs: Record<string, string>;
 }
 
 export interface PostModelRequest {
@@ -75,9 +78,9 @@ export const fetchModels = async (
 export const fetchModelById = async (
   projectId: string | number,
   modelId: string | number,
-): Promise<ModelDbResponse | undefined> => {
+): Promise<ModelResponse | undefined> => {
   try {
-    const response = await api.get<ModelDbResponse>(
+    const response = await api.get<ModelResponse>(
       `/projects/${projectId}/models/${modelId}`,
     );
     return response.data;
@@ -97,9 +100,9 @@ export const updateModelById = async (
   projectId: string | number,
   modelId: string | number,
   data: PatchModelDbRequest,
-): Promise<ModelDbResponse | undefined> => {
+): Promise<ModelResponse | undefined> => {
   try {
-    const response = await api.patch<ModelDbResponse>(
+    const response = await api.patch<ModelResponse>(
       `/projects/${projectId}/models/${modelId}`,
       data,
     );
@@ -112,9 +115,9 @@ export const updateModelById = async (
 export const trainModelById = async (
   projectId: string | number,
   modelId: string | number,
-): Promise<ModelDbResponse | undefined> => {
+): Promise<ModelResponse | undefined> => {
   try {
-    const response = await api.get<ModelDbResponse>(
+    const response = await api.get<ModelResponse>(
       `/projects/${projectId}/models/${modelId}/train`,
     );
     return response.data;
@@ -126,9 +129,9 @@ export const trainModelById = async (
 export const stopTrainModelById = async (
   projectId: string | number,
   modelId: string | number,
-): Promise<ModelDbResponse | undefined> => {
+): Promise<ModelResponse | undefined> => {
   try {
-    const response = await api.delete<ModelDbResponse>(
+    const response = await api.delete<ModelResponse>(
       `/projects/${projectId}/models/${modelId}/train`,
     );
     return response.data;

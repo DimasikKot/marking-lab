@@ -44,7 +44,7 @@ class FileDbResponse(BaseModel):
         from_attributes = True
 
 
-class PredictionModelDbResponse(BaseModel):
+class PredictionModelResponse(BaseModel):
     id: int
     name: str
     parameters: dict[str, Any]
@@ -60,21 +60,21 @@ class PredictionModelDbResponse(BaseModel):
 
 class FileDbListResponse(FileDbResponse):
     origin_file: FileDbResponse | None
-    prediction_model: PredictionModelDbResponse | None
+    prediction_model: PredictionModelResponse | None
 
     class Config:
         from_attributes = True
 
 
 def FileDbListToResponse(file_db: FileDB, db: Session) -> FileDbListResponse:
-    def ModelDbToPredictionResponse(model_db: ModelDB) -> PredictionModelDbResponse:
+    def ToPredictionModelResponse(model_db: ModelDB) -> PredictionModelResponse:
         training_files = [
             FileDbResponse.model_validate(link.file)
             for link in model_db.file_links
             if link.role == "training" and link.file is not None
         ]
 
-        return PredictionModelDbResponse(
+        return PredictionModelResponse(
             id=model_db.id,
             name=model_db.name,
             parameters=model_db.parameters,
@@ -85,7 +85,7 @@ def FileDbListToResponse(file_db: FileDB, db: Session) -> FileDbListResponse:
 
     prediction_model = next(
         (
-            ModelDbToPredictionResponse(link.model)
+            ToPredictionModelResponse(link.model)
             for link in file_db.model_links
             if link.role == "predicted"
         ),
