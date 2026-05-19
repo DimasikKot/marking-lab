@@ -345,7 +345,7 @@ export function FileEdit({
             {localRows.map((line, lineIdx) => (
               <div
                 key={lineIdx}
-                className="pb-6 border-b border-gray-200 last:border-none flex flex-wrap"
+                className="pb-6 border-b border-gray-200 last:border-none last:pb-0 flex flex-wrap"
               >
                 {line.words.map((word, wordIdx) => (
                   <div className="flex flex-col items-center py-0.5 rounded cursor-pointer transition-all">

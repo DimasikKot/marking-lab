@@ -61,7 +61,8 @@ export function Header({
 
   return (
     <div
-      className={`w-full flex flex-col lg:flex-row lg:items-center lg:justify-between p-1 gap-4 sticky top-0 self-start border border-b border-gray-200 bg-white z-200 ${className}`}
+      className={`w-full flex flex-col lg:flex-row lg:items-center lg:justify-between
+        p-1 gap-4 sticky top-0 self-start border border-b border-gray-200 bg-white z-50 ${className}`}
     >
       <Logo onClick={() => navigate("/")} />
 

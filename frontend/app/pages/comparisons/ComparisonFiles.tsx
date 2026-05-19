@@ -3,20 +3,22 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { ButtonPage } from "@/shared/components/ButtonPage";
+import { TextUI } from "@/shared/components/TextUI";
+import { CheckboxUI } from "@/shared/components/CheckboxUI";
+import { PageNavigate } from "@/shared/components/PageNavigate";
 import {
   fetchFileById,
   type FileFullResponse,
   type Row,
   type Word,
 } from "@/shared/api/file";
-import { TextUI } from "@/shared/components/TextUI";
-import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 export function ComparisonFiles() {
   const navigate = useNavigate();
   const { projectId = "0" } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
   const ids_param: string = searchParams.get("ids") || "0,0";
+  const page = searchParams.get("page") || "1";
 
   // Переменные страницы
   const [file1, setFile1] = useState<FileFullResponse | null>(null);
@@ -31,8 +33,8 @@ export function ComparisonFiles() {
         .slice(0, 2); // Максимум 2 файлы
 
       setIsLoadingFiles(true);
-      const response1 = await fetchFileById(projectId, ids[0], 1);
-      const response2 = await fetchFileById(projectId, ids[1], 1);
+      const response1 = await fetchFileById(projectId, ids[0], page);
+      const response2 = await fetchFileById(projectId, ids[1], page);
       setIsLoadingFiles(false);
       if (response1 === undefined || response2 === undefined) return;
       setFile1(response1);
@@ -40,7 +42,7 @@ export function ComparisonFiles() {
     };
 
     loadFiles();
-  }, [projectId, ids_param]);
+  }, [projectId, ids_param, page]);
 
   return (
     <>
@@ -49,13 +51,19 @@ export function ComparisonFiles() {
       <div className="max-w-7xl mx-auto m-6 mb-80">
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=files`)}
+          isLoading={isLoadingFiles}
         />
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {file1 && file2 ? (
             <div className="flex flex-col gap-4">
               <FileInfoRow file1={file1} file2={file2} />
-              <FileRowsRow file1={file1} file2={file2} />
+              <FileRowsRow
+                projectId={projectId}
+                page={Number(page)}
+                file1={file1}
+                file2={file2}
+              />
             </div>
           ) : isLoadingFiles ? (
             <TextUI>Загрузка...</TextUI>
@@ -136,12 +144,17 @@ interface SyncedRow {
 }
 
 const FileRowsRow = ({
+  projectId,
+  page,
   file1,
   file2,
 }: {
+  projectId: string | number;
+  page: number;
   file1: FileFullResponse;
   file2: FileFullResponse;
 }) => {
+  const navigate = useNavigate();
   const [onlyDiff, setOnlyDiff] = useState(false);
 
   const originId1 = file1.origin_file?.id;
@@ -161,11 +174,11 @@ const FileRowsRow = ({
       const row1 = rows1[i];
       const row2 = rows2[i];
 
-      const text1 = row1?.words?.map((w) => w.token).join(" ") || "";
-      const text2 = row2?.words?.map((w) => w.token).join(" ") || "";
+      const text1 = row1?.words?.map((word) => word.token).join(" ") || "";
+      const text2 = row2?.words?.map((word) => word.token).join(" ") || "";
 
-      const labels1 = row1?.words?.map((w) => w.label).join("|") || "";
-      const labels2 = row2?.words?.map((w) => w.label).join("|") || "";
+      const labels1 = row1?.words?.map((word) => word.label).join("|") || "";
+      const labels2 = row2?.words?.map((word) => word.label).join("|") || "";
 
       const isDifferent = text1 !== text2 || labels1 !== labels2;
 
@@ -184,25 +197,50 @@ const FileRowsRow = ({
     return result;
   }, [rows1, rows2, onlyDiff]);
 
+  const handleBackClick = () => {
+    navigate(
+      `/projects/${projectId}/files/compare?ids=${file1.id},${file2.id}&page=${page - 1}`,
+    );
+  };
+
+  const handleNextClick = () => {
+    navigate(
+      `/projects/${projectId}/files/compare?ids=${file1.id},${file2.id}&page=${page + 1}`,
+    );
+  };
+
   return (
     <div className="flex flex-col w-full gap-6">
       {isLinked && (
-        <CheckboxUI
-          value={onlyDiff}
-          title={"Показывать только различия"}
-          onClick={() => setOnlyDiff((prev) => !prev)}
-        />
+        <div>
+          <CheckboxUI
+            value={onlyDiff}
+            title={"Показывать только различия"}
+            onClick={() => setOnlyDiff((prev) => !prev)}
+          />
+
+          <PageNavigate
+            className="mb-4"
+            currentPage={page}
+            totalPages={file1.total_pages}
+            onBack={handleBackClick}
+            onNext={handleNextClick}
+          />
+        </div>
       )}
 
       <div className="grid grid-cols-2 gap-6">
         <FileRowsElement
           file={file1}
+          page={page}
           syncedRows={syncedRows}
           side="left"
           onlyDiff={onlyDiff}
         />
+
         <FileRowsElement
           file={file2}
+          page={page}
           syncedRows={syncedRows}
           side="right"
           onlyDiff={onlyDiff}
@@ -214,52 +252,60 @@ const FileRowsRow = ({
 
 const FileRowsElement = ({
   file,
+  page,
   syncedRows,
   side,
   onlyDiff,
 }: {
   file: FileFullResponse;
+  page: number;
   syncedRows: SyncedRow[];
   side: "left" | "right";
   onlyDiff: boolean;
 }) => {
   return (
-    <div
-      className={`flex flex-col rounded-3xl border p-6 overflow-hidden gap-6 bg-white
-                ${onlyDiff ? "border-orange-200" : "border-gray-200"}`}
-    >
-      {syncedRows.map((item) => {
-        const row = side === "left" ? item.row1 : item.row2;
+    <div>
+      <TextUI variant="desc" className="flex justify-center mb-2">
+        Страница {page} из {file?.total_pages}
+      </TextUI>
 
-        return (
-          <div
-            className={`pb-6 last:border-none border-b
-                ${item.isDifferent ? "border-orange-200" : "border-gray-200"}
-              `}
-          >
+      <div
+        className={`flex flex-col rounded-3xl border p-6 overflow-hidden gap-6 bg-white
+                ${onlyDiff ? "border-orange-200" : "border-gray-200"}`}
+      >
+        {syncedRows.map((item) => {
+          const row = side === "left" ? item.row1 : item.row2;
+
+          return (
             <div
-              key={item.index}
-              className={`rounded-2xl p-2 -m-2
-                ${item.isDifferent && !onlyDiff && "bg-orange-50"}
+              className={`pb-6 last:border-none last:pb-0 border-b
+                ${onlyDiff ? "border-orange-200" : "border-gray-200"}
               `}
             >
-              <div className="flex flex-wrap gap-1">
-                {row?.words?.map((word: Word, idx: number) => (
-                  <span
-                    key={idx}
-                    className={`
+              <div
+                key={item.index}
+                className={`rounded-2xl p-2 -m-2
+                ${item.isDifferent && !onlyDiff && "bg-orange-50"}
+              `}
+              >
+                <div className="flex flex-wrap gap-1">
+                  {row?.words?.map((word: Word, idx: number) => (
+                    <span
+                      key={idx}
+                      className={`
                         px-2 py-1 rounded-lg font-normal text-xl
                         ${file.colors?.[word.label] || ""}
                       `}
-                  >
-                    {word.token}
-                  </span>
-                ))}
+                    >
+                      {word.token}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

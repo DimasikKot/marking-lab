@@ -7,6 +7,7 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
 import { type FileFullResponse, type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
+import { RightPanel } from "@/shared/components/RightPanel";
 
 type SelectedWord = [number, number];
 
@@ -160,16 +161,12 @@ export function FileLabel({
   }, [showTagMenu]);
 
   return (
-    <div className="relative">
+    <div className="max-w-6xl mx-auto m-6 mb-80 bg-white">
+      <ButtonPage onClick={handleExitClick} isLoading={isSaving || isLoading} />
+
       {/* Панель справа */}
-      <div className="absolute right-4 top-0 max-h-10/12 w-80">
-        <div
-          className="shadow-2xl border border-gray-300 rounded-2xl w-80 h-full overflow-clip bg-white"
-          onClick={(event) => event.stopPropagation()}
-          onScroll={(event) => event.stopPropagation()}
-        >
-          <div className="py-2 w-80 h-full overflow-auto">
-            {/* <button
+      <RightPanel>
+        {/* <button
               onClick={() => setShowTagMenu(true)}
               className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
             >
@@ -177,145 +174,136 @@ export function FileLabel({
               <TextUI variant="normal">Добавить метку</TextUI>
             </button> */}
 
+        <button
+          key="O"
+          onClick={() => assignTag("O")}
+          className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
+        >
+          <span
+            className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
+          >
+            O
+          </span>
+
+          <TextUI variant="normal">Не сущность</TextUI>
+        </button>
+
+        {Object.entries(file?.tags ?? {}).map(([tagKey, label]) => {
+          const iTag = tagKey.replace("B-", "I-");
+
+          return (
             <button
-              key="O"
-              onClick={() => assignTag("O")}
+              key={tagKey}
+              onClick={() => assignTag(tagKey)}
               className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
             >
               <span
-                className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
+                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${file?.colors?.[tagKey]}`}
               >
-                O
+                {tagKey}
               </span>
 
-              <TextUI variant="normal">Не сущность</TextUI>
+              <span
+                onClick={() => assignTag(iTag)}
+                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${file?.colors?.[iTag]}`}
+              >
+                {iTag}
+              </span>
+
+              <TextUI variant="normal">{label}</TextUI>
             </button>
+          );
+        })}
+      </RightPanel>
 
-            {Object.entries(file?.tags ?? {}).map(([tagKey, label]) => {
-              const iTag = tagKey.replace("B-", "I-");
-
-              return (
-                <button
-                  key={tagKey}
-                  onClick={() => assignTag(tagKey)}
-                  className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
-                >
-                  <span
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${file?.colors?.[tagKey]}`}
-                  >
-                    {tagKey}
-                  </span>
-
-                  <span
-                    onClick={() => assignTag(iTag)}
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${file?.colors?.[iTag]}`}
-                  >
-                    {iTag}
-                  </span>
-
-                  <TextUI variant="normal">{label}</TextUI>
-                </button>
-              );
-            })}
-          </div>
+      <div className="border border-gray-200 rounded-4xl z-100 p-6 overflow-auto">
+        {/* Header */}
+        <div className="flex justify-end">
+          <ButtonUI
+            onClick={handleSave}
+            disabled={isSaving || isLoading || !hasUnsavedChanges}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {isSaving ? "Сохранение..." : "Сохранить разметку"}
+          </ButtonUI>
         </div>
-      </div>
 
-      <div className="relative max-w-6xl mx-auto m-6 mb-80 bg-white">
-        <ButtonPage
-          onClick={handleExitClick}
-          isLoading={isSaving || isLoading}
+        <TextUI variant="desc" className="flex justify-center mb-2">
+          Страница {page} из {file?.total_pages}
+        </TextUI>
+
+        <PageNavigate
+          className="mb-4"
+          currentPage={page}
+          totalPages={file?.total_pages || 1}
+          onBack={handleBackClick}
+          onNext={handleNextClick}
         />
 
-        <div className="border border-gray-200 rounded-4xl z-100 p-6 overflow-auto">
-          {/* Header */}
-          <div className="flex justify-end">
-            <ButtonUI
-              onClick={handleSave}
-              disabled={isSaving || isLoading || !hasUnsavedChanges}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              {isSaving ? "Сохранение..." : "Сохранить разметку"}
-            </ButtonUI>
-          </div>
+        {/* Разметка текста */}
+        <div
+          className="rounded-3xl border border-gray-200 p-6 bg-white"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="space-y-6">
+            {localRows.map((line, lineIdx) => (
+              <div
+                key={lineIdx}
+                className="pb-6 border-b border-gray-200 last:border-none last:pb-0 flex flex-wrap gap-2"
+              >
+                {line.words.map((word, wordIdx) => {
+                  const isSelected = selectedWords.some(
+                    ([l, w]) => l === lineIdx && w === wordIdx,
+                  );
 
-          <TextUI variant="desc" className="flex justify-center mb-2">
-            Страница {page} из {file?.total_pages}
-          </TextUI>
-
-          <PageNavigate
-            className="mb-4"
-            currentPage={page}
-            totalPages={file?.total_pages || 1}
-            onBack={handleBackClick}
-            onNext={handleNextClick}
-          />
-
-          {/* Разметка текста */}
-          <div
-            className="rounded-3xl border border-gray-200 p-6 bg-white"
-            onContextMenu={(e) => e.preventDefault()}
-          >
-            <div className="space-y-6">
-              {localRows.map((line, lineIdx) => (
-                <div
-                  key={lineIdx}
-                  className="pb-6 border-b border-gray-200 last:border-none flex flex-wrap gap-2"
-                >
-                  {line.words.map((word, wordIdx) => {
-                    const isSelected = selectedWords.some(
-                      ([l, w]) => l === lineIdx && w === wordIdx,
-                    );
-
-                    return (
-                      <div
-                        key={wordIdx}
-                        onMouseDown={(event) =>
-                          handleWordMouseDown(lineIdx, wordIdx, event)
-                        }
-                        className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
+                  return (
+                    <div
+                      key={wordIdx}
+                      onMouseDown={(event) =>
+                        handleWordMouseDown(lineIdx, wordIdx, event)
+                      }
+                      className={`flex flex-col items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-all
                         ${file?.colors?.[word.label] ?? ""}
                         ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
                       `}
-                      >
-                        <span className="font-normal text-xl select-none">
-                          {word.token}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+                    >
+                      <span className="font-normal text-xl select-none">
+                        {word.token}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-
-          {/* Bottom */}
-          <TextUI variant="desc" className="flex justify-center mt-4">
-            Страница {page} из {file?.total_pages}
-          </TextUI>
-
-          <PageNavigate
-            className="mt-2"
-            currentPage={page}
-            totalPages={file?.total_pages || 1}
-            onBack={handleBackClick}
-            onNext={handleNextClick}
-          />
         </div>
 
-        {showTagMenu && (
-          <TagSelector
-            tags={file?.tags ?? {}}
-            colors={file?.colors ?? {}}
-            onSelect={assignTag}
-            onClose={() => {
-              setShowTagMenu(false);
-              setSelectedWords([]);
-            }}
-            position={menuPosition}
-          />
-        )}
+        {/* Bottom */}
+        <TextUI variant="desc" className="flex justify-center mt-4">
+          Страница {page} из {file?.total_pages}
+        </TextUI>
+
+        <PageNavigate
+          className="mt-2"
+          currentPage={page}
+          totalPages={file?.total_pages || 1}
+          onBack={handleBackClick}
+          onNext={handleNextClick}
+        />
       </div>
+
+      {showTagMenu && (
+        <TagSelector
+          tags={file?.tags ?? {}}
+          colors={file?.colors ?? {}}
+          onSelect={assignTag}
+          onClose={() => {
+            setShowTagMenu(false);
+            setSelectedWords([]);
+          }}
+          position={menuPosition}
+        />
+      )}
     </div>
   );
 }

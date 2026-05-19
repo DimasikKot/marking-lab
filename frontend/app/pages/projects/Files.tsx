@@ -172,7 +172,7 @@ export function Files({
                 disabled={selectedIds.length !== 2}
                 onClick={() => {
                   navigate(
-                    `/projects/${projectId}/files/compare?ids=${selectedIds.join(",")}`,
+                    `/projects/${projectId}/files/compare?ids=${selectedIds.join(",")}&page=1`,
                   );
                 }}
                 className="w-fit whitespace-nowrap"
