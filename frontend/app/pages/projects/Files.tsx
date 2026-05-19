@@ -35,7 +35,6 @@ export function Files({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileIsLabeled, setSelectedFileIsLabeled] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [search, setSearch] = useState("");
 
   // Состояния для редактирования
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -44,6 +43,11 @@ export function Files({
   // Состояния для сравнения
   const [isCompareMode, setIsCompareMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const [search, setSearch] = useState("");
+  const filteredFiles = files.filter((file) =>
+    file.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   const loadFiles = async () => {
     setIsLoading(true);
@@ -102,10 +106,6 @@ export function Files({
     setEditingFile(file);
     setIsFormOpen(true);
   };
-
-  const filteredFiles = files.filter((file) =>
-    file.name.toLowerCase().includes(search.toLowerCase()),
-  );
 
   return (
     <div className="max-w-6xl mx-auto m-2 mb-80">

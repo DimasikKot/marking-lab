@@ -41,6 +41,9 @@ export function Models({
 
   // Состояния поиска
   const [search, setSearch] = useState("");
+  const filteredModels = models.filter((model) =>
+    model.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   // Состояния для редактирования
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -158,10 +161,6 @@ export function Models({
     setEditingModel(model);
     setIsFormOpen(true);
   };
-
-  const filteredModels = models.filter((model) =>
-    model.name.toLowerCase().includes(search.toLowerCase()),
-  );
 
   const handleCopyClick = async (
     model: ModelListResponse,

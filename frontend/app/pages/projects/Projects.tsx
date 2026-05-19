@@ -27,7 +27,11 @@ export function Projects() {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingProject, setEditingProject] =
     useState<ProjectDbResponse | null>(null);
+
   const [search, setSearch] = useState("");
+  const filteredProjects = projects.filter((project) =>
+    project.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   const loadProjects = async () => {
     setIsLoading(true);
@@ -79,10 +83,6 @@ export function Projects() {
     toast.success("Проект успешно удалён");
     loadProjects();
   };
-
-  const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(search.toLowerCase()),
-  );
 
   return (
     <>

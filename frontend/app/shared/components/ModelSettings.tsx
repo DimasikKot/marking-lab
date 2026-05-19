@@ -37,6 +37,16 @@ export const ModelSettings = ({
 }) => {
   const [files, setFiles] = useState<FileListResponse[]>([]);
 
+  const [searchTraining, setSearchTraining] = useState("");
+  const filteredTrainingFiles = files.filter((file) =>
+    file.name.toLowerCase().includes(searchTraining.toLowerCase()),
+  );
+
+  const [searchPrediction, setSearchPrediction] = useState("");
+  const filteredPredictionFiles = files.filter((file) =>
+    file.name.toLowerCase().includes(searchPrediction.toLowerCase()),
+  );
+
   useEffect(() => {
     const loadFiles = async () => {
       setIsLoading(true);
@@ -77,32 +87,33 @@ export const ModelSettings = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <TextUI variant="title">Выбор базовой модели</TextUI>
+      <div>
+        <TextUI variant="title">Выбор базовой модели</TextUI>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          marginBottom: 12,
-        }}
-      >
-        {BASE_MODELS.map((model) => {
-          let isActive = false;
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
+          {BASE_MODELS.map((model) => {
+            let isActive = false;
 
-          try {
-            const parsed = JSON.parse(editParams || "{}");
-            isActive = parsed["Базовая модель"] === model;
-          } catch {
-            console.error("Некорректный JSON");
-          }
+            try {
+              const parsed = JSON.parse(editParams || "{}");
+              isActive = parsed["Базовая модель"] === model;
+            } catch {
+              console.error("Некорректный JSON");
+            }
 
-          return (
-            <button
-              key={model}
-              type="button"
-              onClick={() => changeBaseModel(model)}
-              className={`
+            return (
+              <button
+                key={model}
+                type="button"
+                onClick={() => changeBaseModel(model)}
+                className={`
                 px-3 py-1.5 rounded-lg border transition-all duration-200 
                 ${
                   isActive
@@ -110,11 +121,12 @@ export const ModelSettings = ({
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                 }
                 `}
-            >
-              {model}
-            </button>
-          );
-        })}
+              >
+                {model}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div>
@@ -129,48 +141,84 @@ export const ModelSettings = ({
         />
       </div>
 
-      <div>
-        <TextUI variant="title" className="mb-2">
-          Выбор файлов, на которых будет обучаться модель
-        </TextUI>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <TextUI variant="title" className="mb-2">
+            Выбор файлов, на которых будет обучаться модель
+          </TextUI>
 
-        <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-96 p-3">
-            {files.map((file) => (
+          <TextField
+            name="searchFile"
+            value={searchTraining}
+            setValue={setSearchTraining}
+            placeholder="Поиск по имени файла..."
+            className="max-w-md h-fit"
+          />
+        </div>
+
+        <div className="h-80 border border-gray-300 rounded-2xl bg-white overflow-clip">
+          {filteredTrainingFiles.length === 0 && (
+            <TextUI variant="desc" className="text-center w-full mt-6">
+              {searchTraining
+                ? "Файлы по запросу не найдены"
+                : "В проекте пока нет файлов"}
+            </TextUI>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto p-3">
+            {filteredTrainingFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                className="flex items-start gap-2 p-2 w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
                 onClick={() => toggleFile(file.id, "training")}
               >
                 <CheckboxUI
                   value={trainingFilesIds.includes(file.id)}
                   onClick={() => {}}
                 />
-                <FileCard file={file} variant="compact" />
+                <FileCard file={file} variant="compact" className="h-fit" />
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div>
-        <TextUI variant="title" className="mb-2">
-          Выбор файлов, которые будут размечены моделью
-        </TextUI>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <TextUI variant="title">
+            Выбор файлов, которые будут размечены моделью
+          </TextUI>
 
-        <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-96 p-3">
-            {files.map((file) => (
+          <TextField
+            name="searchFile"
+            value={searchPrediction}
+            setValue={setSearchPrediction}
+            placeholder="Поиск по имени файла..."
+            className="max-w-md h-fit"
+          />
+        </div>
+
+        <div className="h-80 border border-gray-300 rounded-2xl bg-white overflow-clip">
+          {filteredPredictionFiles.length === 0 && (
+            <TextUI variant="desc" className="text-center w-full mt-6">
+              {searchTraining
+                ? "Файлы по запросу не найдены"
+                : "В проекте пока нет файлов"}
+            </TextUI>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto p-3">
+            {filteredPredictionFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                className="flex items-start gap-2 p-2 w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
                 onClick={() => toggleFile(file.id, "for_prediction")}
               >
                 <CheckboxUI
                   value={predictionFilesIds.includes(file.id)}
                   onClick={() => {}}
                 />
-                <FileCard file={file} variant="compact" />
+                <FileCard file={file} variant="compact" className="h-fit" />
               </div>
             ))}
           </div>
