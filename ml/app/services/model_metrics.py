@@ -9,34 +9,38 @@ from seqeval.scheme import IOB2
 
 # Метрики
 def compute_metrics(p, label_list):
-    predictions, labels = p  # предсказанные метки и истинные метки
-    predictions = np.argmax(
-        predictions, axis=2
-    )  # для каждого токена определяем индекс метки, по вероятности пренадлежности к классу
-
-    true_predictions = [  # буквально X для модели
+    predictions, labels = p
+    predictions = np.argmax(predictions, axis=2)
+    
+    true_predictions = [
         [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
-    ]  # убираем элементы со значениями -100, преобразуем индексы меток в предсказанные метки
-    true_labels = [  # буквально Y для модели
+    ]
+    true_labels = [
         [label_list[l] for (_, l) in zip(prediction, label) if l != -100]
         for prediction, label in zip(predictions, labels)
-    ]  # убираем элементы со значениями -100, преобразуем индексы меток в истинные метки
-    # true_predictions (X) -> true_labels (Y)
+    ]
+    
+    # Сохраняем метки в глобальную переменную или атрибут trainer
+    # Самый простой способ - вернуть их вместе с метриками
     report = classification_report(
-        true_labels,  # истинные метки
-        true_predictions,  # предсказанные метки
-        scheme=IOB2,  # схема разметки
-        output_dict=True,  # вернуть словарём
+        true_labels,
+        true_predictions,
+        scheme=IOB2,
+        output_dict=True,
     )
     report_dict = cast(dict[str, Any], report)
     f1 = f1_score(true_labels, true_predictions, scheme=IOB2)
     acc = accuracy_score(true_labels, true_predictions)
+    
+    # Возвращаем метрики И метки
     return {
         "accuracy": acc,
         "f1": f1,
         "precision": report_dict["micro avg"]["precision"],
         "recall": report_dict["micro avg"]["recall"],
+        "true_labels": true_labels,      # добавляем
+        "pred_labels": true_predictions,  # добавляем
     }
 
 
@@ -59,20 +63,73 @@ def loss_plot(title: str, loss_list: list) -> str:
 
 
 # График матрицы ошибок
-def plot_confusion_matrix(label_list: list[str]) -> str:
-    fig, ax = plt.subplots(figsize=(8, 6))
+def plot_confusion_matrix(label_list: list[str], true_labels: list, pred_labels: list) -> str:
+    """
+    Создает и возвращает base64 изображение матрицы ошибок
+    
+    Args:
+        label_list: Список всех меток
+        true_labels: Истинные метки для валидационной выборки
+        pred_labels: Предсказанные метки модели
+    """
+    # Фильтруем метки, исключая "O"
     labels = [l for l in label_list if l != "O"]
     size = len(labels)
-    data = np.random.rand(size, size)  # заглушка, замените на реальную матрицу
-    if size > 0:
-        im = ax.imshow(data, cmap="hot", interpolation="nearest")
-        ax.set_xticks(range(size))
-        ax.set_yticks(range(size))
-        ax.set_xticklabels(labels, rotation=45)
-        ax.set_yticklabels(labels)
-        plt.colorbar(im, ax=ax)
-    ax.set_title("Матрица ошибок")
+    
+    if size == 0:
+        # Создаем пустой график, если нет меток
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.text(0.5, 0.5, "Нет меток для отображения", 
+                ha='center', va='center', fontsize=14)
+        ax.set_title("Матрица ошибок")
+        buf = io.BytesIO()
+        plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
+        plt.close(fig)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+    
+    # Создаем mapping меток в индексы
+    label_to_idx = {label: idx for idx, label in enumerate(labels)}
+    
+    # Фильтруем предсказания, исключая "O"
+    filtered_true = []
+    filtered_pred = []
+    for true, pred in zip(true_labels, pred_labels):
+        if true != "O" and pred != "O":
+            filtered_true.append(true)
+            filtered_pred.append(pred)
+    
+    # Строим матрицу ошибок
+    from sklearn.metrics import confusion_matrix
+    cm = confusion_matrix(filtered_true, filtered_pred, labels=labels)
+    
+    # Создаем график
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # Отображаем матрицу
+    im = ax.imshow(cm, interpolation='nearest', cmap='Blues')
+    plt.colorbar(im, ax=ax)
+    
+    # Настраиваем оси
+    ax.set_xticks(np.arange(size))
+    ax.set_yticks(np.arange(size))
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.set_yticklabels(labels)
+    
+    # Добавляем значения в ячейки
+    for i in range(size):
+        for j in range(size):
+            text = ax.text(j, i, cm[i, j],
+                          ha="center", va="center",
+                          color="white" if cm[i, j] > cm.max() / 2 else "black")
+    
+    ax.set_xlabel('Предсказанные метки')
+    ax.set_ylabel('Истинные метки')
+    ax.set_title(f'Матрица ошибок (всего: {len(filtered_true)} примеров)')
+    
+    plt.tight_layout()
+    
     buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
+    plt.savefig(buf, format="png", dpi=100, bbox_inches="tight")
     plt.close(fig)
+    
     return base64.b64encode(buf.getvalue()).decode("utf-8")
