@@ -42,24 +42,161 @@ export function ComparisonFiles() {
       <div className="max-w-6xl mx-auto m-2">
         <ButtonPage onClick={() => window.history.back()} />
 
-        {file1 && file2 ? (
-          <FilesCompareContainer
-            projectId={projectId}
-            file1={file1}
-            file2={file2}
-          />
-        ) : isLoadingFiles ? (
-          <TextUI>Загрузка...</TextUI>
-        ) : (
-          <TextUI>Файлы не найдены</TextUI>
-        )}
+        <div className="mb-8 border border-gray-200 rounded-4xl p-6">
+          {file1 && file2 ? (
+            <FilesCompareContainer file1={file1} file2={file2} />
+          ) : isLoadingFiles ? (
+            <TextUI>Загрузка...</TextUI>
+          ) : (
+            <TextUI>Файлы не найдены</TextUI>
+          )}
+        </div>
       </div>
     </>
   );
 }
 
+const FilesCompareContainer = ({
+  file1,
+  file2,
+}: {
+  file1: FileFullResponse;
+  file2: FileFullResponse;
+}) => {
+  return (
+    <div className="grid md:grid-cols-2 gap-8">
+      <TextUI variant="title" className="mb-4">
+        {file1.name}
+      </TextUI>
+
+      <TextUI variant="title" className="mb-4">
+        {file2.name}
+      </TextUI>
+    </div>
+  );
+};
+
+function ComparisonPanel({ projectId }: { projectId: string | number }) {
+  const [search, setSearch] = useState("");
+  const [files, setFiles] = useState<FileDbResponse[]>([]);
+  const [models, setModels] = useState<ModelDbResponse[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [isComparing, setIsComparing] = useState(false);
+
+  useEffect(() => {
+    const loadList = async () => {
+      if (type === "files") {
+        const res = await fetchFiles(projectId);
+        if (res) setFiles(res.data);
+      } else {
+        const res = await fetchModels(projectId);
+        if (res) setModels(res.data);
+      }
+    };
+    loadList();
+  }, [type, projectId]);
+
+  const toggleSelection = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((i) => i !== id));
+    } else if (selectedIds.length < 2) {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const items = type === "files" ? files : models;
+  const filteredItems = items.filter((i) =>
+    i.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  // Находим выбранные файлы для передачи в контейнер сравнения
+  const file1 = files.find((f) => f.id === selectedIds[0]);
+  const file2 = files.find((f) => f.id === selectedIds[1]);
+
+  return (
+    <>
+      {!isComparing ? (
+        <div className="border border-gray-200 rounded-4xl p-8 bg-white shadow-sm">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <TextUI variant="header">
+                Сравнение {type === "files" ? "файлов" : "моделей"}
+              </TextUI>
+              <TextUI variant="desc">
+                Выберите ровно 2 объекта для параллельного просмотра
+              </TextUI>
+            </div>
+            <div className="flex gap-4 items-center">
+              <TextField
+                value={search}
+                setValue={setSearch}
+                placeholder="Поиск по названию..."
+                name="search"
+              />
+              <ButtonUI
+                disabled={selectedIds.length !== 2}
+                onClick={() => setIsComparing(true)}
+              >
+                Сравнить выбранное ({selectedIds.length}/2)
+              </ButtonUI>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredItems.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => toggleSelection(item.id)}
+                className={`p-5 border-2 rounded-3xl cursor-pointer transition-all flex items-center gap-4 ${
+                  selectedIds.includes(item.id)
+                    ? "border-blue-500 bg-blue-50/30"
+                    : "border-gray-100 hover:border-gray-300"
+                }`}
+              >
+                <CheckboxUI
+                  value={selectedIds.includes(item.id)}
+                  onClick={() => toggleSelection(item.id)}
+                />
+                <div className="overflow-hidden">
+                  <TextUI variant="title" className="truncate text-base">
+                    {item.name}
+                  </TextUI>
+                  <TextUI variant="desc" className="text-xs">
+                    ID: {item.id}
+                  </TextUI>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          {type === "files" && file1 && file2 ? (
+            <FilesCompareContainer
+              projectId={projectId}
+              file1={file1}
+              file2={file2}
+            />
+          ) : type === "models" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <ModelCompareColumn
+                projectId={projectId}
+                modelId={selectedIds[0]}
+              />
+              <ModelCompareColumn
+                projectId={projectId}
+                modelId={selectedIds[1]}
+              />
+            </div>
+          ) : null}
+        </>
+      )}
+    </>
+  );
+}
+
 /*Контейнер для синхронизации двух файлов*/
-function FilesCompareContainer({
+function FilesCompareContainerOld({
   file1,
   file2,
 }: {

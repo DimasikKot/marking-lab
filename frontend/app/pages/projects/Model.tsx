@@ -1,29 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { fetchFiles, type FileListResponse } from "@/shared/api/file";
-import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 import { Header } from "@/shared/components/Header";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
-import { TextField } from "@/shared/components/TextField";
-import { FileCard } from "@/shared/components/FileCard";
-import type { JsonValue, ModelFullResponse } from "@/shared/api/model";
+import { ModelSettings } from "@/shared/components/ModelSettings";
+import { ModelPreview } from "@/shared/components/ModelPreview";
 import {
   fetchModelById,
   trainModelById,
   updateModelById,
+  type ModelFullResponse,
 } from "@/shared/api/model";
-
-const BASE_MODELS: string[] = JSON.parse(
-  import.meta.env.VITE_BASE_MODELS || "[]",
-);
-
-const CLEAR_PARAMETERS: Record<string, JsonValue> = JSON.parse(
-  import.meta.env.VITE_CLEAR_PARAMETERS || "{}",
-);
 
 export function Model() {
   const { projectId = "0", modelId = "0" } = useParams<{
@@ -36,73 +26,50 @@ export function Model() {
   const [isLoading, setIsLoading] = useState(true);
   const [isTraining, setIsTraining] = useState(false);
 
-  const [files, setFiles] = useState<FileListResponse[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editParams, setEditParams] = useState("");
 
   const [trainingFilesIds, setTrainingFilesIds] = useState<number[]>([]);
   const [predictionFilesIds, setPredictionFilesIds] = useState<number[]>([]);
 
-  const changeBaseModel = async (model: string) => {
-    try {
-      const parsed = JSON.parse(editParams || "{}");
-
-      parsed["Базовая модель"] = model;
-
-      setEditParams(JSON.stringify(parsed, null, 2));
-    } catch {
-      toast.error("Некорректный JSON");
-    }
-  };
-
   const loadModel = async () => {
     setIsLoading(true);
-    const [modelRes, filesRes] = await Promise.all([
-      fetchModelById(projectId, modelId),
-      fetchFiles(projectId),
-    ]);
-
+    // const [modelRes, filesRes] = await Promise.all([
+    //   fetchModelById(projectId, modelId),
+    //   fetchFiles(projectId),
+    // ]);
+    const response = await fetchModelById(projectId, modelId);
     setIsLoading(false);
 
-    if (modelRes) {
-      setModel(modelRes);
-      setEditParams(JSON.stringify(modelRes.parameters, null, 2));
-      setTrainingFilesIds(modelRes.training_files.map((file) => file.id));
-      setPredictionFilesIds(modelRes.prediction_files.map((file) => file.id));
-    }
-    if (filesRes) {
-      setFiles(filesRes.data);
+    if (response) {
+      setModel(response);
+      setEditParams(JSON.stringify(response.parameters, null, 2));
+      setTrainingFilesIds(response.training_files.map((file) => file.id));
+      setPredictionFilesIds(response.prediction_files.map((file) => file.id));
     }
   };
 
   useEffect(() => {
     const loadModel = async () => {
       setIsLoading(true);
-      const [modelResponse, filesResponse] = await Promise.all([
-        fetchModelById(projectId, modelId),
-        fetchFiles(projectId),
-      ]);
+      // const [modelResponse, filesResponse] = await Promise.all([
+      //   fetchModelById(projectId, modelId),
+      //   fetchFiles(projectId),
+      // ]);
+      const response = await fetchModelById(projectId, modelId);
       setIsLoading(false);
 
-      if (modelResponse === undefined) return;
-      setModel(modelResponse);
-      setEditParams(JSON.stringify(modelResponse.parameters, null, 2));
+      if (response === undefined) return;
+      setModel(response);
+      setEditParams(JSON.stringify(response.parameters, null, 2));
 
       if (!isEditing) {
-        setEditParams(JSON.stringify(modelResponse.parameters, null, 2));
-        setTrainingFilesIds(
-          modelResponse.training_files.map((file) => file.id),
-        );
-        setPredictionFilesIds(
-          modelResponse.prediction_files.map((file) => file.id),
-        );
+        setEditParams(JSON.stringify(response.parameters, null, 2));
+        setTrainingFilesIds(response.training_files.map((file) => file.id));
+        setPredictionFilesIds(response.prediction_files.map((file) => file.id));
       }
 
-      if (filesResponse) {
-        setFiles(filesResponse.data);
-      }
-
-      if (modelResponse.progress === 0 || modelResponse.progress >= 100) {
+      if (response.progress === 0 || response.progress >= 100) {
         clearInterval(interval);
       }
     };
@@ -132,10 +99,7 @@ export function Model() {
       prediction_files_ids: predictionFilesIds,
     });
 
-    if (!response) {
-      toast.error("Ошибка сохранения");
-      return;
-    }
+    if (response === undefined) return;
 
     toast.success("Изменения сохранены");
     setModel(response);
@@ -159,18 +123,6 @@ export function Model() {
     setModel(response);
     toast.success("Обучение модели успешно запущено");
     setTimeout(() => window.location.reload(), 5000);
-  };
-
-  const toggleFile = (id: number, type: "training" | "for_prediction") => {
-    const setter =
-      type === "training" ? setTrainingFilesIds : setPredictionFilesIds;
-    const current = type === "training" ? trainingFilesIds : predictionFilesIds;
-
-    if (current.includes(id)) {
-      setter(current.filter((i) => i !== id));
-    } else {
-      setter([...current, id]);
-    }
   };
 
   return (
@@ -206,7 +158,7 @@ export function Model() {
         )}
       </Header>
 
-      <div className="max-w-6xl mx-auto m-2">
+      <div className="max-w-6xl mx-auto m-2 mb-80">
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=models`)}
           isLoading={isLoading}
@@ -239,232 +191,19 @@ export function Model() {
               )}
             </div>
 
-            {/* Настройки */}
             {isEditing ? (
-              <div className="flex flex-col gap-4">
-                <TextUI variant="title">Выбор базовой модели</TextUI>
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    flexWrap: "wrap",
-                    marginBottom: 12,
-                  }}
-                >
-                  {BASE_MODELS.map((model) => {
-                    let isActive = false;
-
-                    try {
-                      const parsed = JSON.parse(editParams || "{}");
-                      isActive = parsed["Базовая модель"] === model;
-                    } catch {
-                      console.error("Некорректный JSON");
-                    }
-
-                    return (
-                      <button
-                        key={model}
-                        type="button"
-                        onClick={() => changeBaseModel(model)}
-                        className={`
-                          px-3 py-1.5 rounded-lg border transition-all duration-200
-                          ${
-                            isActive
-                              ? "bg-blue-500 text-white border-blue-500 shadow-md"
-                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                          }
-                        `}
-                      >
-                        {model}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div>
-                  <TextUI variant="title">Параметры обучения</TextUI>
-
-                  <TextField
-                    isArea
-                    rows={10}
-                    value={editParams}
-                    onChange={(e) => setEditParams(e.target.value)}
-                    placeholder={JSON.stringify(CLEAR_PARAMETERS, null, 2)}
-                  />
-                </div>
-
-                <div>
-                  <TextUI variant="title" className="mb-2">
-                    Выбор файлов, на которых будет обучаться модель
-                  </TextUI>
-
-                  <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-60 p-3">
-                      {files.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
-                          onClick={() => toggleFile(file.id, "training")}
-                        >
-                          <CheckboxUI
-                            value={trainingFilesIds.includes(file.id)}
-                            onClick={() => {}}
-                          />
-                          <FileCard
-                            file={file}
-                            variant="compact"
-                            onClick={() => {}}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <TextUI variant="title" className="mb-2">
-                    Выбор файлов, которые будут размечены моделью
-                  </TextUI>
-
-                  <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-60 p-3">
-                      {files.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
-                          onClick={() => toggleFile(file.id, "for_prediction")}
-                        >
-                          <CheckboxUI
-                            value={predictionFilesIds.includes(file.id)}
-                            onClick={() => {}}
-                          />
-                          <FileCard
-                            file={file}
-                            variant="compact"
-                            onClick={() => {}}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ModelSettings
+                projectId={projectId}
+                setIsLoading={setIsLoading}
+                editParams={editParams}
+                setEditParams={setEditParams}
+                trainingFilesIds={trainingFilesIds}
+                setTrainingFilesIds={setTrainingFilesIds}
+                predictionFilesIds={predictionFilesIds}
+                setPredictionFilesIds={setPredictionFilesIds}
+              />
             ) : (
-              /* Информация о модели */
-              <div
-                className={`grid grid-cols-1 ${Object.entries(model.metrics).length > 0 ? "md:grid-cols-2" : ""} gap-8`}
-              >
-                {/* Параметры */}
-                <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-2xl">
-                  <TextUI
-                    variant="header"
-                    className="mb-4 text-orange-400"
-                    isSelectable
-                  >
-                    Параметры обучения
-                  </TextUI>
-
-                  <div className="space-y-2">
-                    {Object.entries(model.parameters).length > 0 &&
-                      Object.entries(model.parameters).map(([k, v]) => (
-                        <div
-                          key={k}
-                          className="flex justify-between py-1 border-b border-orange-200"
-                        >
-                          <TextUI
-                            className="text-orange-400 w-[45%] overflow-hidden"
-                            isSelectable
-                          >
-                            {k}
-                          </TextUI>
-
-                          <TextUI
-                            className="text-orange-400 w-[50%] overflow-hidden"
-                            isSpan
-                            isSelectable
-                          >
-                            {String(v)}
-                          </TextUI>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Метрики */}
-                {Object.entries(model.metrics).length > 0 && (
-                  <div className="p-6 border border-emerald-300 bg-emerald-50/20 rounded-2xl">
-                    <TextUI
-                      variant="header"
-                      className="mb-4 text-emerald-500"
-                      isSelectable
-                    >
-                      Результаты обучения
-                    </TextUI>
-
-                    <div className="space-y-2">
-                      {Object.entries(model.metrics).map(([k, v]) => (
-                        <div
-                          key={k}
-                          className="flex justify-between py-1 border-b border-emerald-300"
-                        >
-                          <TextUI
-                            className="text-emerald-500 w-[45%] overflow-hidden"
-                            isSelectable
-                          >
-                            {k}
-                          </TextUI>
-
-                          <TextUI
-                            className="text-emerald-500 w-[50%] overflow-hidden"
-                            isSpan
-                            isSelectable
-                          >
-                            {String(v)}
-                          </TextUI>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Графики */}
-                {Object.entries(model.graphs).map(([key, value]) => (
-                  <div key={key} className="border rounded-2xl p-3">
-                    <TextUI className="mb-2" isSelectable>
-                      {key}
-                    </TextUI>
-
-                    <img
-                      src={value}
-                      alt={key}
-                      className="w-full select-none rounded-lg"
-                    />
-                  </div>
-                ))}
-
-                <TextUI variant="title" isSelectable>
-                  Файлы, на которых будет обучаться:{" "}
-                  <TextUI isSpan className="text-lg" isSelectable>
-                    {model.training_files.length > 0
-                      ? model.training_files
-                          .map((file) => file.name)
-                          .join(" , ")
-                      : "не выбраны"}
-                  </TextUI>
-                </TextUI>
-
-                <TextUI variant="title" isSelectable>
-                  Файлы, которые будут размечены:{" "}
-                  <TextUI isSpan className="text-lg" isSelectable>
-                    {model.prediction_files.length > 0
-                      ? model.prediction_files
-                          .map((file) => file.name)
-                          .join(" , ")
-                      : "не выбраны"}
-                  </TextUI>
-                </TextUI>
-              </div>
+              <ModelPreview model={model} />
             )}
           </div>
         )}
