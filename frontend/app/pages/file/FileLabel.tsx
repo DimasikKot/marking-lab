@@ -253,14 +253,14 @@ export function FileLabel({
 
           {/* Разметка текста */}
           <div
-            className="bg-white rounded-3xl border border-gray-200 p-6"
+            className="rounded-3xl border border-gray-200 p-6 bg-white"
             onContextMenu={(e) => e.preventDefault()}
           >
             <div className="space-y-6">
               {localRows.map((line, lineIdx) => (
                 <div
                   key={lineIdx}
-                  className="pb-6 border-b border-gray-200 last:border-none flex flex-wrap gap-1.5"
+                  className="pb-6 border-b border-gray-200 last:border-none flex flex-wrap gap-2"
                 >
                   {line.words.map((word, wordIdx) => {
                     const isSelected = selectedWords.some(
@@ -278,7 +278,7 @@ export function FileLabel({
                         ${isSelected ? "ring-2 ring-blue-500" : "hover:bg-gray-300"}
                       `}
                       >
-                        <span className="font-medium text-xl text-gray-900 select-none">
+                        <span className="font-normal text-xl select-none">
                           {word.token}
                         </span>
                       </div>

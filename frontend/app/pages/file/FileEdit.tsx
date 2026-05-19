@@ -340,15 +340,15 @@ export function FileEdit({
         />
 
         {/* Редактор */}
-        <div className="bg-white rounded-3xl border border-gray-200 p-6">
+        <div className="rounded-3xl border border-gray-200 p-6 bg-white">
           <div className="space-y-6">
             {localRows.map((line, lineIdx) => (
               <div
                 key={lineIdx}
-                className="pb-6 border-b border-gray-20 last:border-none flex flex-wrap gap-1.5"
+                className="pb-6 border-b border-gray-200 last:border-none flex flex-wrap"
               >
                 {line.words.map((word, wordIdx) => (
-                  <div className="flex flex-col items-center gap-1 py-0.5 rounded cursor-pointer transition-all">
+                  <div className="flex flex-col items-center py-0.5 rounded cursor-pointer transition-all">
                     <input
                       key={wordIdx}
                       ref={(el) => {
@@ -362,7 +362,7 @@ export function FileEdit({
                       }
                       onKeyDown={(e) => handleKeyDown(lineIdx, wordIdx, e)}
                       className={`hover:ring-gray-300 hover:ring-2 focus:ring-blue-500 focus:ring-2 outline-none
-                        min-w-1 font-medium text-xl mx-1 text-gray-900 transition-colors
+                        min-w-1 font-normal text-xl mx-1 transition-colors
                         flex flex-col items-center gap-1 px-2 py-0.5 rounded
                         ${file?.colors[word.label] ?? ""}`}
                       style={{

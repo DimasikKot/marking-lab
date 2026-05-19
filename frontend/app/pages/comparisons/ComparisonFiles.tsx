@@ -46,7 +46,7 @@ export function ComparisonFiles() {
     <>
       <Header title="Сравнение файлов" />
 
-      <div className="max-w-6xl mx-auto m-6 mb-80">
+      <div className="max-w-7xl mx-auto m-6 mb-80">
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=files`)}
         />
@@ -195,8 +195,18 @@ const FileRowsRow = ({
       )}
 
       <div className="grid grid-cols-2 gap-6">
-        <FileRowsElement file={file1} syncedRows={syncedRows} side="left" />
-        <FileRowsElement file={file2} syncedRows={syncedRows} side="right" />
+        <FileRowsElement
+          file={file1}
+          syncedRows={syncedRows}
+          side="left"
+          onlyDiff={onlyDiff}
+        />
+        <FileRowsElement
+          file={file2}
+          syncedRows={syncedRows}
+          side="right"
+          onlyDiff={onlyDiff}
+        />
       </div>
     </div>
   );
@@ -206,35 +216,39 @@ const FileRowsElement = ({
   file,
   syncedRows,
   side,
+  onlyDiff,
 }: {
   file: FileFullResponse;
   syncedRows: SyncedRow[];
   side: "left" | "right";
+  onlyDiff: boolean;
 }) => {
   return (
-    <div className="flex flex-col overflow-hidden bg-white">
-      <div className="space-y-4">
-        {syncedRows.map((item) => {
-          const row = side === "left" ? item.row1 : item.row2;
+    <div
+      className={`flex flex-col rounded-3xl border p-6 overflow-hidden gap-6 bg-white
+                ${onlyDiff ? "border-orange-200" : "border-gray-200"}`}
+    >
+      {syncedRows.map((item) => {
+        const row = side === "left" ? item.row1 : item.row2;
 
-          return (
+        return (
+          <div
+            className={`pb-6 last:border-none border-b
+                ${item.isDifferent ? "border-orange-200" : "border-gray-200"}
+              `}
+          >
             <div
               key={item.index}
-              className={`
-                rounded-2xl border p-4 transition-all
-                ${
-                  item.isDifferent
-                    ? "border-orange-200 bg-orange-50"
-                    : "border-gray-200"
-                }
+              className={`rounded-2xl p-2 -m-2
+                ${item.isDifferent && !onlyDiff && "bg-orange-50"}
               `}
             >
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 {row?.words?.map((word: Word, idx: number) => (
                   <span
                     key={idx}
                     className={`
-                        px-2 py-1 rounded-lg text-sm
+                        px-2 py-1 rounded-lg font-normal text-xl
                         ${file.colors?.[word.label] || ""}
                       `}
                   >
@@ -243,9 +257,9 @@ const FileRowsElement = ({
                 ))}
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
