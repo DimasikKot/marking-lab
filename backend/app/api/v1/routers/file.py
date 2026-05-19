@@ -276,7 +276,9 @@ async def patch_by_id(
 
 
 class PatchFileFullRequest(BaseModel):
-    new_rows: list[Row]
+    new_rows: list[Row] | None
+    new_tags: dict[str, str] | None
+    new_colors: dict[str, str] | None
 
 
 @router.patch("/{file_id}/content", response_model=FileDbResponse)
@@ -289,6 +291,24 @@ async def patch_by_id_content(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
+    def restore_tags(
+        labels: dict[str, str] | None, colors: dict[str, str] | None
+    ) -> list[dict[str, str]] | None:
+        if labels is None or colors is None:
+            return None
+        tags = []
+
+        for key, label in labels.items():
+            # берем только B-
+            if not key.startswith("B-"):
+                continue
+            value = key[2:]  # убираем B-
+            tags.append(
+                {"value": value, "label": label, "color": colors.get(f"B-{value}")}
+            )
+
+        return tags
+
     file_db = update_page_by_id(
         project_id=project_id,
         file_id=file_id,
@@ -296,6 +316,7 @@ async def patch_by_id_content(
         db=db,
         page=page,
         limit=limit,
+        new_tags=restore_tags(data.new_tags, data.new_colors),
         new_rows=data.new_rows,
     )
 

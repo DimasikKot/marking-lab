@@ -308,22 +308,27 @@ def update_page_by_id(
     db: Session,
     page: int,
     limit: int,
-    new_rows: list[Row],
+    new_tags: list[dict[str, str]] | None,
+    new_rows: list[Row] | None,
 ) -> FileDB:
     file_db = _fetch_file_db_by_id(
         project_id=project_id, file_id=file_id, db=db, user_id=user_id
     )
 
-    file_path = get_file_path_by_id(project_id, file_id)
+    if new_tags is not None:
+        file_db.tags = new_tags
 
-    new_total_rows = _write_new_rows(
-        file_path=file_path,
-        page=page,
-        limit=limit,
-        new_rows=new_rows,
-    )
+    if new_rows is not None:
+        file_path = get_file_path_by_id(project_id, file_id)
 
-    file_db.total_rows = new_total_rows
+        new_total_rows = _write_new_rows(
+            file_path=file_path,
+            page=page,
+            limit=limit,
+            new_rows=new_rows,
+        )
+
+        file_db.total_rows = new_total_rows
 
     db.commit()
     db.refresh(file_db)
