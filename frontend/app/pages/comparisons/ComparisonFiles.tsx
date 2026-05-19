@@ -53,7 +53,7 @@ export function ComparisonFiles() {
 
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {file1 && file2 ? (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
               <FileInfoRow file1={file1} file2={file2} />
               <FileRowsRow file1={file1} file2={file2} />
             </div>
@@ -91,10 +91,6 @@ const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
           <TextUI variant="title" maxLines={1} className="-mt-1">
             {file.name}
           </TextUI>
-
-          {/* <TextUI variant="desc" className="flex items-end mt-0.5 h-min w-26">
-              (id: {file.id})
-            </TextUI> */}
         </div>
 
         <div
@@ -156,9 +152,6 @@ const FileRowsRow = ({
   const rows1 = file1.rows;
   const rows2 = file2.rows;
 
-  /**
-   * Формируем синхронный массив строк
-   */
   const syncedRows: SyncedRow[] = useMemo(() => {
     const maxLength = Math.max(rows1.length, rows2.length);
 
@@ -169,18 +162,11 @@ const FileRowsRow = ({
       const row2 = rows2[i];
 
       const text1 = row1?.words?.map((w) => w.token).join(" ") || "";
-
       const text2 = row2?.words?.map((w) => w.token).join(" ") || "";
 
       const labels1 = row1?.words?.map((w) => w.label).join("|") || "";
-
       const labels2 = row2?.words?.map((w) => w.label).join("|") || "";
 
-      /**
-       * Строка отличается:
-       * - разный текст
-       * - разные labels
-       */
       const isDifferent = text1 !== text2 || labels1 !== labels2;
 
       result.push({
@@ -199,26 +185,17 @@ const FileRowsRow = ({
   }, [rows1, rows2, onlyDiff]);
 
   return (
-    <div className="w-full space-y-4">
+    <div className="flex flex-col w-full gap-6">
       {isLinked && (
-        <div className="flex items-center gap-3 bg-white px-5 py-3 border border-gray-200 rounded-3xl shadow-sm w-fit">
-          <CheckboxUI
-            value={onlyDiff}
-            onClick={() => setOnlyDiff((prev) => !prev)}
-          />
-
-          <span
-            className="text-sm font-medium text-gray-700 cursor-pointer select-none"
-            onClick={() => setOnlyDiff((prev) => !prev)}
-          >
-            Показывать только различия
-          </span>
-        </div>
+        <CheckboxUI
+          value={onlyDiff}
+          title={"Показывать только различия"}
+          onClick={() => setOnlyDiff((prev) => !prev)}
+        />
       )}
 
       <div className="grid grid-cols-2 gap-6">
         <FileRowsElement file={file1} syncedRows={syncedRows} side="left" />
-
         <FileRowsElement file={file2} syncedRows={syncedRows} side="right" />
       </div>
     </div>
@@ -235,12 +212,8 @@ const FileRowsElement = ({
   side: "left" | "right";
 }) => {
   return (
-    <div className="flex flex-col border border-gray-200 rounded-3xl overflow-hidden bg-white">
-      <div className="border-b border-gray-100 px-6 py-4">
-        <TextUI variant="title">{file.name}</TextUI>
-      </div>
-
-      <div className="p-6 space-y-4">
+    <div className="flex flex-col overflow-hidden bg-white">
+      <div className="space-y-4">
         {syncedRows.map((item) => {
           const row = side === "left" ? item.row1 : item.row2;
 
@@ -251,8 +224,8 @@ const FileRowsElement = ({
                 rounded-2xl border p-4 transition-all
                 ${
                   item.isDifferent
-                    ? "border-orange-300 bg-orange-50"
-                    : "border-gray-100"
+                    ? "border-orange-200 bg-orange-50"
+                    : "border-gray-200"
                 }
               `}
             >

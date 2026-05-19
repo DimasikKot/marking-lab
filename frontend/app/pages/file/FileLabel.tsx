@@ -162,7 +162,7 @@ export function FileLabel({
   return (
     <div className="relative">
       {/* Панель справа */}
-      <div className="absolute right-4 top-0 max-h-11/12 w-80">
+      <div className="absolute right-4 top-0 max-h-10/12 w-80">
         <div
           className="shadow-2xl border border-gray-300 rounded-2xl w-80 h-full overflow-clip bg-white"
           onClick={(event) => event.stopPropagation()}
@@ -253,14 +253,14 @@ export function FileLabel({
 
           {/* Разметка текста */}
           <div
-            className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10"
+            className="bg-white rounded-3xl border border-gray-200 p-6"
             onContextMenu={(e) => e.preventDefault()}
           >
             <div className="space-y-6">
               {localRows.map((line, lineIdx) => (
                 <div
                   key={lineIdx}
-                  className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
+                  className="pb-6 border-b border-gray-200 last:border-none flex flex-wrap gap-1.5"
                 >
                   {line.words.map((word, wordIdx) => {
                     const isSelected = selectedWords.some(

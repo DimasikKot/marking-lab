@@ -340,12 +340,12 @@ export function FileEdit({
         />
 
         {/* Редактор */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10">
+        <div className="bg-white rounded-3xl border border-gray-200 p-6">
           <div className="space-y-6">
             {localRows.map((line, lineIdx) => (
               <div
                 key={lineIdx}
-                className="pb-6 border-b border-gray-100 last:border-none flex flex-wrap gap-1.5"
+                className="pb-6 border-b border-gray-20 last:border-none flex flex-wrap gap-1.5"
               >
                 {line.words.map((word, wordIdx) => (
                   <div className="flex flex-col items-center gap-1 py-0.5 rounded cursor-pointer transition-all">
