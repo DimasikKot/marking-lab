@@ -6,8 +6,8 @@ import { Files } from "./Files";
 import { Models } from "./Models";
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
-import { fetchFiles, type FileDbListResponse } from "@/shared/api/file";
-import { fetchModels, type ModelDbResponse } from "@/shared/api/model";
+import { fetchFiles, type FileListResponse } from "@/shared/api/file";
+import { fetchModels, type ModelListResponse } from "@/shared/api/model";
 
 export function Project() {
   // Переменные URL
@@ -20,25 +20,25 @@ export function Project() {
   // const page = searchParams.get("page") || "1";
 
   // Переменные страниц
-  const [files, setFiles] = useState<FileDbListResponse[]>([]);
-  const [loadingFiles, setLoadingFiles] = useState(true);
+  const [files, setFiles] = useState<FileListResponse[]>([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(true);
 
-  const [models, setModels] = useState<ModelDbResponse[]>([]);
-  const [loadingModels, setLoadingModels] = useState(true);
+  const [models, setModels] = useState<ModelListResponse[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(true);
 
   useEffect(() => {
     const loadFiles = async () => {
-      setLoadingFiles(true);
+      setIsLoadingFiles(true);
       const response = await fetchFiles(projectId);
-      setLoadingFiles(false);
+      setIsLoadingFiles(false);
       if (response === undefined) return;
       setFiles(response.data);
     };
 
     const loadModels = async () => {
-      setLoadingModels(true);
+      setIsLoadingModels(true);
       const response = await fetchModels(projectId);
-      setLoadingModels(false);
+      setIsLoadingModels(false);
       if (response === undefined) return;
       setModels(response.data);
     };
@@ -93,8 +93,8 @@ export function Project() {
           projectId={projectId}
           files={files}
           setFiles={setFiles}
-          loading={loadingFiles}
-          setLoading={setLoadingFiles}
+          isLoading={isLoadingFiles}
+          setIsLoading={setIsLoadingFiles}
         />
       </TabPanel>
 
@@ -103,8 +103,8 @@ export function Project() {
           projectId={projectId}
           models={models}
           setModels={setModels}
-          loading={loadingModels}
-          setLoading={setLoadingModels}
+          isLoading={isLoadingModels}
+          setIsLoading={setIsLoadingModels}
         />
       </TabPanel>
     </Tabs>

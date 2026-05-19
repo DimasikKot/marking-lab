@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { ModelDbResponse } from "../api/model";
+import type { ModelFullResponse } from "../api/model";
 import { ButtonUI } from "./ButtonUI";
 import { TextUI } from "./TextUI";
 
@@ -8,7 +8,7 @@ export const ModelModalCard = ({
   model,
   onClose,
 }: {
-  model: ModelDbResponse;
+  model: ModelFullResponse;
   onClose: () => void;
 }) => {
   useEffect(() => {

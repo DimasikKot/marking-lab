@@ -1,10 +1,8 @@
 import toast from "react-hot-toast";
-import { useState } from "react";
 
-import type { ModelDbResponse } from "@/shared/api/model";
+import type { ModelListResponse } from "@/shared/api/model";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
-import { ModelModalCard } from "./ModelModalCard";
 
 export const ModelCard = ({
   model,
@@ -16,7 +14,7 @@ export const ModelCard = ({
   dateIsCreatedAt = false,
   className = "",
 }: {
-  model: ModelDbResponse;
+  model: ModelListResponse;
   onClick?: () => void;
   onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
   onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -25,55 +23,53 @@ export const ModelCard = ({
   dateIsCreatedAt?: boolean;
   className?: string;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const date = dateIsCreatedAt ? model.created_at : model.updated_at;
 
   return (
-    <>
-      <div
-        onClick={onClick}
-        className={`
+    <div
+      onClick={onClick}
+      className={`
         bg-white border border-gray-300 rounded-2xl p-4 gap-3
         hover:border-gray-400 hover:shadow-md transition-all duration-200
         cursor-pointer flex flex-col justify-between w-full
         ${className}
       `}
-      >
-        <div className="flex-1 h-full">
-          <div className="flex flex-row justify-between gap-4">
-            <div className="flex w-full flex-row gap-2">
-              <TextUI variant="title" maxLines={1} className="-mt-1">
-                {model.name}
-                {/* {model.parameters["Базовая модель"] && (
+    >
+      <div className="flex-1 h-full">
+        <div className="flex flex-row justify-between gap-4">
+          <div className="flex w-full flex-row gap-2">
+            <TextUI variant="title" maxLines={1} className="-mt-1">
+              {model.name}
+              {/* {model.parameters["Базовая модель"] && (
                   <> ({String(model.parameters["Базовая модель"])})</>
                 )} */}
+            </TextUI>
+
+            {model.parameters["Базовая модель"] && (
+              <TextUI
+                variant="label"
+                className="mt-0.75 h-min w-40 line-clamp-1" // text-orange-400
+              >
+                {String(model.parameters["Базовая модель"]).split("/").pop()}
               </TextUI>
+            )}
 
-              {model.parameters["Базовая модель"] && (
-                <TextUI
-                  variant="label"
-                  className="mt-0.75 h-min w-40 line-clamp-1" // text-orange-400
-                >
-                  {String(model.parameters["Базовая модель"]).split("/").pop()}
-                </TextUI>
-              )}
-
-              {/* <TextUI
+            {/* <TextUI
                 variant="desc"
                 className="flex items-end mt-0.5 h-min w-26"
               >
                 (id: {model.id})
               </TextUI> */}
-            </div>
+          </div>
 
-            {model.progress !== 0 && model.progress !== 100 && (
-              <TextUI variant="normal" className="text-cyan-500 -mr-3">
-                {`${model.progress}%`}
-              </TextUI>
-            )}
+          {model.progress !== 0 && model.progress !== 100 && (
+            <TextUI variant="normal" className="text-cyan-500 -mr-3">
+              {`${model.progress}%`}
+            </TextUI>
+          )}
 
-            <div
-              className={`flex items-center justify-center select-none material-icons
+          <div
+            className={`flex items-center justify-center select-none material-icons
                 ${
                   model.progress === 0
                     ? "text-amber-500"
@@ -81,161 +77,156 @@ export const ModelCard = ({
                       ? "text-cyan-500"
                       : "text-emerald-500"
                 }`}
+          >
+            {model.progress === 0
+              ? "edit_note"
+              : model.progress !== 100
+                ? "model_training"
+                : "school"}
+            {/* task_alt */}
+          </div>
+
+          {model.progress > 0 && model.progress < 100 && (
+            <ButtonUI
+              onClick={onStopClick}
+              variant="secondary"
+              className="flex-max text-right text-red-600 hover:text-red-800"
             >
-              {model.progress === 0
-                ? "edit_note"
-                : model.progress !== 100
-                  ? "model_training"
-                  : "school"}
-              {/* task_alt */}
-            </div>
-
-            {model.progress > 0 && model.progress < 100 && (
-              <ButtonUI
-                onClick={onStopClick}
-                variant="secondary"
-                className="flex-max text-right text-red-600 hover:text-red-800"
-              >
-                <div className="-ml-3 select-none material-icons">cancel</div>
-              </ButtonUI>
-            )}
-          </div>
-
-          <div className="flex flex-col overflow-auto">
-            {model.training_files.length > 0 && (
-              <TextUI variant="label">
-                Файлы, на которых будет обучаться:{" "}
-                <TextUI isSpan variant="desc">
-                  {model.training_files.map((file) => file.name).join(" , ")}
-                </TextUI>
-              </TextUI>
-            )}
-
-            {model.prediction_files.length > 0 && (
-              <TextUI variant="label">
-                Файлы, которые будут размечены:{" "}
-                <TextUI isSpan variant="desc">
-                  {model.prediction_files.map((file) => file.name).join(" , ")}
-                </TextUI>
-              </TextUI>
-            )}
-
-            <div className="mt-1 flex max-h-[20vh]">
-              {Object.entries(model.parameters).length > 0 && (
-                <div className="flex-1 w-[50%]">
-                  {Object.entries(model.parameters).map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="flex justify-between px-1 border-b border-orange-200"
-                    >
-                      <TextUI
-                        variant="desc"
-                        className="text-orange-400 w-[45%] overflow-hidden"
-                        maxLines={1}
-                      >
-                        {k}
-                      </TextUI>
-
-                      <TextUI
-                        variant="desc"
-                        className="text-orange-400 w-[50%] overflow-hidden"
-                        isSpan
-                        maxLines={1}
-                      >
-                        {String(v)}
-                      </TextUI>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {Object.entries(model.metrics).length > 0 && (
-                <div className="flex-1 w-[50%]">
-                  {Object.entries(model.metrics).map(([k, v]) => (
-                    <div
-                      key={k}
-                      className="flex justify-between px-1 border-b border-emerald-300"
-                    >
-                      <TextUI
-                        variant="desc"
-                        className="text-green-500/90 w-[45%] overflow-hidden"
-                        maxLines={1}
-                      >
-                        {k}
-                      </TextUI>
-
-                      <TextUI
-                        variant="desc"
-                        className="text-green-500/90 w-[50%] overflow-hidden"
-                        isSpan
-                        maxLines={1}
-                      >
-                        {String(v)}
-                      </TextUI>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+              <div className="-ml-3 select-none material-icons">cancel</div>
+            </ButtonUI>
+          )}
         </div>
 
-        <div className="w-full flex-1 border-b border-gray-300" />
+        <div className="flex flex-col overflow-auto">
+          {model.training_files.length > 0 && (
+            <TextUI variant="label">
+              Файлы, на которых будет обучаться:{" "}
+              <TextUI isSpan variant="desc">
+                {model.training_files.map((file) => file.name).join(" , ")}
+              </TextUI>
+            </TextUI>
+          )}
 
-        <div className="flex justify-between -mb-1 gap-3">
-          <div className="flex flex-max gap-3">
-            <ButtonUI
-              onClick={onEditClick}
-              variant="secondary"
-              className="text-left"
-            >
-              <div className="select-none material-icons">edit</div>
-            </ButtonUI>
+          {model.prediction_files.length > 0 && (
+            <TextUI variant="label">
+              Файлы, которые будут размечены:{" "}
+              <TextUI isSpan variant="desc">
+                {model.prediction_files.map((file) => file.name).join(" , ")}
+              </TextUI>
+            </TextUI>
+          )}
 
-            <ButtonUI
-              onClick={(event) => onCopyClick?.(event)}
-              variant="secondary"
-            >
-              <div className="select-none material-icons">copy_all</div>
-            </ButtonUI>
+          <div className="mt-1 flex max-h-[20vh]">
+            {Object.entries(model.parameters).length > 0 && (
+              <div className="flex-1 w-[50%]">
+                {Object.entries(model.parameters).map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="flex justify-between px-1 border-b border-orange-200"
+                  >
+                    <TextUI
+                      variant="desc"
+                      className="text-orange-400 w-[45%] overflow-hidden"
+                      maxLines={1}
+                    >
+                      {k}
+                    </TextUI>
 
-            {/* {Object.keys(model.metrics).length > 0 && (
+                    <TextUI
+                      variant="desc"
+                      className="text-orange-400 w-[50%] overflow-hidden"
+                      isSpan
+                      maxLines={1}
+                    >
+                      {String(v)}
+                    </TextUI>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {Object.entries(model.metrics).length > 0 && (
+              <div className="flex-1 w-[50%]">
+                {Object.entries(model.metrics).map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="flex justify-between px-1 border-b border-emerald-300"
+                  >
+                    <TextUI
+                      variant="desc"
+                      className="text-green-500/90 w-[45%] overflow-hidden"
+                      maxLines={1}
+                    >
+                      {k}
+                    </TextUI>
+
+                    <TextUI
+                      variant="desc"
+                      className="text-green-500/90 w-[50%] overflow-hidden"
+                      isSpan
+                      maxLines={1}
+                    >
+                      {String(v)}
+                    </TextUI>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full flex-1 border-b border-gray-300" />
+
+      <div className="flex justify-between -mb-1 gap-3">
+        <div className="flex flex-max gap-3">
+          <ButtonUI
+            onClick={onEditClick}
+            variant="secondary"
+            className="text-left"
+          >
+            <div className="select-none material-icons">edit</div>
+          </ButtonUI>
+
+          <ButtonUI
+            onClick={(event) => onCopyClick?.(event)}
+            variant="secondary"
+          >
+            <div className="select-none material-icons">copy_all</div>
+          </ButtonUI>
+
+          {/* {Object.keys(model.metrics).length > 0 && (
               <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
                 <div className="select-none material-icons">insert_chart</div>
               </ButtonUI>
             )} */}
-          </div>
-
-          <TextUI
-            variant="desc"
-            className="flex flex-1 text-center justify-center items-center"
-          >
-            {new Date(date).toLocaleDateString("ru-RU", {
-              month: "long",
-              day: "numeric",
-              hour: "numeric",
-              minute: "numeric",
-            })}
-          </TextUI>
-
-          <ButtonUI
-            onClick={onDeleteClick}
-            variant="secondary"
-            className="flex-max text-right text-red-600 hover:text-red-800"
-          >
-            <div
-              // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
-              className="ml-9 select-none material-icons"
-            >
-              delete
-            </div>
-          </ButtonUI>
         </div>
-      </div>
 
-      {isOpen && (
-        <ModelModalCard model={model} onClose={() => setIsOpen(false)} />
-      )}
-    </>
+        <TextUI
+          variant="desc"
+          className="flex flex-1 text-center justify-center items-center"
+        >
+          {new Date(date).toLocaleDateString("ru-RU", {
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+          })}
+        </TextUI>
+
+        <ButtonUI
+          onClick={onDeleteClick}
+          variant="secondary"
+          className="flex-max text-right text-red-600 hover:text-red-800"
+        >
+          <div
+            // className={`${Object.keys(model.metrics).length > 0 ? "ml-15" : "ml-9"} select-none material-icons`}
+            className="ml-9 select-none material-icons"
+          >
+            delete
+          </div>
+        </ButtonUI>
+      </div>
+    </div>
   );
 };

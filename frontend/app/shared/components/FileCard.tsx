@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 
-import type { FileDbListResponse } from "@/shared/api/file";
+import type { FileListResponse } from "@/shared/api/file";
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "./ButtonUI";
 
@@ -13,7 +13,7 @@ export const FileCard = ({
   className = "",
   variant = "normal",
 }: {
-  file: FileDbListResponse;
+  file: FileListResponse;
   onClick?: () => void;
   onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;

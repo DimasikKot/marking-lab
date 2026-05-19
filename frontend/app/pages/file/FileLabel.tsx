@@ -5,7 +5,7 @@ import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
-import { type GetFilePageResponse, type Row } from "@/shared/api/file";
+import { type FileFullResponse, type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 
 type SelectedWord = [number, number];
@@ -26,7 +26,7 @@ export function FileLabel({
   projectId: string | number;
   fileId: string | number;
   page: number;
-  file: GetFilePageResponse | null;
+  file: FileFullResponse | null;
   localRows: Row[];
   setLocalRows: React.Dispatch<React.SetStateAction<Row[]>>;
   isLoading: boolean;

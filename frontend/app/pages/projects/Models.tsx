@@ -14,57 +14,58 @@ import { TextUI } from "@/shared/components/TextUI";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { ModelCard } from "@/shared/components/ModelCard";
-import type { ModelDbResponse } from "@/shared/api/model";
+import type { ModelListResponse } from "@/shared/api/model";
 
 export function Models({
   projectId,
   models,
   setModels,
-  loading,
-  setLoading,
+  isLoading,
+  setIsLoading,
 }: {
   projectId: string | number;
-  models: ModelDbResponse[];
-  setModels: (models: ModelDbResponse[]) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+  models: ModelListResponse[];
+  setModels: (models: ModelListResponse[]) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 }) {
   const navigate = useNavigate();
 
   // Состояния для создания модели
   const [newModelName, setNewModelName] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Состояния поиска
   const [search, setSearch] = useState("");
 
   // Состояния для редактирования
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [editingModel, setEditingModel] = useState<ModelDbResponse | null>(
+  const [editingModel, setEditingModel] = useState<ModelListResponse | null>(
     null,
   );
   const [formData, setFormData] = useState({ name: "" });
 
   const loadModels = async () => {
-    setLoading(true);
+    setIsLoading(true);
     const response = await fetchModels(projectId);
-    setLoading(false);
+    setIsLoading(false);
     if (response === undefined) return;
     setModels(response.data);
   };
 
   useEffect(() => {
     const loadModels = async () => {
-      setLoading(true);
+      setIsLoading(true);
       const response = await fetchModels(projectId);
-      setLoading(false);
+      setIsLoading(false);
 
       if (response === undefined) return;
       setModels(response.data);
 
       // Есть ли хотя бы одна модель в процессе обучения
       const hasTrainingModels = response.data.some(
-        (model: ModelDbResponse) => model.progress > 0 && model.progress < 100,
+        (model: ModelListResponse) =>
+          model.progress > 0 && model.progress < 100,
       );
 
       // Если ни одна модель не обучается — останавливаем polling
@@ -85,9 +86,9 @@ export function Models({
   const handleCreate = async () => {
     if (!newModelName.trim() || !projectId) return;
 
-    setCreating(true);
+    setIsCreating(true);
     const response = await createModel(projectId, { name: newModelName });
-    setCreating(false);
+    setIsCreating(false);
 
     if (response === undefined) return;
     toast.success("Модель успешно создана");
@@ -110,9 +111,9 @@ export function Models({
         return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await stopTrainModelById(projectId, model_id);
-    setLoading(false);
+    setIsLoading(false);
 
     if (response === undefined) return;
     toast.success("Обучение модели успешно остановлено");
@@ -128,9 +129,9 @@ export function Models({
       if (!window.confirm("Вы уверены, что хотите удалить эту модель?")) return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await deleteModelById(projectId, model_id);
-    setLoading(false);
+    setIsLoading(false);
 
     if (response === undefined) return;
     toast.success("Модель успешно удалена");
@@ -138,7 +139,7 @@ export function Models({
   };
 
   // Открытие формы редактирования
-  const handleEditClick = (model: ModelDbResponse) => {
+  const handleEditClick = (model: ModelListResponse) => {
     setEditingModel(model);
     setFormData({ name: model.name });
     setIsFormOpen(true);
@@ -148,11 +149,11 @@ export function Models({
   const handleSubmitClick = async () => {
     if (!editingModel || !projectId) return;
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await updateModelById(projectId, editingModel.id, {
       name: formData.name,
     });
-    setLoading(false);
+    setIsLoading(false);
 
     if (response === undefined) return;
     toast.success("Модель успешно изменена");
@@ -166,19 +167,19 @@ export function Models({
   );
 
   const handleCopyClick = async (
-    model: ModelDbResponse,
+    model: ModelListResponse,
     event?: React.MouseEvent<HTMLButtonElement>,
   ) => {
     if (!projectId) return;
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await createModel(projectId, {
       name: `${model.name} COPY`,
       parameters: model.parameters,
       training_files_ids: model.training_files.map((file) => file.id),
       prediction_files_ids: model.prediction_files.map((file) => file.id),
     });
-    setLoading(false);
+    setIsLoading(false);
 
     if (response === undefined) return;
     toast.success("Модель успешно скопирована");
@@ -193,7 +194,7 @@ export function Models({
     <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
         onClick={() => navigate("/projects")}
-        isLoading={loading || creating}
+        isLoading={isLoading || isCreating}
       />
 
       {/* Блок создания модели */}
@@ -215,9 +216,9 @@ export function Models({
 
             <ButtonUI
               onClick={handleCreate}
-              disabled={!newModelName.trim() || creating}
+              disabled={!newModelName.trim() || isCreating}
             >
-              {creating ? "Создание..." : "Создать"}
+              {isCreating ? "Создание..." : "Создать"}
             </ButtonUI>
           </div>
         </div>

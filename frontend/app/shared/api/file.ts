@@ -22,7 +22,7 @@ export interface PredictionModelDbResponse {
   updated_at: string;
 }
 
-export interface FileDbListResponse extends FileDbResponse {
+export interface FileListResponse extends FileDbResponse {
   origin_file: FileDbResponse | null;
   prediction_model: PredictionModelDbResponse | null;
 }
@@ -53,7 +53,7 @@ export const uploadFile = async (
 };
 
 export interface GetFilesResponse {
-  data: FileDbListResponse[];
+  data: FileListResponse[];
 }
 
 export const fetchFiles = async (
@@ -86,7 +86,7 @@ export interface Row {
   words: Word[];
 }
 
-export interface GetFilePageResponse {
+export interface FileFullResponse {
   id: number;
   name: string;
   total_rows: number;
@@ -106,9 +106,9 @@ export const fetchFileById = async (
   fileId: string | number,
   page?: string | number,
   limit?: string | number,
-): Promise<GetFilePageResponse | undefined> => {
+): Promise<FileFullResponse | undefined> => {
   try {
-    const response = await api.get<GetFilePageResponse>(
+    const response = await api.get<FileFullResponse>(
       `/projects/${projectId}/files/${fileId}`,
       {
         params: {
@@ -123,7 +123,7 @@ export const fetchFileById = async (
   }
 };
 
-export interface PatchFileDbRequest {
+export interface PatchFileListRequest {
   name: string;
   is_labeled: boolean;
 }
@@ -131,7 +131,7 @@ export interface PatchFileDbRequest {
 export const updateFileById = async (
   projectId: string | number,
   fileId: string | number,
-  data: PatchFileDbRequest,
+  data: PatchFileListRequest,
 ): Promise<FileDbResponse | undefined> => {
   try {
     const response = await api.patch<FileDbResponse>(
@@ -158,16 +158,16 @@ export const deleteFileById = async (
   }
 };
 
-export interface PatchFileContentRequest {
+export interface PatchFileFullRequest {
   new_rows: Row[];
 }
 
 export const updateFileByIdContent = async (
   projectId: string | number,
   fileId: string | number,
-  data: PatchFileContentRequest,
+  data: PatchFileFullRequest,
   page?: string | number,
-  rows?: string | number,
+  limit?: string | number,
 ): Promise<FileDbResponse | undefined> => {
   try {
     const response = await api.patch<FileDbResponse>(
@@ -176,7 +176,7 @@ export const updateFileByIdContent = async (
       {
         params: {
           page,
-          rows,
+          limit,
         },
       },
     );

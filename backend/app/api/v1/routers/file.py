@@ -58,7 +58,7 @@ class PredictionModelResponse(BaseModel):
         from_attributes = True
 
 
-class FileDbListResponse(FileDbResponse):
+class FileListResponse(FileDbResponse):
     origin_file: FileDbResponse | None
     prediction_model: PredictionModelResponse | None
 
@@ -66,7 +66,7 @@ class FileDbListResponse(FileDbResponse):
         from_attributes = True
 
 
-def FileDbListToResponse(file_db: FileDB, db: Session) -> FileDbListResponse:
+def ToFileListResponse(file_db: FileDB, db: Session) -> FileListResponse:
     def ToPredictionModelResponse(model_db: ModelDB) -> PredictionModelResponse:
         training_files = [
             FileDbResponse.model_validate(link.file)
@@ -96,7 +96,7 @@ def FileDbListToResponse(file_db: FileDB, db: Session) -> FileDbListResponse:
         db.query(FileDB).filter(FileDB.id == file_db.origin_file_id).first()
     )
 
-    return FileDbListResponse(
+    return FileListResponse(
         id=file_db.id,
         name=file_db.name,
         total_rows=file_db.total_rows,
@@ -134,7 +134,7 @@ async def post(
 
 
 class GetFilesResponse(BaseModel):
-    data: list[FileDbListResponse]
+    data: list[FileListResponse]
 
 
 @router.get("", response_model=GetFilesResponse)
@@ -157,11 +157,11 @@ async def get(
     )
 
     return GetFilesResponse(
-        data=[FileDbListToResponse(file_db, db) for file_db in files_db]
+        data=[ToFileListResponse(file_db, db) for file_db in files_db]
     )
 
 
-class GetFilePageResponse(BaseModel):
+class GetFileFullResponse(BaseModel):
     id: int
     name: str
     total_rows: int
@@ -176,7 +176,7 @@ class GetFilePageResponse(BaseModel):
     updated_at: datetime
 
 
-@router.get("/{file_id}", response_model=GetFilePageResponse)
+@router.get("/{file_id}", response_model=GetFileFullResponse)
 async def get_by_id(
     project_id: int,
     file_id: int,
@@ -221,7 +221,7 @@ async def get_by_id(
         db.query(FileDB).filter(FileDB.id == file_db.origin_file_id).first()
     )
 
-    return GetFilePageResponse(
+    return GetFileFullResponse(
         id=file_db.id,
         name=file_db.name,
         total_rows=file_db.total_rows,
@@ -239,7 +239,7 @@ async def get_by_id(
     )
 
 
-class PatchFileDbRequest(BaseModel):
+class PatchFileListRequest(BaseModel):
     name: str | None = None
     is_labeled: bool | None = None
 
@@ -248,7 +248,7 @@ class PatchFileDbRequest(BaseModel):
 async def patch_by_id(
     project_id: int,
     file_id: int,
-    data: PatchFileDbRequest,
+    data: PatchFileListRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -264,7 +264,7 @@ async def patch_by_id(
     return file_db
 
 
-class PatchFilePageRequest(BaseModel):
+class PatchFileFullRequest(BaseModel):
     new_rows: list[Row]
 
 
@@ -273,8 +273,8 @@ async def patch_by_id_content(
     project_id: int = Path(...),
     file_id: int = Path(...),
     page: int = Query(1, description="Номер страницы"),
-    count: int = Query(40, description="Количество строк на странице"),
-    data: PatchFilePageRequest = Body(...),
+    limit: int = Query(40, description="Количество строк на странице"),
+    data: PatchFileFullRequest = Body(...),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -284,7 +284,7 @@ async def patch_by_id_content(
         user_id=user_id,
         db=db,
         page=page,
-        count=count,
+        limit=limit,
         new_rows=data.new_rows,
     )
 

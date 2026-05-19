@@ -7,7 +7,7 @@ import {
   fetchFiles,
   updateFileById,
   uploadFile,
-  type FileDbListResponse,
+  type FileListResponse,
 } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
@@ -15,41 +15,39 @@ import { FileCard } from "@/shared/components/FileCard";
 import { TextField } from "@/shared/components/TextField";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
-import type { PatchFileDbRequest } from "@/shared/api/file";
+import type { PatchFileListRequest } from "@/shared/api/file";
 
 export function Files({
   projectId,
   files,
   setFiles,
-  loading,
-  setLoading,
+  isLoading,
+  setIsLoading,
 }: {
   projectId: string | number;
-  files: FileDbListResponse[];
-  setFiles: (files: FileDbListResponse[]) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+  files: FileListResponse[];
+  setFiles: (files: FileListResponse[]) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 }) {
   const navigate = useNavigate();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileIsLabeled, setSelectedFileIsLabeled] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [search, setSearch] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [editingFile, setEditingFile] = useState<FileDbListResponse | null>(
-    null,
-  );
-  const [formData, setFormData] = useState<PatchFileDbRequest>({
+  const [editingFile, setEditingFile] = useState<FileListResponse | null>(null);
+  const [formData, setFormData] = useState<PatchFileListRequest>({
     name: "",
     is_labeled: false,
   });
 
   const loadFiles = async () => {
-    setLoading(true);
+    setIsLoading(true);
     const response = await fetchFiles(projectId);
-    setLoading(false);
+    setIsLoading(false);
     if (response === undefined) return;
     setFiles(response.data);
   };
@@ -58,14 +56,14 @@ export function Files({
   const handleUpload = async () => {
     if (!selectedFile || !projectId) return;
 
-    setUploading(true);
+    setIsUploading(true);
     const response = await uploadFile(
       projectId,
       selectedFile,
       selectedFile.name,
       selectedFileIsLabeled,
     );
-    setUploading(false);
+    setIsUploading(false);
 
     if (response === undefined) return;
     toast.success("Файл успешно загружен");
@@ -82,16 +80,16 @@ export function Files({
       if (!window.confirm("Вы уверены, что хотите удалить этот файл?")) return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await deleteFileById(projectId, file_id);
-    setLoading(false);
+    setIsLoading(false);
     if (response === undefined) return;
     toast.success("Файл успешно удалён");
     loadFiles();
   };
 
   // Открытие формы редактирования
-  const handleEditClick = (file: FileDbListResponse) => {
+  const handleEditClick = (file: FileListResponse) => {
     setEditingFile(file);
     setFormData({ name: file.name, is_labeled: file.is_labeled });
     setIsFormOpen(true);
@@ -101,9 +99,9 @@ export function Files({
   const handleSubmitClick = async () => {
     if (!editingFile || !projectId) return;
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await updateFileById(projectId, editingFile.id, formData);
-    setLoading(false);
+    setIsLoading(false);
 
     if (response === undefined) return;
     toast.success("Файл успешно изменён");
@@ -120,7 +118,7 @@ export function Files({
     <div className="max-w-6xl mx-auto m-2 mb-80">
       <ButtonPage
         onClick={() => navigate("/projects")}
-        isLoading={loading || uploading}
+        isLoading={isLoading || isUploading}
       />
 
       {/* Блок загрузки файла */}
@@ -148,9 +146,9 @@ export function Files({
             <div className="flex flex-row gap-4">
               <ButtonUI
                 onClick={handleUpload}
-                disabled={!selectedFile || uploading}
+                disabled={!selectedFile || isUploading}
               >
-                {uploading ? "Отправляем файл..." : "Загрузить на сервер"}
+                {isUploading ? "Отправляем файл..." : "Загрузить на сервер"}
               </ButtonUI>
 
               <CheckboxUI

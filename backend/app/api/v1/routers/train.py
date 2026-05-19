@@ -15,7 +15,7 @@ from fastapi import (
 
 from app.core.database import get_db
 from app.api.v1.routers.file import FileDbResponse
-from app.api.v1.routers.model import ModelResponse, ToModelResponse
+from app.api.v1.routers.model import ModelFullResponse, ToModelFullResponse
 from app.services.train import (
     create_prediction_file_by_project_id,
     get_prediction_files_by_id,
@@ -32,7 +32,7 @@ class PostProgressRequest(BaseModel):
     graphs: dict[str, Any] | None = None
 
 
-@router.post("/post_progress", response_model=ModelResponse)
+@router.post("/post_progress", response_model=ModelFullResponse)
 async def post_progress(
     data: PostProgressRequest,
     db: Session = Depends(get_db),
@@ -45,7 +45,7 @@ async def post_progress(
         db=db,
     )
 
-    return ToModelResponse(model_db=model_db)
+    return ToModelFullResponse(model_db=model_db)
 
 
 class GetPredictionRequest(BaseModel):

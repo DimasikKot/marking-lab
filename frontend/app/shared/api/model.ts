@@ -10,7 +10,7 @@ export type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 
-export interface ModelDbResponse {
+export interface ModelListResponse {
   id: number;
   name: string;
   progress: number;
@@ -24,7 +24,7 @@ export interface ModelDbResponse {
   updated_at: string;
 }
 
-export interface ModelResponse extends ModelDbResponse {
+export interface ModelFullResponse extends ModelListResponse {
   graphs: Record<string, string>;
 }
 
@@ -38,9 +38,9 @@ export interface PostModelRequest {
 export const createModel = async (
   projectId: string | number,
   data: PostModelRequest,
-): Promise<ModelDbResponse | undefined> => {
+): Promise<ModelListResponse | undefined> => {
   try {
-    const response = await api.post<ModelDbResponse>(
+    const response = await api.post<ModelListResponse>(
       `/projects/${projectId}/models`,
       data,
     );
@@ -51,7 +51,7 @@ export const createModel = async (
 };
 
 export interface GetModelsResponse {
-  data: ModelDbResponse[];
+  data: ModelListResponse[];
 }
 
 export const fetchModels = async (
@@ -78,9 +78,9 @@ export const fetchModels = async (
 export const fetchModelById = async (
   projectId: string | number,
   modelId: string | number,
-): Promise<ModelResponse | undefined> => {
+): Promise<ModelFullResponse | undefined> => {
   try {
-    const response = await api.get<ModelResponse>(
+    const response = await api.get<ModelFullResponse>(
       `/projects/${projectId}/models/${modelId}`,
     );
     return response.data;
@@ -89,7 +89,7 @@ export const fetchModelById = async (
   }
 };
 
-export interface PatchModelDbRequest {
+export interface PatchModelFullRequest {
   name?: string;
   parameters?: Record<string, JsonValue>;
   training_files_ids?: number[];
@@ -99,10 +99,10 @@ export interface PatchModelDbRequest {
 export const updateModelById = async (
   projectId: string | number,
   modelId: string | number,
-  data: PatchModelDbRequest,
-): Promise<ModelResponse | undefined> => {
+  data: PatchModelFullRequest,
+): Promise<ModelFullResponse | undefined> => {
   try {
-    const response = await api.patch<ModelResponse>(
+    const response = await api.patch<ModelFullResponse>(
       `/projects/${projectId}/models/${modelId}`,
       data,
     );
@@ -115,9 +115,9 @@ export const updateModelById = async (
 export const trainModelById = async (
   projectId: string | number,
   modelId: string | number,
-): Promise<ModelResponse | undefined> => {
+): Promise<ModelFullResponse | undefined> => {
   try {
-    const response = await api.get<ModelResponse>(
+    const response = await api.get<ModelFullResponse>(
       `/projects/${projectId}/models/${modelId}/train`,
     );
     return response.data;
@@ -129,9 +129,9 @@ export const trainModelById = async (
 export const stopTrainModelById = async (
   projectId: string | number,
   modelId: string | number,
-): Promise<ModelResponse | undefined> => {
+): Promise<ModelFullResponse | undefined> => {
   try {
-    const response = await api.delete<ModelResponse>(
+    const response = await api.delete<ModelFullResponse>(
       `/projects/${projectId}/models/${modelId}/train`,
     );
     return response.data;

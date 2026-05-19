@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { fetchFiles, type FileDbListResponse } from "@/shared/api/file";
+import { fetchFiles, type FileListResponse } from "@/shared/api/file";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 
 import { Header } from "@/shared/components/Header";
@@ -10,7 +10,7 @@ import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextField } from "@/shared/components/TextField";
 import { FileCard } from "@/shared/components/FileCard";
-import type { JsonValue, ModelDbResponse } from "@/shared/api/model";
+import type { JsonValue, ModelFullResponse } from "@/shared/api/model";
 import {
   fetchModelById,
   trainModelById,
@@ -32,11 +32,11 @@ export function Model() {
   }>();
   const navigate = useNavigate();
 
-  const [model, setModel] = useState<ModelDbResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [model, setModel] = useState<ModelFullResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isTraining, setIsTraining] = useState(false);
 
-  const [allFiles, setAllFiles] = useState<FileDbListResponse[]>([]);
+  const [files, setFiles] = useState<FileListResponse[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editParams, setEditParams] = useState("");
 
@@ -56,13 +56,13 @@ export function Model() {
   };
 
   const loadModel = async () => {
-    setLoading(true);
+    setIsLoading(true);
     const [modelRes, filesRes] = await Promise.all([
       fetchModelById(projectId, modelId),
       fetchFiles(projectId),
     ]);
 
-    setLoading(false);
+    setIsLoading(false);
 
     if (modelRes) {
       setModel(modelRes);
@@ -71,18 +71,18 @@ export function Model() {
       setPredictionFilesIds(modelRes.prediction_files.map((file) => file.id));
     }
     if (filesRes) {
-      setAllFiles(filesRes.data);
+      setFiles(filesRes.data);
     }
   };
 
   useEffect(() => {
     const loadModel = async () => {
-      setLoading(true);
+      setIsLoading(true);
       const [modelResponse, filesResponse] = await Promise.all([
         fetchModelById(projectId, modelId),
         fetchFiles(projectId),
       ]);
-      setLoading(false);
+      setIsLoading(false);
 
       if (modelResponse === undefined) return;
       setModel(modelResponse);
@@ -99,7 +99,7 @@ export function Model() {
       }
 
       if (filesResponse) {
-        setAllFiles(filesResponse.data);
+        setFiles(filesResponse.data);
       }
 
       if (modelResponse.progress === 0 || modelResponse.progress >= 100) {
@@ -209,7 +209,7 @@ export function Model() {
       <div className="max-w-6xl mx-auto m-2">
         <ButtonPage
           onClick={() => navigate(`/projects/${projectId}?tab=models`)}
-          isLoading={loading}
+          isLoading={isLoading}
         />
 
         {/* Кнопки */}
@@ -301,7 +301,7 @@ export function Model() {
 
                   <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-60 p-3">
-                      {allFiles.map((file) => (
+                      {files.map((file) => (
                         <div
                           key={file.id}
                           className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
@@ -329,7 +329,7 @@ export function Model() {
 
                   <div className="border border-gray-300 rounded-2xl bg-white overflow-clip">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-60 p-3">
-                      {allFiles.map((file) => (
+                      {files.map((file) => (
                         <div
                           key={file.id}
                           className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"

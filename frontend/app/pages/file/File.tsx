@@ -10,7 +10,7 @@ import { Header } from "@/shared/components/Header";
 import {
   fetchFileById,
   updateFileByIdContent,
-  type GetFilePageResponse,
+  type FileFullResponse,
   type Row,
 } from "@/shared/api/file";
 
@@ -23,7 +23,7 @@ export function File() {
   const page = searchParams.get("page") || "1";
 
   // Переменные страниц
-  const [file, setFile] = useState<GetFilePageResponse | null>(null);
+  const [file, setFile] = useState<FileFullResponse | null>(null);
   const [localRows, setLocalRows] = useState<Row[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

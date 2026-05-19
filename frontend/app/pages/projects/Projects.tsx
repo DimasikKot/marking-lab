@@ -21,7 +21,7 @@ import { CheckboxUI } from "@/shared/components/CheckboxUI";
 export function Projects() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectDbResponse[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Состояния для модального окна формы
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -35,9 +35,9 @@ export function Projects() {
   });
 
   const loadProjects = async () => {
-    setLoading(true);
+    setIsLoading(true);
     const response = await fetchProjects();
-    setLoading(false);
+    setIsLoading(false);
     if (response === undefined) return;
     setProjects(response.data);
   };
@@ -45,9 +45,9 @@ export function Projects() {
   // Загрузка списка проектов при монтировании
   useEffect(() => {
     const loadProjects = async () => {
-      setLoading(true);
+      setIsLoading(true);
       const response = await fetchProjects();
-      setLoading(false);
+      setIsLoading(false);
       if (response === undefined) return;
       setProjects(response.data);
     };
@@ -76,15 +76,15 @@ export function Projects() {
   // Обработка отправки формы
   const handleSubmitClick = async () => {
     if (editingProject) {
-      setLoading(true);
+      setIsLoading(true);
       const response = await patchProjectById(editingProject.id, formData);
-      setLoading(false);
+      setIsLoading(false);
       if (response === undefined) return;
       toast.success("Проект успешно изменён");
     } else {
-      setLoading(true);
+      setIsLoading(true);
       const response = await createProject(formData);
-      setLoading(false);
+      setIsLoading(false);
       if (response === undefined) return;
       toast.success("Проект успешно создан");
     }
@@ -103,9 +103,9 @@ export function Projects() {
         return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     const response = await deleteProjectById(project_id);
-    setLoading(false);
+    setIsLoading(false);
     if (response === undefined) return;
     toast.success("Проект успешно удалён");
     loadProjects();
@@ -127,7 +127,7 @@ export function Projects() {
       <Header title="Проекты" />
 
       <div className="max-w-6xl mx-auto m-2 mb-80">
-        <ButtonPage onClick={() => navigate("/")} isLoading={loading} />
+        <ButtonPage onClick={() => navigate("/")} isLoading={isLoading} />
 
         <div className="border border-gray-200 rounded-4xl p-6">
           <div className="mb-4 flex justify-between items-center">

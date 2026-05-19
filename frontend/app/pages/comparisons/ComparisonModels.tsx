@@ -1,24 +1,64 @@
+import { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+
 import { Header } from "@/shared/components/Header";
+import { fetchModelById, type ModelFullResponse } from "@/shared/api/model";
+import { ButtonPage } from "@/shared/components/ButtonPage";
+import { TextUI } from "@/shared/components/TextUI";
 
 export function ComparisonModels() {
+  const { projectId = "0" } = useParams<{ projectId: string }>();
+  const [searchParams] = useSearchParams();
+  const ids_param: string = searchParams.get("ids") || "0,0";
+
+  // Переменные страницы
+  const [file1, setFile1] = useState<ModelFullResponse | null>(null);
+  const [file2, setFile2] = useState<ModelFullResponse | null>(null);
+  const [isLoadingModels, setIsLoadingModels] = useState(true);
+
+  useEffect(() => {
+    const loadFiles = async () => {
+      const ids = ids_param
+        .split(",") // Разделение на массив
+        .map((id) => Number(id)) // Преобразование в число
+        .slice(0, 2); // Максимум 2 модели
+
+      setIsLoadingModels(true);
+      const response1 = await fetchModelById(projectId, ids[0]);
+      const response2 = await fetchModelById(projectId, ids[1]);
+      setIsLoadingModels(false);
+      if (response1 === undefined || response2 === undefined) return;
+      setFile1(response1);
+      setFile2(response2);
+    };
+
+    loadFiles();
+  }, [projectId, ids_param]);
+
   return (
-    <div>
+    <>
       <Header title="Сравнение моделей" />
 
       <div className="max-w-6xl mx-auto m-2">
-        <p>Список моделей</p>
+        <ButtonPage onClick={() => window.history.back()} />
+
+        {file1 && file2 ? (
+          <ModelsCompareContainer
+            projectId={projectId}
+            file1={file1}
+            file2={file2}
+          />
+        ) : isLoadingModels ? (
+          <TextUI>Загрузка...</TextUI>
+        ) : (
+          <TextUI>Файлы не найдены</TextUI>
+        )}
       </div>
-    </div>
+    </>
   );
 }
 
-function ComparisonPanel({
-  projectId,
-  type,
-}: {
-  projectId: string | number;
-  type: CompareType;
-}) {
+function ComparisonPanel({ projectId }: { projectId: string | number }) {
   const [search, setSearch] = useState("");
   const [files, setFiles] = useState<FileDbResponse[]>([]);
   const [models, setModels] = useState<ModelDbResponse[]>([]);
@@ -136,7 +176,6 @@ function ComparisonPanel({
     </>
   );
 }
-
 
 /*Колонки для моделей (без изменений)*/
 function ModelCompareColumn({

@@ -27,7 +27,7 @@ from app.services.model import (
 router = APIRouter()
 
 
-class ModelDbResponse(BaseModel):
+class ModelListResponse(BaseModel):
     id: int
     name: str
     progress: int
@@ -44,7 +44,7 @@ class ModelDbResponse(BaseModel):
         from_attributes = True
 
 
-def ToModelDbResponse(model_db: ModelDB) -> ModelDbResponse:
+def ToModelListResponse(model_db: ModelDB) -> ModelListResponse:
     training_files = [
         FileDbResponse.model_validate(link.file)
         for link in model_db.file_links
@@ -57,7 +57,7 @@ def ToModelDbResponse(model_db: ModelDB) -> ModelDbResponse:
         if link.role == "for_prediction" and link.file is not None
     ]
 
-    return ModelDbResponse(
+    return ModelListResponse(
         id=model_db.id,
         name=model_db.name,
         progress=model_db.progress,
@@ -70,27 +70,27 @@ def ToModelDbResponse(model_db: ModelDB) -> ModelDbResponse:
     )
 
 
-class ModelResponse(ModelDbResponse):
+class ModelFullResponse(ModelListResponse):
     graphs: dict[str, str]
 
     class Config:
         from_attributes = True
 
 
-def ToModelResponse(model_db: ModelDB) -> ModelResponse:
-    model_db_response = ToModelDbResponse(model_db)
+def ToModelFullResponse(model_db: ModelDB) -> ModelFullResponse:
+    model_list_response = ToModelListResponse(model_db)
 
-    return ModelResponse(
-        id=model_db_response.id,
-        name=model_db_response.name,
-        progress=model_db_response.progress,
-        parameters=model_db_response.parameters,
-        metrics=model_db_response.metrics,
+    return ModelFullResponse(
+        id=model_list_response.id,
+        name=model_list_response.name,
+        progress=model_list_response.progress,
+        parameters=model_list_response.parameters,
+        metrics=model_list_response.metrics,
         graphs=model_db.graphs,
-        training_files=model_db_response.training_files,
-        prediction_files=model_db_response.prediction_files,
-        created_at=model_db_response.created_at,
-        updated_at=model_db_response.updated_at,
+        training_files=model_list_response.training_files,
+        prediction_files=model_list_response.prediction_files,
+        created_at=model_list_response.created_at,
+        updated_at=model_list_response.updated_at,
     )
 
 
@@ -101,7 +101,7 @@ class PostModelRequest(BaseModel):
     prediction_files_ids: list[int] | None = None
 
 
-@router.post("", response_model=ModelDbResponse)
+@router.post("", response_model=ModelListResponse)
 async def post(
     project_id: int,
     data: PostModelRequest,
@@ -118,11 +118,11 @@ async def post(
         prediction_files_ids=data.prediction_files_ids,
     )
 
-    return ToModelDbResponse(model_db=model_db)
+    return ToModelListResponse(model_db=model_db)
 
 
 class GetModelsResponse(BaseModel):
-    data: list[ModelDbResponse]
+    data: list[ModelListResponse]
 
 
 @router.get("", response_model=GetModelsResponse)
@@ -141,11 +141,11 @@ async def get(
     )
 
     return GetModelsResponse(
-        data=[ToModelDbResponse(model_db=model_db) for model_db in models_db]
+        data=[ToModelListResponse(model_db=model_db) for model_db in models_db]
     )
 
 
-@router.get("/{model_id}", response_model=ModelResponse)
+@router.get("/{model_id}", response_model=ModelFullResponse)
 async def get_by_id(
     project_id: int,
     model_id: int,
@@ -156,21 +156,21 @@ async def get_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    return ToModelResponse(model_db=model_db)
+    return ToModelFullResponse(model_db=model_db)
 
 
-class PatchModelDbRequest(BaseModel):
+class PatchModelFullRequest(BaseModel):
     name: str | None = None
     parameters: dict[str, Any] | None = None
     training_files_ids: list[int] | None = None
     prediction_files_ids: list[int] | None = None
 
 
-@router.patch("/{model_id}", response_model=ModelResponse)
+@router.patch("/{model_id}", response_model=ModelFullResponse)
 async def patch_by_id(
     project_id: int,
     model_id: int,
-    data: PatchModelDbRequest,
+    data: PatchModelFullRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -185,10 +185,10 @@ async def patch_by_id(
         prediction_files_ids=data.prediction_files_ids,
     )
 
-    return ToModelResponse(model_db=model_db)
+    return ToModelFullResponse(model_db=model_db)
 
 
-@router.get("/{model_id}/train", response_model=ModelResponse)
+@router.get("/{model_id}/train", response_model=ModelFullResponse)
 async def get_by_id_train(
     project_id: int,
     model_id: int,
@@ -202,10 +202,10 @@ async def get_by_id_train(
         db=db,
     )
 
-    return ToModelResponse(model_db=model_db)
+    return ToModelFullResponse(model_db=model_db)
 
 
-@router.delete("/{model_id}/train", response_model=ModelResponse)
+@router.delete("/{model_id}/train", response_model=ModelFullResponse)
 async def stop_train_by_id(
     project_id: int,
     model_id: int,
@@ -219,7 +219,7 @@ async def stop_train_by_id(
         db=db,
     )
 
-    return ToModelResponse(model_db=model_db)
+    return ToModelFullResponse(model_db=model_db)
 
 
 @router.delete("/{model_id}", response_model=GetEchoResponse)
