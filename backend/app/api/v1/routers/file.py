@@ -167,10 +167,11 @@ class GetFilePageResponse(BaseModel):
     total_rows: int
     total_pages: int
     page: int
-    rows: list[Row]
+    origin_file: FileDbResponse | None
     is_labeled: bool
     tags: dict[str, str]
     colors: dict[str, str]
+    rows: list[Row]
     created_at: datetime
     updated_at: datetime
 
@@ -180,7 +181,7 @@ async def get_by_id(
     project_id: int,
     file_id: int,
     page: int = Query(1, description="Номер страницы"),
-    rows: int = Query(40, description="Количество строк на странице"),
+    limit: int = Query(40, description="Количество строк на странице"),
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
@@ -190,9 +191,9 @@ async def get_by_id(
         user_id=user_id,
         db=db,
         page=page,
-        rows=rows,
+        limit=limit,
     )
-    total_pages = ceil(file_db.total_rows / rows)
+    total_pages = ceil(file_db.total_rows / limit)
 
     def parse_labels(tags):
         labels = {}
@@ -216,16 +217,23 @@ async def get_by_id(
 
         return colors
 
+    origin_file_db = (
+        db.query(FileDB).filter(FileDB.id == file_db.origin_file_id).first()
+    )
+
     return GetFilePageResponse(
         id=file_db.id,
         name=file_db.name,
         total_rows=file_db.total_rows,
         total_pages=total_pages,
         page=page,
-        rows=page_rows,
+        origin_file=(
+            FileDbResponse.model_validate(origin_file_db) if origin_file_db else None
+        ),
         is_labeled=file_db.is_labeled,
         tags=parse_labels(file_db.tags),
         colors=parse_colors(file_db.tags),
+        rows=page_rows,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
     )

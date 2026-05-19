@@ -174,7 +174,7 @@ export function Model() {
   };
 
   return (
-    <div>
+    <>
       <Header>
         {model && (
           <div className="flex flex-row gap-4 items-center">
@@ -212,6 +212,7 @@ export function Model() {
           isLoading={loading}
         />
 
+        {/* Кнопки */}
         {model && (
           <div className="border border-gray-200 rounded-4xl flex flex-col gap-4 p-6 overflow-auto">
             <div className="flex justify-between items-center">
@@ -238,6 +239,7 @@ export function Model() {
               )}
             </div>
 
+            {/* Настройки */}
             {isEditing ? (
               <div className="flex flex-col gap-4">
                 <TextUI variant="title">Выбор базовой модели</TextUI>
@@ -349,6 +351,7 @@ export function Model() {
                 </div>
               </div>
             ) : (
+              /* Информация о модели */
               <div
                 className={`grid grid-cols-1 ${Object.entries(model.metrics).length > 0 ? "md:grid-cols-2" : ""} gap-8`}
               >
@@ -466,6 +469,6 @@ export function Model() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

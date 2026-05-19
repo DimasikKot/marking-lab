@@ -75,8 +75,8 @@ class Row(BaseModel):
     words: list[Word]
 
 
-def _get_file_rows(file_path: Path, page: int, rows: int) -> Generator[Row, Any, None]:
-    start_idx = (page - 1) * rows
+def _get_file_rows(file_path: Path, page: int, limit: int) -> Generator[Row, Any, None]:
+    start_idx = (page - 1) * limit
 
     with file_path.open(encoding="utf-8", errors="ignore") as file:
         # Пропускаем заголовок + нужное количество строк
@@ -88,7 +88,7 @@ def _get_file_rows(file_path: Path, page: int, rows: int) -> Generator[Row, Any,
 
         reader = csv.reader(file)
 
-        for row in islice(reader, rows):
+        for row in islice(reader, limit):
             if len(row) < 2:
                 continue
             tokens_str = row[0].strip()
@@ -277,7 +277,7 @@ def get_page_by_id(
     user_id: int,
     db: Session,
     page: int,
-    rows: int,
+    limit: int,
 ) -> tuple[FileDB, list[Row]]:
     file_db = _fetch_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
@@ -285,7 +285,7 @@ def get_page_by_id(
 
     file_path = get_file_path_by_id(project_id, file_id)
 
-    page_rows = list(_get_file_rows(file_path, page=page, rows=rows))
+    page_rows = list(_get_file_rows(file_path, page=page, limit=limit))
 
     return file_db, page_rows
 

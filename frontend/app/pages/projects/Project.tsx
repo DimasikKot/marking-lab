@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { Files } from "./Files";
 import { Models } from "./Models";
-import { Comparisons } from "./Comparisons";
 import { Header } from "@/shared/components/Header";
 import { TextUI } from "@/shared/components/TextUI";
 import { fetchFiles, type FileDbListResponse } from "@/shared/api/file";
@@ -85,17 +84,6 @@ export function Project() {
               </TextUI>
               <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
             </Tab>
-
-            {/* Сравнения */}
-            <Tab
-              selectedClassName="active"
-              className="group relative px-8 pb-2 text-gray-500 hover:text-gray-900 transition-all duration-200 cursor-pointer outline-none"
-            >
-              <TextUI variant="normal" className="w-32 text-center">
-                Сравнения
-              </TextUI>
-              <span className="absolute -bottom-px left-1/2 h-0.75 w-0 bg-black -translate-x-1/2 transition-all duration-300 group-[.active]:w-full" />
-            </Tab>
           </div>
         </TabList>
       </Header>
@@ -118,10 +106,6 @@ export function Project() {
           loading={loadingModels}
           setLoading={setLoadingModels}
         />
-      </TabPanel>
-
-      <TabPanel>
-        <Comparisons projectId={projectId} />
       </TabPanel>
     </Tabs>
   );

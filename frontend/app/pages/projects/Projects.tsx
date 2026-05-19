@@ -123,7 +123,7 @@ export function Projects() {
   );
 
   return (
-    <div>
+    <>
       <Header title="Проекты" />
 
       <div className="max-w-6xl mx-auto m-2 mb-80">
@@ -252,6 +252,6 @@ export function Projects() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

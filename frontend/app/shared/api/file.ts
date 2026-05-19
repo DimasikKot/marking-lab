@@ -92,10 +92,11 @@ export interface GetFilePageResponse {
   total_rows: number;
   total_pages: number;
   page: number;
-  rows: Row[];
+  origin_file: FileDbResponse | null;
   is_labeled: boolean;
   tags: Record<string, string>;
   colors: Record<string, string>;
+  rows: Row[];
   created_at: string;
   updated_at: string;
 }
@@ -104,7 +105,7 @@ export const fetchFileById = async (
   projectId: string | number,
   fileId: string | number,
   page?: string | number,
-  count?: string | number,
+  limit?: string | number,
 ): Promise<GetFilePageResponse | undefined> => {
   try {
     const response = await api.get<GetFilePageResponse>(
@@ -112,7 +113,7 @@ export const fetchFileById = async (
       {
         params: {
           page,
-          count,
+          limit,
         },
       },
     );

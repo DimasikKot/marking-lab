@@ -156,7 +156,7 @@ export function Components() {
   ];
 
   return (
-    <div>
+    <>
       <Header title="Компоненты" />
 
       <div className="max-w-6xl mx-auto m-2 mb-80">
@@ -406,6 +406,6 @@ export function Components() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
