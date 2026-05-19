@@ -18,7 +18,7 @@ export function ComparisonModels() {
   const [isLoadingModels, setIsLoadingModels] = useState(true);
 
   useEffect(() => {
-    const loadFiles = async () => {
+    const loadModels = async () => {
       const ids = ids_param
         .split(",") // Разделение на массив
         .map((id) => Number(id)) // Преобразование в число
@@ -31,9 +31,25 @@ export function ComparisonModels() {
       if (response1 === undefined || response2 === undefined) return;
       setModel1(response1);
       setModel2(response2);
+
+      const hasTrainingModels = [response1, response2].some(
+        (model: ModelFullResponse) =>
+          model.progress > 0 && model.progress < 100,
+      );
+
+      // Если ни одна модель не обучается — останавливаем polling
+      if (!hasTrainingModels) {
+        clearInterval(interval);
+      }
     };
 
-    loadFiles();
+    loadModels();
+
+    const interval = setInterval(() => {
+      loadModels();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [projectId, ids_param]);
 
   return (
@@ -310,7 +326,7 @@ const ModelGraphsRow = ({
 
 const ModelGraphsElement = ({ model }: { model: ModelFullResponse }) => {
   return (
-    <>
+    <div className="space-y-6">
       {Object.entries(model.graphs).map(([key, value]) => (
         <div key={key} className="border rounded-2xl p-3">
           <TextUI className="mb-2" isSelectable>
@@ -324,6 +340,6 @@ const ModelGraphsElement = ({ model }: { model: ModelFullResponse }) => {
           />
         </div>
       ))}
-    </>
+    </div>
   );
 };

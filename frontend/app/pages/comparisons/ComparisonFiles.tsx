@@ -36,6 +36,13 @@ export function ComparisonFiles() {
     ...(file2?.colors ?? {}),
   };
 
+  const isLinkedOriginal =
+    file1?.origin_file?.id === file2?.id
+      ? 2
+      : file2?.origin_file?.id === file1?.id
+        ? 1
+        : 0;
+
   useEffect(() => {
     const loadFiles = async () => {
       const ids = ids_param
@@ -95,12 +102,16 @@ export function ComparisonFiles() {
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {file1 && file2 ? (
             <div className="flex flex-col gap-4">
-              <FileInfoRow file1={file1} file2={file2} />
+              <FileInfoRow
+                file1={isLinkedOriginal === 2 ? file2 : file1}
+                file2={isLinkedOriginal === 2 ? file1 : file2}
+              />
               <FileRowsRow
                 projectId={projectId}
                 page={Number(page)}
-                file1={file1}
-                file2={file2}
+                file1={isLinkedOriginal === 2 ? file2 : file1}
+                file2={isLinkedOriginal === 2 ? file1 : file2}
+                isLinked={isLinkedOriginal != 0}
               />
             </div>
           ) : isLoadingFiles ? (
@@ -186,19 +197,16 @@ const FileRowsRow = ({
   page,
   file1,
   file2,
+  isLinked,
 }: {
   projectId: string | number;
   page: number;
   file1: FileFullResponse;
   file2: FileFullResponse;
+  isLinked: boolean;
 }) => {
   const navigate = useNavigate();
   const [onlyDiff, setOnlyDiff] = useState(false);
-
-  const originId1 = file1.origin_file?.id;
-  const originId2 = file2.origin_file?.id;
-
-  const isLinked = originId1 === file2.id || originId2 === file1.id;
 
   const rows1 = file1.rows;
   const rows2 = file2.rows;
@@ -248,7 +256,7 @@ const FileRowsRow = ({
   };
 
   return (
-    <div className="flex flex-col w-full gap-4 mt-2">
+    <div className="flex flex-col w-full items-center gap-2 mt-2">
       {isLinked && (
         <CheckboxUI
           value={onlyDiff}
