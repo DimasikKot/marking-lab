@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "@/assets/logo/logo.svg";
+import logo from "@/shared/images/logo.svg";
 
 import { TextUI } from "@/shared/components/TextUI";
 import { ButtonUI } from "@/shared/components/ButtonUI";

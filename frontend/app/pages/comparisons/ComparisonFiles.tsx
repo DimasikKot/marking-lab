@@ -19,7 +19,8 @@ export function ComparisonFiles() {
   const { projectId = "0" } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
   const ids_param: string = searchParams.get("ids") || "0,0";
-  const page = searchParams.get("page") || "1";
+  const page_param = searchParams.get("page") || "1";
+  const [page, setPage] = useState(Number(page_param));
 
   // Переменные страницы
   const [file1, setFile1] = useState<FileFullResponse | null>(null);
@@ -51,16 +52,17 @@ export function ComparisonFiles() {
         .slice(0, 2); // Максимум 2 файлы
 
       setIsLoadingFiles(true);
-      const response1 = await fetchFileById(projectId, ids[0], page);
-      const response2 = await fetchFileById(projectId, ids[1], page);
+      const response1 = await fetchFileById(projectId, ids[0], page_param);
+      const response2 = await fetchFileById(projectId, ids[1], page_param);
       setIsLoadingFiles(false);
       if (response1 === undefined || response2 === undefined) return;
       setFile1(response1);
       setFile2(response2);
+      setPage(Math.max(response1.page, response2.page));
     };
 
     loadFiles();
-  }, [projectId, ids_param, page]);
+  }, [projectId, ids_param, page_param]);
 
   return (
     <>
@@ -111,7 +113,8 @@ export function ComparisonFiles() {
                 page={Number(page)}
                 file1={isLinkedOriginal === 2 ? file2 : file1}
                 file2={isLinkedOriginal === 2 ? file1 : file2}
-                isLinked={isLinkedOriginal != 0}
+                mergedColors={mergedColors}
+                isLinkedParam={isLinkedOriginal != 0}
               />
             </div>
           ) : isLoadingFiles ? (
@@ -197,15 +200,18 @@ const FileRowsRow = ({
   page,
   file1,
   file2,
-  isLinked,
+  mergedColors,
+  isLinkedParam,
 }: {
   projectId: string | number;
   page: number;
   file1: FileFullResponse;
   file2: FileFullResponse;
-  isLinked: boolean;
+  mergedColors: Record<string, string>;
+  isLinkedParam: boolean;
 }) => {
   const navigate = useNavigate();
+  const [isLinked, setIsLinked] = useState(isLinkedParam);
   const [onlyDiff, setOnlyDiff] = useState(false);
 
   const rows1 = file1.rows;
@@ -257,6 +263,14 @@ const FileRowsRow = ({
 
   return (
     <div className="flex flex-col w-full items-center gap-2 mt-2">
+      {!isLinkedParam && (
+        <CheckboxUI
+          value={isLinked}
+          title={"Связанные файлы"}
+          onClick={() => setIsLinked((prev) => !prev)}
+        />
+      )}
+
       {isLinked && (
         <CheckboxUI
           value={onlyDiff}
@@ -274,7 +288,8 @@ const FileRowsRow = ({
 
       <div className="grid grid-cols-2 gap-6">
         <FileRowsElement
-          file={file1}
+          totalPages={file1.total_pages}
+          mergedColors={mergedColors}
           page={page}
           syncedRows={syncedRows}
           side="left"
@@ -283,7 +298,8 @@ const FileRowsRow = ({
         />
 
         <FileRowsElement
-          file={file2}
+          totalPages={file2.total_pages}
+          mergedColors={mergedColors}
           page={page}
           syncedRows={syncedRows}
           side="right"
@@ -303,14 +319,16 @@ const FileRowsRow = ({
 };
 
 const FileRowsElement = ({
-  file,
+  totalPages,
+  mergedColors,
   page,
   syncedRows,
   side,
   onlyDiff,
   isLinked,
 }: {
-  file: FileFullResponse;
+  totalPages: number;
+  mergedColors: Record<string, string>;
   page: number;
   syncedRows: SyncedRow[];
   side: "left" | "right";
@@ -320,13 +338,12 @@ const FileRowsElement = ({
   return (
     <div>
       <TextUI variant="desc" className="flex justify-center mb-4">
-        Страница {page > file.total_pages ? file.total_pages : page} из{" "}
-        {file.total_pages}
+        Страница {page > totalPages ? totalPages : page} из {totalPages}
       </TextUI>
 
       <div
         className={`flex flex-col rounded-3xl border p-6 overflow-hidden gap-6 bg-white
-                ${onlyDiff ? "border-orange-200" : "border-gray-200"}`}
+                ${onlyDiff && side === "right" ? "border-orange-300" : "border-gray-200"}`}
       >
         {syncedRows.map((item) => {
           const row = side === "left" ? item.row1 : item.row2;
@@ -336,13 +353,13 @@ const FileRowsElement = ({
               {row?.words?.length > 0 && (
                 <div
                   className={`pb-6 last:border-none last:pb-0 border-b
-                ${onlyDiff ? "border-orange-200" : "border-gray-200"}
+                ${onlyDiff && side === "right" ? "border-orange-300" : "border-gray-200"}
               `}
                 >
                   <div
                     key={item.index}
                     className={`rounded-2xl p-2 -m-2
-                ${isLinked && item.isDifferent && !onlyDiff && "bg-orange-50"}
+                ${isLinked && item.isDifferent && !onlyDiff && side === "right" && "bg-orange-50"}
               `}
                   >
                     <div className="flex flex-wrap gap-1">
@@ -351,7 +368,7 @@ const FileRowsElement = ({
                           key={idx}
                           className={`
                         px-2 py-1 rounded-lg font-normal text-xl
-                        ${file.colors?.[word.label] || ""}
+                        ${mergedColors[word.label] || ""}
                       `}
                         >
                           {word.token}
@@ -367,8 +384,7 @@ const FileRowsElement = ({
       </div>
 
       <TextUI variant="desc" className="flex justify-center mt-4">
-        Страница {page > file.total_pages ? file.total_pages : page} из{" "}
-        {file.total_pages}
+        Страница {page > totalPages ? totalPages : page} из {totalPages}
       </TextUI>
     </div>
   );

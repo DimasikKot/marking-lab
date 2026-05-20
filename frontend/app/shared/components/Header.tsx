@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
-import logo from "@/assets/logo/logo.svg";
+import logo from "@/shared/images/logo.svg";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { logoutUser } from "@/shared/api/user";
