@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { fetchModelById, type ModelFullResponse } from "@/shared/api/model";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TextUI } from "@/shared/components/TextUI";
+import React from "react";
 
 export function ComparisonModels() {
   const navigate = useNavigate();
@@ -73,7 +79,7 @@ export function ComparisonModels() {
         <div className="mb-8 border border-gray-200 rounded-4xl p-6">
           {models.length > 0 ? (
             <div className="flex flex-col gap-6">
-              <ModelInfoRow models={models} />
+              <ModelInfoRow models={models} projectId={projectId} />
               <ModelParametersRow models={models} />
               <ModelMetricsRow models={models} />
               <ModelGraphsRow models={models} />
@@ -89,7 +95,13 @@ export function ComparisonModels() {
   );
 }
 
-const ModelInfoRow = ({ models }: { models: ModelFullResponse[] }) => {
+const ModelInfoRow = ({
+  models,
+  projectId,
+}: {
+  models: ModelFullResponse[];
+  projectId: string;
+}) => {
   return (
     <div
       className="w-full grid gap-8 sticky sm:top-47 lg:top-15 self-start"
@@ -98,13 +110,19 @@ const ModelInfoRow = ({ models }: { models: ModelFullResponse[] }) => {
       }}
     >
       {models.map((model) => (
-        <ModelInfoElement key={model.id} model={model} />
+        <ModelInfoElement key={model.id} model={model} projectId={projectId} />
       ))}
     </div>
   );
 };
 
-const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
+const ModelInfoElement = ({
+  model,
+  projectId,
+}: {
+  model: ModelFullResponse;
+  projectId: string;
+}) => {
   return (
     <div className="flex-1 flex-col p-4 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">
@@ -149,8 +167,18 @@ const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
         {model.training_files.length > 0 && (
           <TextUI variant="label">
             Файлы, на которых будет обучаться:{" "}
-            <TextUI isSpan variant="desc">
-              {model.training_files.map((file) => file.name).join(" , ")}
+            <TextUI isSpan variant="label">
+              {model.training_files.map((file, index) => (
+                <React.Fragment key={file.id}>
+                  <TextUI variant="link" isSpan isSelectable>
+                    <Link to={`/projects/${projectId}/files/${file.id}`}>
+                      {file.name}
+                    </Link>
+                  </TextUI>
+
+                  {index < model.training_files.length - 1 && ", "}
+                </React.Fragment>
+              ))}
             </TextUI>
           </TextUI>
         )}
@@ -158,8 +186,18 @@ const ModelInfoElement = ({ model }: { model: ModelFullResponse }) => {
         {model.prediction_files.length > 0 && (
           <TextUI variant="label">
             Файлы, которые будут размечены:{" "}
-            <TextUI isSpan variant="desc">
-              {model.prediction_files.map((file) => file.name).join(" , ")}
+            <TextUI isSpan variant="label">
+              {model.prediction_files.map((file, index) => (
+                <React.Fragment key={file.id}>
+                  <TextUI variant="link" isSpan isSelectable>
+                    <Link to={`/projects/${projectId}/files/${file.id}`}>
+                      {file.name}
+                    </Link>
+                  </TextUI>
+
+                  {index < model.prediction_files.length - 1 && ", "}
+                </React.Fragment>
+              ))}
             </TextUI>
           </TextUI>
         )}

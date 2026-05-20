@@ -203,7 +203,7 @@ export function Model() {
                 setPredictionFilesIds={setPredictionFilesIds}
               />
             ) : (
-              <ModelPreview model={model} />
+              <ModelPreview model={model} projectId={projectId} />
             )}
           </div>
         )}

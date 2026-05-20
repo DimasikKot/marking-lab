@@ -1,7 +1,15 @@
 import { TextUI } from "@/shared/components/TextUI";
 import type { ModelFullResponse } from "@/shared/api/model";
+import { Link } from "react-router-dom";
+import React from "react";
 
-export const ModelPreview = ({ model }: { model: ModelFullResponse }) => {
+export const ModelPreview = ({
+  model,
+  projectId,
+}: {
+  model: ModelFullResponse;
+  projectId: string;
+}) => {
   return (
     <div
       className={`grid grid-cols-1 ${Object.entries(model.metrics).length > 0 ? "md:grid-cols-2" : ""} gap-8`}
@@ -96,18 +104,44 @@ export const ModelPreview = ({ model }: { model: ModelFullResponse }) => {
       <div className="flex flex-col p-6 border border-gray-300 rounded-2xl">
         <TextUI variant="title" isSelectable className="h-50%">
           Файлы, на которых будет обучаться:{" "}
-          <TextUI isSpan className="text-lg" isSelectable>
+          <TextUI variant="subtitle" isSpan isSelectable>
             {model.training_files.length > 0
-              ? model.training_files.map((file) => file.name).join(" , ")
+              ? model.training_files.map((file, index) => (
+                  <React.Fragment key={file.id}>
+                    <TextUI variant="link" isSpan isSelectable>
+                      <Link
+                        to={`/projects/${projectId}/files/${file.id}`}
+                        className="text-lg"
+                      >
+                        {file.name}
+                      </Link>
+                    </TextUI>
+
+                    {index < model.training_files.length - 1 && ", "}
+                  </React.Fragment>
+                ))
               : "не выбраны"}
           </TextUI>
         </TextUI>
 
         <TextUI variant="title" isSelectable className="h-50%">
           Файлы, которые будут размечены:{" "}
-          <TextUI isSpan className="text-lg" isSelectable>
+          <TextUI variant="subtitle" isSpan isSelectable>
             {model.prediction_files.length > 0
-              ? model.prediction_files.map((file) => file.name).join(" , ")
+              ? model.prediction_files.map((file, index) => (
+                  <React.Fragment key={file.id}>
+                    <TextUI variant="link" isSpan isSelectable>
+                      <Link
+                        to={`/projects/${projectId}/files/${file.id}`}
+                        className="text-lg"
+                      >
+                        {file.name}
+                      </Link>
+                    </TextUI>
+
+                    {index < model.prediction_files.length - 1 && ", "}
+                  </React.Fragment>
+                ))
               : "не выбраны"}
           </TextUI>
         </TextUI>
