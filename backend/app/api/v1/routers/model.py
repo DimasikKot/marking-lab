@@ -36,6 +36,7 @@ class ModelListResponse(BaseModel):
 
     training_files: list[FileDbResponse]
     prediction_files: list[FileDbResponse]
+    predicted_files: list[FileDbResponse]
 
     created_at: datetime
     updated_at: datetime
@@ -57,6 +58,12 @@ def ToModelListResponse(model_db: ModelDB) -> ModelListResponse:
         if link.role == "for_prediction" and link.file is not None
     ]
 
+    predicted_files = [
+        FileDbResponse.model_validate(link.file)
+        for link in model_db.file_links
+        if link.role == "predicted" and link.file is not None
+    ]
+
     return ModelListResponse(
         id=model_db.id,
         name=model_db.name,
@@ -65,6 +72,7 @@ def ToModelListResponse(model_db: ModelDB) -> ModelListResponse:
         metrics=model_db.metrics,
         training_files=training_files,
         prediction_files=prediction_files,
+        predicted_files=predicted_files,
         created_at=model_db.created_at,
         updated_at=model_db.updated_at,
     )
@@ -89,6 +97,7 @@ def ToModelFullResponse(model_db: ModelDB) -> ModelFullResponse:
         graphs=model_db.graphs,
         training_files=model_list_response.training_files,
         prediction_files=model_list_response.prediction_files,
+        predicted_files=model_list_response.predicted_files,
         created_at=model_list_response.created_at,
         updated_at=model_list_response.updated_at,
     )

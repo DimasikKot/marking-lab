@@ -19,6 +19,7 @@ export interface ModelListResponse {
 
   training_files: FileDbResponse[];
   prediction_files: FileDbResponse[];
+  predicted_files: FileDbResponse[];
 
   created_at: string;
   updated_at: string;

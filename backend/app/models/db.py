@@ -93,11 +93,6 @@ class FileDB(Base):
                 "color": "bg-blue-300",
             },
             {
-                "value": "art",
-                "label": "Иновационные проекты",
-                "color": "bg-yellow-300",
-            },
-            {
                 "value": "eve",
                 "label": "Событие",
                 "color": "bg-orange-300",

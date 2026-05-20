@@ -7,6 +7,7 @@ import { ButtonPage } from "@/shared/components/ButtonPage";
 import { type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { RightPanel } from "@/shared/components/RightPanel";
+import { COLORS } from "@/shared/constants/tags";
 
 export function FileEdit({
   projectId,
@@ -49,25 +50,6 @@ export function FileEdit({
   const [newTagName, setNewTagName] = useState("");
   const [selectedColor, setSelectedColor] = useState("bg-blue-200");
 
-  const colorPalette = [
-    "bg-red-200",
-    "bg-orange-200",
-    "bg-amber-200",
-    "bg-yellow-200",
-    "bg-lime-200",
-    "bg-green-200",
-    "bg-emerald-200",
-    "bg-teal-200",
-    "bg-cyan-200",
-    "bg-sky-200",
-    "bg-blue-200",
-    "bg-indigo-200",
-    "bg-violet-200",
-    "bg-purple-200",
-    "bg-pink-200",
-    "bg-rose-200",
-  ];
-
   const handleAddTag = () => {
     if (!newTagName.trim()) return;
 
@@ -94,8 +76,10 @@ export function FileEdit({
   const handleChangeColor = (tagKey: string, color: string) => {
     const iTag = tagKey.replace("B-", "I-");
 
-    // bg-red-200 -> bg-red-100
-    const iColor = color.replace(/-\d+$/, "-100");
+    const iColor = color.replace(/-(\d+)$/, (_, num) => {
+      const newNum = Math.max(parseInt(num) - 100, 100);
+      return `-${newNum}`;
+    });
 
     setLocalColors((prev) => ({
       ...prev,
@@ -402,12 +386,12 @@ export function FileEdit({
           />
 
           <div className="flex flex-wrap gap-1 px-2">
-            {colorPalette.map((color) => (
+            {COLORS.map((color) => (
               <button
                 key={color}
                 onClick={() => setSelectedColor(color)}
                 className={`
-                            w-6 h-6 rounded-full border
+                            w-7 h-7 rounded-full border
                             ${color}
                           `}
               />
@@ -442,7 +426,7 @@ export function FileEdit({
             <>
               <button
                 key={tagKey}
-                className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
+                className="w-full px-2 py-2.5 text-left flex items-center cursor-pointer gap-3 transition-colors"
               >
                 <span
                   className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
@@ -465,7 +449,7 @@ export function FileEdit({
               </button>
 
               <div className="flex flex-wrap gap-1 px-2">
-                {colorPalette.map((color) => (
+                {COLORS.map((color) => (
                   <button
                     key={color}
                     onClick={(e) => {
@@ -473,7 +457,7 @@ export function FileEdit({
                       handleChangeColor(tagKey, color);
                     }}
                     className={`
-                                w-6 h-6 rounded-full border
+                                w-7 h-7 rounded-full border
                                 ${color}
                               `}
                   />

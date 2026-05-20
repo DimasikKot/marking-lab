@@ -167,29 +167,27 @@ export function Model() {
         {/* Кнопки */}
         {model && (
           <div className="border border-gray-200 rounded-4xl flex flex-col gap-4 p-6 overflow-auto">
-            <div className="flex justify-between items-center">
-              {!(model.progress > 0 && model.progress < 100) && (
-                <>
-                  <ButtonUI
-                    variant="secondary"
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="flex items-center"
-                  >
-                    {isEditing ? "Отмена" : "Настроить"}
+            {!(model.progress > 0 && model.progress < 100) && (
+              <div className="flex justify-between items-center">
+                <ButtonUI
+                  variant="secondary"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex items-center"
+                >
+                  {isEditing ? "Отмена" : "Настроить"}
+                </ButtonUI>
+
+                {!isEditing && (
+                  <ButtonUI onClick={handleTrainClick} disabled={isTraining}>
+                    {isTraining ? "Запускается..." : "Запустить обучение"}
                   </ButtonUI>
+                )}
 
-                  {!isEditing && (
-                    <ButtonUI onClick={handleTrainClick} disabled={isTraining}>
-                      {isTraining ? "Запускается..." : "Запустить обучение"}
-                    </ButtonUI>
-                  )}
-
-                  {isEditing && (
-                    <ButtonUI onClick={handleSaveSettings}>Сохранить</ButtonUI>
-                  )}
-                </>
-              )}
-            </div>
+                {isEditing && (
+                  <ButtonUI onClick={handleSaveSettings}>Сохранить</ButtonUI>
+                )}
+              </div>
+            )}
 
             {isEditing ? (
               <ModelSettings

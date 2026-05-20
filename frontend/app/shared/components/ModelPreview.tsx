@@ -125,7 +125,7 @@ export const ModelPreview = ({
         </TextUI>
 
         <TextUI variant="title" isSelectable className="h-50%">
-          Файлы, которые будут размечены:{" "}
+          Будут размечены:{" "}
           <TextUI variant="subtitle" isSpan isSelectable>
             {model.prediction_files.length > 0
               ? model.prediction_files.map((file, index) => (
@@ -145,6 +145,28 @@ export const ModelPreview = ({
               : "не выбраны"}
           </TextUI>
         </TextUI>
+
+        {model.predicted_files.length > 0 && (
+          <TextUI variant="title">
+            Были размечены:{" "}
+            <TextUI isSpan variant="subtitle">
+              {model.predicted_files.map((file, index) => (
+                <React.Fragment key={file.id}>
+                  <TextUI variant="link" isSpan isSelectable>
+                    <Link
+                      to={`/projects/${projectId}/files/${file.id}`}
+                      className="text-lg"
+                    >
+                      {file.name}
+                    </Link>
+                  </TextUI>
+
+                  {index < model.predicted_files.length - 1 && ", "}
+                </React.Fragment>
+              ))}
+            </TextUI>
+          </TextUI>
+        )}
       </div>
     </div>
   );

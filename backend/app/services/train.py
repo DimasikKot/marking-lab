@@ -147,6 +147,14 @@ def create_prediction_file_by_project_id(
     if not model_db:
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
+    training_files = [
+        link.file for link in model_db.file_links if link.role == "training"
+    ]
+
+    tags: list[dict[str, str]] = []
+    for training_file in training_files:
+        tags.extend(training_file.tags)
+
     origin_file_db = (
         db.query(FileDB)
         .filter(FileDB.id == origin_file_id, FileDB.project_id == project_id)
@@ -156,16 +164,19 @@ def create_prediction_file_by_project_id(
     if not origin_file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    content, total_rows = normalize_content_to_csv(file)
+    content, total_rows, real_tags = normalize_content_to_csv(file)
+    tags.extend(real_tags)
 
     file_db = FileDB(
-        name=origin_file_db.name,
+        name=origin_file_db.name + " (размечен)",
         project_id=project_id,
         total_rows=total_rows,
         origin_file_id=origin_file_db.id,
+        tags=tags,
         is_labeled=True,
     )
-
+    if real_tags == []:
+        file_db.is_labeled = False
     db.add(file_db)
     db.flush()
 

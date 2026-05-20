@@ -177,11 +177,20 @@ def create_file_by_project_id(
 ) -> FileDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    content, total_rows = normalize_content_to_csv(file)
+    content, total_rows, tags = normalize_content_to_csv(file)
+
+    if tags == []:
+        tags = None
 
     file_db = FileDB(
-        name=name, project_id=project_id, total_rows=total_rows, is_labeled=is_labeled
+        name=name,
+        project_id=project_id,
+        total_rows=total_rows,
+        is_labeled=is_labeled,
+        tags=tags,
     )
+    if tags == None:
+        file_db.is_labeled = False
     db.add(file_db)
     db.flush()
 

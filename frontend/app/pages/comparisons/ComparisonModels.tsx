@@ -166,7 +166,7 @@ const ModelInfoElement = ({
       <div className="flex flex-col overflow-auto">
         {model.training_files.length > 0 && (
           <TextUI variant="label">
-            Файлы, на которых будет обучаться:{" "}
+            Файлы для обучения:{" "}
             <TextUI isSpan variant="label">
               {model.training_files.map((file, index) => (
                 <React.Fragment key={file.id}>
@@ -185,7 +185,7 @@ const ModelInfoElement = ({
 
         {model.prediction_files.length > 0 && (
           <TextUI variant="label">
-            Файлы, которые будут размечены:{" "}
+            Будут размечены:{" "}
             <TextUI isSpan variant="label">
               {model.prediction_files.map((file, index) => (
                 <React.Fragment key={file.id}>
@@ -196,6 +196,25 @@ const ModelInfoElement = ({
                   </TextUI>
 
                   {index < model.prediction_files.length - 1 && ", "}
+                </React.Fragment>
+              ))}
+            </TextUI>
+          </TextUI>
+        )}
+
+        {model.predicted_files.length > 0 && (
+          <TextUI variant="label">
+            Были размечены:{" "}
+            <TextUI isSpan variant="label">
+              {model.predicted_files.map((file, index) => (
+                <React.Fragment key={file.id}>
+                  <TextUI variant="link" isSpan isSelectable>
+                    <Link to={`/projects/${projectId}/files/${file.id}`}>
+                      {file.name}
+                    </Link>
+                  </TextUI>
+
+                  {index < model.predicted_files.length - 1 && ", "}
                 </React.Fragment>
               ))}
             </TextUI>

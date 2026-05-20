@@ -106,7 +106,7 @@ export const ModelCard = ({
         <div className="flex flex-col overflow-auto">
           {model.training_files.length > 0 && (
             <TextUI variant="label">
-              Файлы, на которых будет обучаться:{" "}
+              Файлы для обучения:{" "}
               <TextUI isSpan variant="desc">
                 {model.training_files.map((file) => file.name).join(" , ")}
               </TextUI>
@@ -115,9 +115,18 @@ export const ModelCard = ({
 
           {model.prediction_files.length > 0 && (
             <TextUI variant="label">
-              Файлы, которые будут размечены:{" "}
+              Будут размечены:{" "}
               <TextUI isSpan variant="desc">
                 {model.prediction_files.map((file) => file.name).join(" , ")}
+              </TextUI>
+            </TextUI>
+          )}
+
+          {model.predicted_files.length > 0 && (
+            <TextUI variant="label">
+              Были размечены:{" "}
+              <TextUI isSpan variant="desc">
+                {model.predicted_files.map((file) => file.name).join(" , ")}
               </TextUI>
             </TextUI>
           )}
