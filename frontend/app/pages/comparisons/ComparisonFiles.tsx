@@ -27,22 +27,22 @@ export function ComparisonFiles() {
   const [file2, setFile2] = useState<FileFullResponse | null>(null);
   const [isLoadingFiles, setIsLoadingFiles] = useState(true);
 
-  const mergedTags = {
-    ...(file1?.tags ?? {}),
-    ...(file2?.tags ?? {}),
-  };
-
-  const mergedColors = {
-    ...(file1?.colors ?? {}),
-    ...(file2?.colors ?? {}),
-  };
-
   const isLinkedOriginal =
     file1?.origin_file?.id === file2?.id
       ? 2
       : file2?.origin_file?.id === file1?.id
         ? 1
         : 0;
+
+  const mergedTags = {
+    ...(isLinkedOriginal === 2 ? file2?.tags : (file1?.tags ?? {})),
+    ...(isLinkedOriginal === 2 ? file1?.tags : (file2?.tags ?? {})),
+  };
+
+  const mergedColors = {
+    ...(isLinkedOriginal === 2 ? file2?.colors : (file1?.colors ?? {})),
+    ...(isLinkedOriginal === 2 ? file1?.colors : (file2?.colors ?? {})),
+  };
 
   useEffect(() => {
     const loadFiles = async () => {

@@ -147,14 +147,6 @@ def create_prediction_file_by_project_id(
     if not model_db:
         raise HTTPException(status_code=404, detail="Модель не найдена")
 
-    training_files = [
-        link.file for link in model_db.file_links if link.role == "training"
-    ]
-
-    tags: list[dict[str, str]] = []
-    for training_file in training_files:
-        tags.extend(training_file.tags)
-
     origin_file_db = (
         db.query(FileDB)
         .filter(FileDB.id == origin_file_id, FileDB.project_id == project_id)
@@ -165,7 +157,15 @@ def create_prediction_file_by_project_id(
         raise HTTPException(status_code=404, detail="Файл не найден")
 
     content, total_rows, real_tags = normalize_content_to_csv(file)
-    tags.extend(real_tags)
+
+    training_files = [
+        link.file for link in model_db.file_links if link.role == "training"
+    ]
+
+    tags: list[dict[str, str]] = []
+    for training_file in training_files:
+        tags.extend(training_file.tags) # главной инфой всегда считаются метки последнего файла
+    real_tags.extend(tags)
 
     file_db = FileDB(
         name=origin_file_db.name + " (размечен)",
