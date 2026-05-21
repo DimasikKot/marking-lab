@@ -6,7 +6,7 @@ import logo from "@/shared/images/logo.svg";
 import { StatusIndicator } from "@/shared/components/StatusIndicator";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { logoutUser } from "@/shared/api/user";
-import { fetchBackendEcho, fetchMLEcho } from "@/shared/api/echo";
+import { fetchBackendEcho } from "@/shared/api/echo";
 import { TextUI } from "@/shared/components/TextUI";
 
 const Logo = ({ onClick }: { onClick?: () => void }) => (
@@ -42,7 +42,6 @@ export function Header({
   const navigate = useNavigate();
 
   const [backendStatus, setBackendStatus] = useState(false);
-  const [mlStatus, setMlStatus] = useState(false);
   const username = localStorage.getItem("username");
 
   useEffect(() => {
@@ -50,14 +49,10 @@ export function Header({
       const dataBackend = await fetchBackendEcho();
       if (dataBackend === undefined) return;
       setBackendStatus(dataBackend.success);
-
-      const dataMl = await fetchMLEcho();
-      if (dataMl === undefined) return;
-      setMlStatus(dataMl.success);
     };
 
     load();
-  }, []); // <- пустой массив = выполнится только один раз при монтировани
+  }, []);
 
   return (
     <div
@@ -85,13 +80,6 @@ export function Header({
             <StatusIndicator status={backendStatus} />
             <TextUI variant="desc" isSpan>
               Backend
-            </TextUI>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <StatusIndicator status={mlStatus} />
-            <TextUI variant="desc" isSpan>
-              ML
             </TextUI>
           </div>
         </div>
