@@ -124,7 +124,7 @@ export function Model() {
     if (response === undefined) return;
     setModel(response);
     toast.success("Обучение модели успешно запущено");
-    setTimeout(() => window.location.reload(), 5000);
+    setTimeout(() => window.location.reload(), 2000);
   };
 
   return (
