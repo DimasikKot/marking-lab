@@ -127,6 +127,24 @@ export const trainModelById = async (
   }
 };
 
+export const downloadModelById = async (
+  projectId: string | number,
+  modelId: string | number,
+): Promise<Blob | undefined> => {
+  try {
+    const response = await api.get(
+      `/projects/${projectId}/models/${modelId}/download`,
+      {
+        responseType: "blob",
+      },
+    );
+    const blob = new Blob([response.data]);
+    return blob;
+  } catch (error: unknown) {
+    errorValidate(error);
+  }
+};
+
 export const stopTrainModelById = async (
   projectId: string | number,
   modelId: string | number,

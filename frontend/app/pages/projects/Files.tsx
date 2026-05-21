@@ -88,10 +88,11 @@ export function Files({
   };
 
   const handleDownloadClick = async (file: FileListResponse) => {
+    setIsLoading(true);
     const blob = await downloadFileById(projectId, file.id);
+    setIsLoading(false);
 
     if (blob === undefined) return;
-
     const url = window.URL.createObjectURL(blob);
 
     const link = document.createElement("a");

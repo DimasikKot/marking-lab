@@ -1,5 +1,7 @@
 from datetime import datetime
+import tempfile
 from typing import Any
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from fastapi import (
@@ -252,6 +254,26 @@ async def get_by_id_train(
     )
 
     return ToModelFullResponse(model_db=model_db)
+
+
+@router.get("/{model_id}/download")
+def download_model(
+    project_id: int,
+    model_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    model_db = fetch_model_db_by_id(
+        project_id=project_id, model_id=model_id, user_id=user_id, db=db
+    )
+
+    with tempfile.NamedTemporaryFile(mode="w+b", delete=False) as tmp:
+        tmp.write(b'print("Hello world =)")')
+        tmp.flush()
+
+    return FileResponse(
+        tmp.name, filename=model_db.name, media_type="application/octet-stream"
+    )
 
 
 @router.delete("/{model_id}/train", response_model=ModelFullResponse)

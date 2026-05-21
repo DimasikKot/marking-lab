@@ -8,6 +8,7 @@ import {
   updateModelById,
   deleteModelById,
   stopTrainModelById,
+  downloadModelById,
 } from "@/shared/api/model";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { TextUI } from "@/shared/components/TextUI";
@@ -114,6 +115,24 @@ export function Models({
     loadModels();
 
     navigate(`/projects/${projectId}/models/${response.id}`);
+  };
+
+  const handleDownloadClick = async (model: ModelListResponse) => {
+    setIsLoading(true);
+    const blob = await downloadModelById(projectId, model.id);
+    setIsLoading(false);
+
+    if (blob === undefined) return;
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${model.name}.py`;
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const handleStopClick = async (
@@ -299,6 +318,7 @@ export function Models({
                       model={model}
                       onEditClick={() => handleEditClick(model)}
                       onCopyClick={(event) => handleCopyClick(model, event)}
+                      onDownloadClick={() => handleDownloadClick(model)}
                       onStopClick={(event) => handleStopClick(model.id, event)}
                       onDeleteClick={(event) =>
                         handleDeleteClick(model.id, event)

@@ -9,6 +9,7 @@ export const ModelCard = ({
   onClick,
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
   onCopyClick = () => toast.error("Обработка копирования не настроена"),
+  onDownloadClick = () => toast.error("Обработка скачивания не настроена"),
   onStopClick = () => toast.error("Обработка остановки не настроена"),
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
@@ -19,6 +20,7 @@ export const ModelCard = ({
   onClick?: () => void;
   onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
   onCopyClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onDownloadClick?: React.MouseEventHandler<HTMLButtonElement>;
   onStopClick?: React.MouseEventHandler<HTMLButtonElement>;
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
   dateIsCreatedAt?: boolean;
@@ -222,10 +224,14 @@ export const ModelCard = ({
               </ButtonUI>
 
               {/* {Object.keys(model.metrics).length > 0 && (
-              <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
-                <div className="select-none material-icons">insert_chart</div>
+                <ButtonUI onClick={() => setIsOpen(true)} variant="secondary">
+                  <div className="select-none material-icons">insert_chart</div>
+                </ButtonUI>
+              )} */}
+
+              <ButtonUI onClick={onDownloadClick} variant="icon">
+                <div className="select-none material-icons">download</div>
               </ButtonUI>
-            )} */}
             </div>
 
             <TextUI
@@ -240,7 +246,7 @@ export const ModelCard = ({
               })}
             </TextUI>
 
-            <div className="ml-9">
+            <div className="ml-18">
               <ButtonUI
                 onClick={onDeleteClick}
                 variant="icon"
