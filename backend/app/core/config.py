@@ -3,7 +3,8 @@ from functools import lru_cache
 
 
 class _Settings(BaseSettings):
-    ML_URL: str = "http://ml:8001/api/v1"
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
 
     # Основная БД
     DB_HOST: str = "host.docker.internal"
@@ -31,14 +32,6 @@ class _Settings(BaseSettings):
 
     # Хранилище файлов
     STORAGE_PATH: str = "./projects"
-
-    @property
-    def GET_ECHO_URL(self) -> str:
-        return f"{self.ML_URL}/echos/ml"
-
-    @property
-    def POST_TRAIN_URL(self) -> str:
-        return f"{self.ML_URL}/models/train"
 
     @property
     def DATABASE_URL(self) -> str:

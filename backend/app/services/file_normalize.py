@@ -189,7 +189,7 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
                 "color": next(color_cycle),
             },
         )
-        for tag in sorted(unique_tags)
+        for tag in unique_tags
     ]
 
     return csv_result, total_rows, tags
@@ -286,7 +286,7 @@ def write_new_rows(
                 "color": next(color_cycle),
             },
         )
-        for tag in sorted(unique_tags)
+        for tag in unique_tags
     ]
 
     return new_total_rows, tags

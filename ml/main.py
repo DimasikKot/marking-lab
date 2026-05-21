@@ -7,23 +7,26 @@ from redis.exceptions import ResponseError
 from app.core.config import settings
 from app.services.model_router import model_router
 
-REDIS_HOST = "redis"
 STREAM = "ml_train_tasks"
 GROUP = "ml_trainers"
 WORKER = socket.gethostname()
 
-r = redis.Redis(host=REDIS_HOST, decode_responses=True)
+redis_class = redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    decode_responses=True,
+)
 
 # создаём группу (один раз)
 try:
-    r.xgroup_create(STREAM, GROUP, mkstream=True)
+    redis_class.xgroup_create(STREAM, GROUP, mkstream=True)
 except ResponseError:
     pass
 
 print(f"[{WORKER}] ML worker started")
 
 while True:
-    resp = r.xreadgroup(
+    resp = redis_class.xreadgroup(
         groupname=GROUP, consumername=WORKER, streams={STREAM: ">"}, count=1, block=0
     )
 
@@ -44,7 +47,7 @@ while True:
         )
 
         # обучение полностью завершено
-        r.xack(STREAM, GROUP, msg_id)
+        redis_class.xack(STREAM, GROUP, msg_id)
         print(f"[{WORKER}] done {msg_id}")
 
     except Exception as error:

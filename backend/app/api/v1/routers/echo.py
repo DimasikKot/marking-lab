@@ -15,15 +15,3 @@ class GetEchoResponse(BaseModel):
 @router.get("/backend", response_model=GetEchoResponse)
 async def get_backend():
     return GetEchoResponse(detail="Backend контейнер исправно работает", success=True)
-
-
-@router.get("/ml", response_model=GetEchoResponse)
-async def get_ml():
-    try:
-        async with AsyncClient() as client:
-            response_dict = await client.get(settings.GET_ECHO_URL, timeout=5000)
-            response_json = response_dict.json()
-        return response_json
-    except Exception as error:
-        # raise HTTPException(status_code=500, detail="ML контейнер недоступен")
-        return GetEchoResponse(detail="ML контейнер недоступен", success=False)

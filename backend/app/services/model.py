@@ -1,10 +1,10 @@
 import json
 from typing import Any, Literal
 from fastapi import HTTPException
-import httpx
 import redis
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.project import is_owner_of_project, is_viewer_of_project
 from app.services.train import encode_train_access_token
@@ -41,8 +41,8 @@ def is_viewer_of_model(
 async def _train_model_request(model_db: ModelDB, db: Session):
     try:
         redis_class = redis.Redis(
-            host="redis",  # имя сервиса в docker-compose
-            port=6379,
+            host=settings.REDIS_HOST,  # имя сервиса в docker-compose
+            port=settings.REDIS_PORT,
             decode_responses=True,
         )
 
@@ -317,8 +317,8 @@ def stop_train_model_by_id(
     )
 
     redis_class = redis.Redis(
-        host="redis",  # имя сервиса в docker-compose
-        port=6379,
+        host=settings.REDIS_HOST,  # имя сервиса в docker-compose
+        port=settings.REDIS_PORT,
         decode_responses=True,
     )
 

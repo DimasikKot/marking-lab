@@ -64,33 +64,42 @@ export const ModelCard = ({
               </TextUI> */}
           </div>
 
-          {model.progress !== 0 && model.progress !== 100 && (
+          {3 <= model.progress && model.progress <= 99 && (
             <TextUI variant="normal" className="text-cyan-500 -mr-3">
               {`${model.progress}%`}
+            </TextUI>
+          )}
+
+          {101 <= model.progress && model.progress <= 199 && (
+            <TextUI variant="normal" className="text-cyan-500 -mr-3">
+              {`${model.progress - 100}%`}
             </TextUI>
           )}
 
           <div
             className={`flex items-center justify-center select-none material-icons
                 ${
-                  model.progress === 0
+                  0 <= model.progress && model.progress <= 2
                     ? "text-amber-500"
-                    : model.progress !== 100
+                    : (3 <= model.progress && model.progress <= 99) ||
+                        (101 <= model.progress && model.progress <= 199)
                       ? "text-cyan-500"
                       : "text-emerald-500"
                 }`}
           >
             {model.progress === 0
               ? "edit_note"
-              : model.progress !== 100
+              : 1 <= model.progress && model.progress <= 99
                 ? "model_training"
-                : "school"}
+                : 101 <= model.progress && model.progress <= 199
+                  ? "edit_note"
+                  : "school"}
             {/* task_alt */}
           </div>
 
           {variant === "normal" &&
-            model.progress > 0 &&
-            model.progress < 100 && (
+            model.progress >= 2 &&
+            model.progress <= 99 && (
               <div className="-ml-3">
                 <ButtonUI
                   onClick={onStopClick}

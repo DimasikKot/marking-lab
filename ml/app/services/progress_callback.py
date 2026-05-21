@@ -38,9 +38,9 @@ class ProgressCallback(TrainerCallback):
                 "metrics": metrics_data,
             }
 
-            print("=" * 100)
-            print(request)
-            print("=" * 100)
+            # print("=" * 100)
+            # print(request)
+            # print("=" * 100)
 
             response = httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=300)
 

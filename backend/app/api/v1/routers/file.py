@@ -202,7 +202,7 @@ async def get_by_id(
     )
 
     def parse_labels(tags):
-        labels = {}
+        labels: dict[str, str] = {}
 
         for tag in tags:
             labels[f"B-{tag['value']}"] = tag["label"]

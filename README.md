@@ -87,7 +87,8 @@ services:
 `backend`
 
 ```bash
-ML_URL="http://ml:8001/api/v1"
+REDIS_HOST="redis"
+REDIS_PORT=6379
 
 DB_HOST="host.docker.internal"
 DB_PORT=5432
@@ -123,6 +124,9 @@ VITE_BACKEND_URL="http://localhost:8000/api/v1"
 
 ```bash
 BACKEND_URL="http://backend:8001/api/v1"
+
+REDIS_HOST="redis"
+REDIS_PORT=6379
 
 TRAIN_LOGGING_STEPS=8
 # Количесво шагов, необходимое для обратной связи обучения модели

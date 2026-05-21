@@ -141,9 +141,10 @@ export function Model() {
               isSpan
               className={`px-3 py-1 rounded-2xl border size-max mt-1 min-w-38 text-center
                 ${
-                  model.progress === 0
+                  0 <= model.progress && model.progress <= 2
                     ? "bg-amber-100 border-amber-300"
-                    : model.progress !== 100
+                    : (3 <= model.progress && model.progress <= 99) ||
+                        (101 <= model.progress && model.progress <= 199)
                       ? "bg-cyan-100 border-cyan-300"
                       : "bg-emerald-100 border-emerald-300"
                 }`}
@@ -151,9 +152,13 @@ export function Model() {
               {`${
                 model.progress === 0
                   ? "Черновик"
-                  : model.progress !== 100
-                    ? `Обучается ${model.progress}%`
-                    : "Обучена"
+                  : 1 <= model.progress && model.progress <= 2
+                    ? "В очереди"
+                    : 3 <= model.progress && model.progress <= 99
+                      ? `Обучается ${model.progress}%`
+                      : 101 <= model.progress && model.progress <= 199
+                        ? `Размечает файлы ${model.progress - 100}%`
+                        : "Обучена"
               }`}
             </TextUI>
           </div>

@@ -2,6 +2,7 @@ import tempfile
 import time
 from datasets import Dataset
 import httpx
+import signal
 
 from app.services.model_class import NERModel
 from app.core.config import settings
@@ -37,15 +38,23 @@ def model_train(
     label_list = extract_labels_from_sentences(all_sentences)
 
     # Инициализируем модель
+    # ====================================================
+    class InitTimeout(Exception):
+        pass
+
+    def handler(signum, frame):
+        raise InitTimeout("Инициализация NERModel превысила 180 секунд")
+
+    signal.signal(signal.SIGALRM, handler)  # type: ignore
+    signal.alarm(180)  # type: ignore
+
     try:
+        print("Инициализация NERModel...")
         ner = NERModel(BASE_MODEL, label_list)
-    except Exception as error:
-        httpx.post(
-            settings.POST_PROGRESS_URL,
-            json={"progress": 0, "train_access_token": train_access_token},
-            timeout=300,
-        )
-        raise RuntimeError(f"Ошибка создания модели: {error}")
+        print("Инициализация NERModel завершена")
+    finally:
+        signal.alarm(0)  # type: ignore
+    # ====================================================
 
     tokenizer = ner.tokenizer
     label2id = ner.label2id
@@ -134,7 +143,7 @@ def model_train(
             star_predict_time = time.perf_counter()
             model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
             predict_time_seconds = time.perf_counter() - star_predict_time
-            return_metrics["Время предсказания (сек)"] = round(predict_time_seconds, 2)
+            return_metrics["Время разметки (сек)"] = round(predict_time_seconds, 2)
         except Exception as error:
             httpx.post(
                 settings.POST_PROGRESS_URL,
