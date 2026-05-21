@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Any
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from fastapi import (
     APIRouter,
     Depends,
     Query,
+    HTTPException,
 )
 
 from app.api.v1.routers.echo import GetEchoResponse
@@ -109,6 +110,15 @@ class PostModelRequest(BaseModel):
     training_files_ids: list[int] | None = None
     prediction_files_ids: list[int] | None = None
 
+    @field_validator("name")
+    def validate_name(cls, value):
+        if len(value) > 255:
+            raise HTTPException(
+                status_code=400,
+                detail="Название модели не должно превышать 255 символов",
+            )
+        return value
+
 
 @router.post("", response_model=ModelListResponse)
 async def post(
@@ -174,6 +184,11 @@ class PatchModelFullRequest(BaseModel):
     training_files_ids: list[int] | None = None
     prediction_files_ids: list[int] | None = None
 
+    @field_validator("name")
+    def validate_name(cls, v):
+        if len(v) > 255:
+            raise ValueError("Название модели не должно превышать 255 символов")
+        return v
 
 @router.patch("/{model_id}", response_model=ModelFullResponse)
 async def patch_by_id(

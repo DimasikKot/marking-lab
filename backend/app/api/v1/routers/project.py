@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 
 from app.api.v1.routers.echo import GetEchoResponse
@@ -22,6 +22,23 @@ class PostRequest(BaseModel):
     name: str
     description: str
 
+    @field_validator("name")
+    def validate_name(cls, value):
+        if len(value) > 255:
+            raise HTTPException(
+                status_code=400,
+                detail="Название проекта не должно превышать 255 символов",
+            )
+        return value
+    
+    @field_validator("description")
+    def validate_description(cls, value):
+        if len(value) > 1024:
+            raise HTTPException(
+                status_code=400,
+                detail="Описание проекта не должно превышать 1024 символов",
+            )
+        return value
 
 class PostResponse(BaseModel):
     id: int
@@ -35,6 +52,8 @@ class PostResponse(BaseModel):
     # Вместе с этим нужно использовать model_validate (если где-то список)
     class Config:
         from_attributes = True
+
+    
 
 
 @router.post("", response_model=PostResponse)
@@ -96,6 +115,24 @@ class PatchProjectRequest(BaseModel):
     description: str | None = None
     is_public: bool | None = None
 
+    @field_validator("name")
+    def validate_name(cls, value):
+        if len(value) > 255:
+            raise HTTPException(
+                status_code=400,
+                detail="Название проекта не должно превышать 255 символов",
+            )
+        return value
+
+    @field_validator("description")
+    def validate_description(cls, value):
+        if len(value) > 100:
+            raise HTTPException(
+                status_code=400,
+                detail="Описание проекта не должно превышать 255 символов",
+            )
+        return value
+    
 
 @router.patch("/{project_id}", response_model=PostResponse)
 async def patch_by_id(

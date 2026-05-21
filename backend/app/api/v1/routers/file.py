@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from fastapi import (
     APIRouter,
@@ -11,6 +11,7 @@ from fastapi import (
     Path,
     Query,
     UploadFile,
+    HTTPException,
 )
 
 from app.api.v1.routers.echo import GetEchoResponse
@@ -254,7 +255,14 @@ class PatchFileListRequest(BaseModel):
     name: str | None = None
     is_labeled: bool | None = None
 
-
+    @field_validator("name")
+    def validate_name(cls, value):
+        if len(value) > 128 or len(value) < 1:
+            raise HTTPException(
+            status_code=400,
+            detail="Название файла не должно быть от 1 до 128",
+        )
+        
 @router.patch("/{file_id}", response_model=FileDbResponse)
 async def patch_by_id(
     project_id: int,
@@ -262,7 +270,7 @@ async def patch_by_id(
     data: PatchFileListRequest,
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
-):
+):  
     file_db = update_file_db_by_id(
         project_id=project_id,
         file_id=file_id,
@@ -280,6 +288,15 @@ class PatchFileFullRequest(BaseModel):
     new_tags: dict[str, str] | None
     new_colors: dict[str, str] | None
 
+    @field_validator("new_rows")
+    def validate_new_rows(cls, value):
+        if len(value) > 200:
+            raise HTTPException(
+                status_code=400,
+                detail="Вы можете сохранить до 200 строк за раз",
+            )
+        return value
+
 
 @router.patch("/{file_id}/content", response_model=FileDbResponse)
 async def patch_by_id_content(
@@ -291,6 +308,19 @@ async def patch_by_id_content(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
+    
+    if limit < 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Количество строк на странице должно быть положительным",
+        )
+
+    if limit > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Максимальное количество строк на странице - 100",
+        )
+    
     def restore_tags(
         labels: dict[str, str] | None, colors: dict[str, str] | None
     ) -> list[dict[str, str]] | None:
@@ -306,6 +336,7 @@ async def patch_by_id_content(
             tags.append(
                 {"value": value, "label": label, "color": colors.get(f"B-{value}")}
             )
+            
 
         return tags
 
