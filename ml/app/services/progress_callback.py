@@ -45,7 +45,7 @@ class ProgressCallback(TrainerCallback):
             response = httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=300)
 
             if response.status_code != 200:
-                print(f"Ошибка отправки прогресса: {response}")
+                print(f"Ошибка отправки прогресса: {response.json()["detail"]}")
                 raise RuntimeError(f"Не удалось отправить прогресс")
 
             return True
@@ -59,11 +59,12 @@ class ProgressCallback(TrainerCallback):
         """
 
         if state.max_steps and state.max_steps > 0:
-            progress = int((state.global_step / state.max_steps) * 80) + 10
+            progress = int((state.global_step / state.max_steps) * (99 - 5)) + 5  # 5-99
+            progress = min(99, max(5, progress))
         else:
             progress = 0
 
-        return min(progress, 95)
+        return progress
 
     def on_log(self, args, state, control, logs=None, **kwargs):
         """

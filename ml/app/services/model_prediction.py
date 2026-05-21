@@ -29,7 +29,7 @@ def model_predict(
 
         client.post(
             settings.POST_PROGRESS_URL,
-            json={"train_access_token": train_access_token, "progress": 91},
+            json={"train_access_token": train_access_token, "progress": 101},
         )
 
         # Сохраняем модель во временном каталоге, чтобы не засорять память
@@ -47,12 +47,15 @@ def model_predict(
             with zipfile.ZipFile(zip_bytes) as zip_file:
                 for index, file_name in enumerate(zip_file.namelist()):
                     with zip_file.open(file_name) as file:
+                        progress = (
+                            int((index / len(zip_file.namelist())) * (99 - 2)) + 102
+                        )
+                        progress = min(199, max(102, progress))
                         client.post(
                             settings.POST_PROGRESS_URL,
                             json={
                                 "train_access_token": train_access_token,
-                                "progress": 93
-                                + int((index / len(zip_file.namelist())) * 6),
+                                "progress": progress,
                             },
                         )
 

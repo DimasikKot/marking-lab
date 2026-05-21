@@ -66,7 +66,7 @@ def model_train(
 
     httpx.post(
         settings.POST_PROGRESS_URL,
-        json={"train_access_token": train_access_token, "progress": 10},
+        json={"train_access_token": train_access_token, "progress": 4},
         timeout=300,
     )
 
@@ -121,7 +121,7 @@ def model_train(
 
         request = {
             "train_access_token": train_access_token,
-            "progress": 92,
+            "progress": 100,
             "metrics": return_metrics,
             "graphs": {
                 "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
@@ -138,13 +138,13 @@ def model_train(
         except Exception as error:
             httpx.post(
                 settings.POST_PROGRESS_URL,
-                json={"progress": 95, "train_access_token": train_access_token},
+                json={"progress": 100, "train_access_token": train_access_token},
                 timeout=300,
             )
 
         request = {
             "train_access_token": train_access_token,
-            "progress": 100,
+            "progress": 200,
             "metrics": return_metrics,
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
@@ -183,15 +183,18 @@ def model_router(
         "Максимальная длина предложения": MAX_LINE_LENGHT,
     }
 
-    httpx.post(
+    response = httpx.post(
         settings.POST_PROGRESS_URL,
         json={
-            "progress": 8,
+            "progress": 3,
             "train_access_token": train_access_token,
             "parameters": return_parameters,
         },
         timeout=1000,
     )
+
+    if response.status_code != 200:
+        raise Exception(response.json()["detail"])
 
     model_train(
         EPOCHS=EPOCHS,

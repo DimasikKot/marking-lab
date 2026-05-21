@@ -39,46 +39,40 @@ def is_viewer_of_model(
 
 
 async def _train_model_request(model_db: ModelDB, db: Session):
-    # Формируем запрос к внешнему сервису
-    async with httpx.AsyncClient() as client:
+    try:
+        redis_class = redis.Redis(
+            host="redis",  # имя сервиса в docker-compose
+            port=6379,
+            decode_responses=True,
+        )
+
+        redis_id = redis_class.xadd(
+            "ml_train_tasks",
+            {
+                "model_id": model_db.id,
+                "project_id": model_db.project_id,
+                "parameters": json.dumps(model_db.parameters),
+                "train_access_token": encode_train_access_token(
+                    project_id=model_db.project_id, model_id=model_db.id
+                ),
+            },
+        )
+
+        model_db.redis_id = str(redis_id)
+
         model_db.progress = 2
         db.commit()
         db.refresh(model_db)
 
-        try:
-            redis_class = redis.Redis(
-                host="redis",  # имя сервиса в docker-compose
-                port=6379,
-                decode_responses=True,
-            )
+    except Exception as _:
+        model_db.progress = 0
+        db.commit()
+        db.refresh(model_db)
 
-            redis_id = redis_class.xadd(
-                "ml_train_tasks",
-                {
-                    "model_id": model_db.id,
-                    "project_id": model_db.project_id,
-                    "parameters": json.dumps(model_db.parameters),
-                    "train_access_token": encode_train_access_token(
-                        project_id=model_db.project_id, model_id=model_db.id
-                    ),
-                },
-            )
-
-            model_db.redis_id = str(redis_id)
-
-            model_db.progress = 5
-            db.commit()
-            db.refresh(model_db)
-
-        except Exception as _:
-            model_db.progress = 0
-            db.commit()
-            db.refresh(model_db)
-
-            raise HTTPException(
-                status_code=500,
-                detail=f"Ошибка при страрте обучения модели: {model_db.id}",
-            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ошибка при страрте обучения модели {model_db.id}",
+        )
 
 
 def _update_files_by_role(
@@ -233,7 +227,7 @@ def update_model_db_by_id(
         model_db.name = name
 
     if parameters is not None:
-        if 0 < model_db.progress < 100:
+        if 3 <= model_db.progress <= 99:
             raise HTTPException(
                 status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
@@ -242,7 +236,7 @@ def update_model_db_by_id(
 
     # ---------- TRAINING FILES ----------
     if training_files_ids is not None:
-        if 0 < model_db.progress < 100:
+        if 3 <= model_db.progress <= 99:
             raise HTTPException(
                 status_code=400, detail="Нельзя изменять параметры обучаемой модели"
             )
@@ -256,9 +250,9 @@ def update_model_db_by_id(
 
     # ---------- PREDICTION FILES ----------
     if prediction_files_ids is not None:
-        if 0 < model_db.progress < 100:
+        if 101 <= model_db.progress <= 199:
             raise HTTPException(
-                status_code=400, detail="Нельзя изменять параметры обучаемой модели"
+                status_code=400, detail="Нельзя изменять параметры размечающей модели"
             )
 
         _update_files_by_role(
@@ -291,14 +285,11 @@ async def train_model_by_id(
     ]
 
     if len(training_files) == 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Выберите файлы для обучения",
-        )
+        raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
 
-    if 0 < model_db.progress < 100:
+    if 0 < model_db.progress < 200:
         raise HTTPException(
-            status_code=400, detail="Нельзя изменять параметры обучаемой модели"
+            status_code=400, detail="Нельзя запустить обучение модели повторно"
         )
 
     model_db.progress = 1
