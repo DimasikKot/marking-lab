@@ -1,16 +1,21 @@
 import csv
 from collections import deque
-from itertools import cycle, islice
+from itertools import islice
 from fastapi import HTTPException
 from pathlib import Path
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Any, BinaryIO, Generator, Literal
 
 from app.core.config import settings
 from app.models.db import FileDB
 from app.services.project import is_owner_of_project
-from app.services.file_normalize import BASE_TAGS, COLORS_SET, normalize_content_to_csv
+from app.services.file_normalize import (
+    BASE_TAGS,
+    Row,
+    Word,
+    normalize_content_to_csv,
+    write_new_rows,
+)
 
 
 def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) -> None:
@@ -66,15 +71,6 @@ def _delete_file_from_disk(project_id: int, file_id: int) -> None:
         file_path.unlink()
 
 
-class Word(BaseModel):
-    token: str
-    label: str
-
-
-class Row(BaseModel):
-    words: list[Word]
-
-
 def _get_file_rows(file_path: Path, page: int, limit: int) -> Generator[Row, Any, None]:
     start_idx = (page - 1) * limit
 
@@ -105,98 +101,6 @@ def _get_file_rows(file_path: Path, page: int, limit: int) -> Generator[Row, Any
 
             words = [Word(token=t, label=l) for t, l in zip(tokens, labels)]
             yield Row(words=words)
-
-
-def _write_new_rows(
-    file_path: Path, page: int, limit: int, new_rows: list[Row]
-) -> tuple[int, list[dict[str, str]]]:
-    start_idx = (page - 1) * limit
-    end_idx = start_idx + limit
-    tmp = file_path.with_suffix(".tmp")
-
-    new_total_rows = 0
-    inserted_rows = 0
-    unique_tags: set[str] = set()
-
-    def collect_tags(labels: list[str]) -> None:
-        for label in labels:
-            if label != "O":
-                tag = label[2:] if label.startswith(("B-", "I-")) else label
-                unique_tags.add(tag)
-
-    with file_path.open(encoding="utf-8") as src, tmp.open(
-        "w", encoding="utf-8", newline=""
-    ) as dst:
-        reader = csv.reader(src)
-        writer = csv.writer(dst)
-
-        # 1. Переносим заголовок
-        writer.writerow(next(reader))
-
-        # 2. Идем по старым строкам
-        for i, row in enumerate(reader):
-
-            # Если это строка ДО или ПОСЛЕ заменяемой страницы -> просто копируем
-            if i < start_idx or i >= end_idx:
-                writer.writerow(row)
-                new_total_rows += 1
-
-                # Собираем теги из старых строк
-                if len(row) > 1:
-                    collect_tags(row[1].split())
-
-            # Если мы дошли ровно до начала заменяемой страницы -> вываливаем все новые строки разом
-            elif i == start_idx:
-                for new_row in new_rows:
-                    tokens = [(word.token or "").strip() for word in new_row.words]
-                    labels = [word.label for word in new_row.words]
-
-                    writer.writerow(
-                        [
-                            " ".join(tokens),
-                            " ".join(labels),
-                        ]
-                    )
-
-                    collect_tags(labels)
-
-                    new_total_rows += 1
-                    inserted_rows += 1
-
-            # Примечание: если start_idx < i < end_idx, код ничего не делает
-            # Старые строки просто пропускаются (удаляются)
-
-        # 3. Подстраховка: если мы добавляли новую страницу в самый конец файла,
-        # цикл мог закончиться раньше, чем наступил start_idx. Дописываем в конец.
-        if inserted_rows < len(new_rows):
-            for new_row in new_rows[inserted_rows:]:
-                tokens = [(word.token or "").strip() for word in new_row.words]
-                labels = [word.label for word in new_row.words]
-
-                writer.writerow(
-                    [
-                        " ".join(tokens),
-                        " ".join(labels),
-                    ]
-                )
-
-                collect_tags(labels)
-                new_total_rows += 1
-
-    tmp.replace(file_path)
-
-    # tags
-    color_cycle = cycle(COLORS_SET)
-    tags = [
-        {
-            "value": tag,
-            "label": tag,
-            "color": next(color_cycle),
-        }
-        for tag in sorted(unique_tags)
-    ]
-
-    return new_total_rows, tags
 
 
 # router
@@ -367,7 +271,7 @@ def update_page_by_id(
     if new_rows is not None:
         file_path = get_file_path_by_id(project_id, file_id)
 
-        new_total_rows, real_tags = _write_new_rows(
+        new_total_rows, real_tags = write_new_rows(
             file_path=file_path,
             page=page,
             limit=limit,
