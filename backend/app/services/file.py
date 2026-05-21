@@ -8,7 +8,7 @@ from typing import Any, BinaryIO, Generator, Literal
 
 from app.core.config import settings
 from app.models.db import FileDB
-from app.services.project import is_owner_of_project
+from app.services.project import is_owner_of_project, is_viewer_of_project
 from app.services.file_normalize import (
     BASE_TAGS,
     Row,
@@ -30,10 +30,24 @@ def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) 
         raise HTTPException(status_code=403, detail=f"Нет доступа к файлу {file_id}")
 
 
+def _is_viewer_of_file(
+    project_id: int, file_id: int, user_id: int, db: Session
+) -> None:
+    is_viewer_of_project(project_id=project_id, user_id=user_id, db=db)
+
+    if (
+        db.query(FileDB)
+        .filter(FileDB.id == file_id, FileDB.project_id == project_id)
+        .first()
+        is None
+    ):
+        raise HTTPException(status_code=403, detail=f"Нет доступа к файлу {file_id}")
+
+
 def _fetch_file_db_by_id(
     project_id: int, file_id: int, user_id: int, db: Session
 ) -> FileDB:
-    _is_owner_of_file(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
+    _is_viewer_of_file(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
 
     file_db = db.query(FileDB).filter(FileDB.id == file_id).first()
     if not file_db:
@@ -157,7 +171,7 @@ def fetch_files_db_by_project_id(
     sort: SortType | None,
     search: str | None,
 ) -> list[FileDB]:
-    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
+    is_viewer_of_project(project_id=project_id, user_id=user_id, db=db)
 
     files_db = db.query(FileDB).filter(FileDB.project_id == project_id)
 
@@ -182,6 +196,7 @@ def fetch_files_db_by_project_id(
 
 # router
 def delete_file_by_id(project_id: int, file_id: int, user_id: int, db: Session) -> None:
+    _is_owner_of_file(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
     file_db = _fetch_file_db_by_id(
         project_id=project_id, file_id=file_id, user_id=user_id, db=db
     )
@@ -201,6 +216,7 @@ def update_file_db_by_id(
     name: str | None,
     is_labeled: bool | None,
 ) -> FileDB:
+    _is_owner_of_file(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
     file_db = _fetch_file_db_by_id(
         db=db, project_id=project_id, user_id=user_id, file_id=file_id
     )
@@ -257,6 +273,7 @@ def update_page_by_id(
     new_tags: list[dict[str, str]] | None,
     new_rows: list[Row] | None,
 ) -> FileDB:
+    _is_owner_of_file(project_id=project_id, file_id=file_id, user_id=user_id, db=db)
     file_db = _fetch_file_db_by_id(
         project_id=project_id, file_id=file_id, db=db, user_id=user_id
     )

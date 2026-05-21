@@ -38,6 +38,20 @@ def is_owner_of_project(project_id: int, user_id: int, db: Session) -> None:
     if project_db is None:
         raise HTTPException(status_code=404, detail=f"Проект {project_id} не найден")
 
+    if project_db.user_id != user_id:
+        raise HTTPException(
+            status_code=403, detail=f"Нет доступа к проекту {project_id}"
+        )
+
+
+def is_viewer_of_project(project_id: int, user_id: int, db: Session) -> None:
+    """Проверяет, является ли пользователь владельцем проекта"""
+
+    project_db = db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
+
+    if project_db is None:
+        raise HTTPException(status_code=404, detail=f"Проект {project_id} не найден")
+
     if project_db.user_id != user_id and not project_db.is_public:
         raise HTTPException(
             status_code=403, detail=f"Нет доступа к проекту {project_id}"
@@ -75,8 +89,6 @@ def fetch_projects_db_by_user_id(
     search: str | None,
     is_public: bool | None,
 ) -> list[ProjectDB]:
-    """Получает все проекты, принадлежащие пользователю"""
-
     projects_db = db.query(ProjectDB).filter(ProjectDB.user_id == user_id)
 
     if search is not None:
@@ -103,9 +115,9 @@ def fetch_projects_db_by_user_id(
 
 # router
 def fetch_project_db_by_id(project_id: int, user_id: int, db: Session) -> ProjectDB:
-    is_owner_of_project(project_id, user_id, db)
-
+    is_viewer_of_project(project_id, user_id, db)
     project_db = db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
+
     if not project_db:
         raise HTTPException(status_code=404, detail="Проект не найден")
 
@@ -121,8 +133,7 @@ def update_project_by_id(
     new_description: str | None,
     new_is_public: bool | None,
 ) -> ProjectDB:
-    """Обновляет проект с заданным ID"""
-
+    is_owner_of_project(project_id, user_id, db)
     project_db = fetch_project_db_by_id(project_id=project_id, user_id=user_id, db=db)
 
     if new_name is not None:
@@ -142,6 +153,7 @@ def update_project_by_id(
 
 # router
 def delete_project_by_id(project_id: int, user_id: int, db: Session) -> None:
+    is_owner_of_project(project_id, user_id, db)
     project_db = fetch_project_db_by_id(project_id=project_id, user_id=user_id, db=db)
 
     _delete_project_from_disk(project_id)

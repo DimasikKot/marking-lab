@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.db import FileDB, ModelDB, ModelFileDB
-from app.services.project import is_owner_of_project
+from app.services.project import is_owner_of_project, is_viewer_of_project
 from app.services.file import get_file_path_by_id
 from app.services.train import encode_train_access_token
 
@@ -17,6 +17,20 @@ def is_owner_of_model(
     project_id: int, model_id: int, user_id: int, db: Session
 ) -> None:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
+
+    if (
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
+        .first()
+        is None
+    ):
+        raise HTTPException(status_code=404, detail=f"Нет доступа к модели {model_id}")
+
+
+def is_viewer_of_model(
+    project_id: int, model_id: int, user_id: int, db: Session
+) -> None:
+    is_viewer_of_project(project_id=project_id, user_id=user_id, db=db)
 
     if (
         db.query(ModelDB)
@@ -177,7 +191,7 @@ def create_model(
 def fetch_model_db_by_id(
     project_id: int, model_id: int, user_id: int, db: Session
 ) -> ModelDB:
-    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
+    is_viewer_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
 
     model_db = (
         db.query(ModelDB)
@@ -209,7 +223,7 @@ def fetch_models_db_by_project_id(
     sort: SortType | None,
     search: str | None,
 ) -> list[ModelDB]:
-    is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
+    is_viewer_of_project(project_id=project_id, user_id=user_id, db=db)
 
     models_db = db.query(ModelDB).filter(ModelDB.project_id == project_id)
 
@@ -243,6 +257,7 @@ def update_model_db_by_id(
     training_files_ids: list[int] | None,
     prediction_files_ids: list[int] | None,
 ) -> ModelDB:
+    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
@@ -298,6 +313,7 @@ async def train_model_by_id(
     user_id: int,
     db: Session,
 ) -> ModelDB:
+    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
@@ -350,6 +366,7 @@ def stop_train_model_by_id(
     user_id: int,
     db: Session,
 ) -> ModelDB:
+    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
@@ -365,6 +382,7 @@ def stop_train_model_by_id(
 def delete_model_by_id(
     project_id: int, model_id: int, user_id: int, db: Session
 ) -> None:
+    is_owner_of_model(project_id=project_id, model_id=model_id, user_id=user_id, db=db)
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
