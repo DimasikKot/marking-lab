@@ -5,7 +5,7 @@ from typing import BinaryIO
 
 from fastapi import HTTPException
 
-COLORS_SET: set[str] = {
+COLORS_SET: list[str] = [
     "bg-red-200",
     "bg-rose-200",
     "bg-pink-200",
@@ -51,7 +51,7 @@ COLORS_SET: set[str] = {
     "bg-yellow-400",
     "bg-amber-400",
     "bg-orange-400",
-}
+]
 
 
 def normalize_label(label: str) -> str:

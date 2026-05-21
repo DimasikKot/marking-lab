@@ -118,6 +118,12 @@ def _write_new_rows(
     inserted_rows = 0
     unique_tags: set[str] = set()
 
+    def collect_tags(labels: list[str]) -> None:
+        for label in labels:
+            if label != "O":
+                tag = label[2:] if label.startswith(("B-", "I-")) else label
+                unique_tags.add(tag)
+
     with file_path.open(encoding="utf-8") as src, tmp.open(
         "w", encoding="utf-8", newline=""
     ) as dst:
@@ -135,17 +141,25 @@ def _write_new_rows(
                 writer.writerow(row)
                 new_total_rows += 1
 
+                # Собираем теги из старых строк
+                if len(row) > 1:
+                    collect_tags(row[1].split())
+
             # Если мы дошли ровно до начала заменяемой страницы -> вываливаем все новые строки разом
             elif i == start_idx:
                 for new_row in new_rows:
+                    tokens = [(word.token or "").strip() for word in new_row.words]
+                    labels = [word.label for word in new_row.words]
+
                     writer.writerow(
                         [
-                            " ".join(
-                                (word.token or "").strip() for word in new_row.words
-                            ),
-                            " ".join(word.label for word in new_row.words),
+                            " ".join(tokens),
+                            " ".join(labels),
                         ]
                     )
+
+                    collect_tags(labels)
+
                     new_total_rows += 1
                     inserted_rows += 1
 
@@ -156,12 +170,17 @@ def _write_new_rows(
         # цикл мог закончиться раньше, чем наступил start_idx. Дописываем в конец.
         if inserted_rows < len(new_rows):
             for new_row in new_rows[inserted_rows:]:
+                tokens = [(word.token or "").strip() for word in new_row.words]
+                labels = [word.label for word in new_row.words]
+
                 writer.writerow(
                     [
-                        " ".join(word.token for word in new_row.words),
-                        " ".join(word.label for word in new_row.words),
+                        " ".join(tokens),
+                        " ".join(labels),
                     ]
                 )
+
+                collect_tags(labels)
                 new_total_rows += 1
 
     tmp.replace(file_path)
