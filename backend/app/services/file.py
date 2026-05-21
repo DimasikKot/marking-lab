@@ -210,19 +210,18 @@ def create_file_by_project_id(
 ) -> FileDB:
     is_owner_of_project(project_id=project_id, user_id=user_id, db=db)
 
-    content, total_rows, tags = normalize_content_to_csv(file)
-
-    if tags == []:
-        tags = None
+    content, total_rows, real_tags = normalize_content_to_csv(file)
+    # 1) сначала реальные метки
+    # 2) если реальных меток нет, то значит файл не размечен
 
     file_db = FileDB(
         name=name,
         project_id=project_id,
         total_rows=total_rows,
         is_labeled=is_labeled,
-        tags=tags,
+        tags=real_tags,  # 1
     )
-    if tags == None:
+    if real_tags == []:  # 2
         file_db.is_labeled = False
     db.add(file_db)
     db.flush()

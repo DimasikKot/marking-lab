@@ -5,6 +5,49 @@ from typing import BinaryIO
 
 from fastapi import HTTPException
 
+BASE_TAGS: list[dict[str, str]] = [
+    {
+        "value": "art",
+        "label": "Иновационные проекты",
+        "color": "bg-yellow-200",
+    },
+    {
+        "value": "eve",
+        "label": "Событие",
+        "color": "bg-green-200",
+    },
+    {
+        "value": "geo",
+        "label": "Географическое место",
+        "color": "bg-orange-200",
+    },
+    {
+        "value": "gpe",
+        "label": "Страна/город (полит.)",
+        "color": "bg-amber-400",
+    },
+    {
+        "value": "nat",
+        "label": "Природное явление",
+        "color": "bg-teal-200",
+    },
+    {
+        "value": "org",
+        "label": "Организация",
+        "color": "bg-purple-200",
+    },
+    {
+        "value": "per",
+        "label": "Человек",
+        "color": "bg-pink-200",
+    },
+    {
+        "value": "tim",
+        "label": "Дата/время",
+        "color": "bg-blue-200",
+    },
+]
+
 COLORS_SET: list[str] = [
     "bg-red-200",
     "bg-rose-200",
@@ -21,21 +64,6 @@ COLORS_SET: list[str] = [
     "bg-yellow-200",
     "bg-amber-200",
     "bg-orange-200",
-    "bg-red-300",
-    "bg-rose-300",
-    "bg-pink-300",
-    "bg-purple-300",
-    "bg-indigo-300",
-    "bg-blue-300",
-    "bg-sky-300",
-    "bg-cyan-300",
-    "bg-teal-300",
-    "bg-emerald-300",
-    "bg-green-300",
-    "bg-lime-300",
-    "bg-yellow-300",
-    "bg-amber-300",
-    "bg-orange-300",
     "bg-red-400",
     "bg-rose-400",
     "bg-pink-400",
@@ -139,13 +167,18 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
     total_rows = len(sentences)
 
     # tags
+    base_tags_map = {tag["value"]: tag for tag in BASE_TAGS}
     color_cycle = cycle(COLORS_SET)
+    # Формируем `tags` с заменой совпадающих
     tags = [
-        {
-            "value": tag,
-            "label": tag,
-            "color": next(color_cycle),
-        }
+        base_tags_map.get(
+            tag,  # ключ поиска
+            {
+                "value": tag,
+                "label": tag,
+                "color": next(color_cycle),
+            },
+        )
         for tag in sorted(unique_tags)
     ]
 
