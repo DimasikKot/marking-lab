@@ -268,7 +268,185 @@ def download_model(
     )
 
     with tempfile.NamedTemporaryFile(mode="w+b", delete=False) as tmp:
-        tmp.write(b'print("Hello world =)")')
+        tmp.write(b"""
+# ========================= model_class.py =========================
+
+import gc
+from typing import Union
+import torch
+from transformers import (
+    AutoTokenizer,
+    AutoModelForTokenClassification,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForTokenClassification,
+    EarlyStoppingCallback,
+)
+
+from app.core.config import settings
+from app.services.model_metrics import compute_metrics
+from app.services.progress_callback import ProgressCallback
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+class NERModel:
+    def __init__(self, model_name: str, label_list: list[str]):
+        self.model_name = model_name
+        self.label_list = label_list
+        self.label2id = {l: i for i, l in enumerate(label_list)}
+        self.id2label = {i: l for l, i in self.label2id.items()}
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+        self.model = AutoModelForTokenClassification.from_pretrained(
+            model_name,
+            num_labels=len(label_list),
+            id2label=self.id2label,
+            label2id=self.label2id,
+        ).to(DEVICE)
+
+        self.data_collator = DataCollatorForTokenClassification(
+            self.tokenizer, padding="longest"
+        )
+
+    def train(
+        self,
+        train_dataset,
+        epochs: int,
+        batch_size: int,
+        learning_rate: float,
+        train_access_token: str,
+        eval_dataset=None,
+        output_dir: str = "./models",
+    ) -> dict:
+        training_args = TrainingArguments(
+            output_dir=output_dir,
+            eval_steps=10,
+            eval_strategy="epoch" if eval_dataset else "no",
+            save_strategy="epoch",
+            learning_rate=learning_rate,
+            per_device_train_batch_size=batch_size,
+            per_device_eval_batch_size=batch_size,
+            num_train_epochs=epochs,
+            weight_decay=0.01,
+            logging_steps=settings.TRAIN_LOGGING_STEPS,
+            load_best_model_at_end=bool(eval_dataset),
+            metric_for_best_model="f1",
+            greater_is_better=True,
+            push_to_hub=False,
+            report_to="none",
+            fp16=torch.cuda.is_available(),
+            dataloader_num_workers=2,
+            save_total_limit=1,
+            max_grad_norm=1.0,
+            optim="adamw_torch",
+            lr_scheduler_type="linear",
+            warmup_steps=0.1,
+            dataloader_pin_memory=False,
+        )
+
+        trainer = Trainer(
+            model=self.model,
+            args=training_args,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            data_collator=self.data_collator,
+            compute_metrics=(
+                lambda p: compute_metrics(p, self.label_list)
+                if eval_dataset
+                else None
+            ),
+            callbacks=[
+                ProgressCallback(
+                    train_access_token=train_access_token,
+                    total_epochs=epochs,
+                )
+            ],
+        )
+
+        torch.cuda.empty_cache()
+        gc.collect()
+        trainer.train()
+
+        return {"model_dir": output_dir}
+
+# ========================= model_files.py =========================
+
+import csv
+import io
+import zipfile
+from datasets import Dataset
+import httpx
+from app.core.config import settings
+
+
+def get_all_sentences(train_access_token: str):
+    all_sentences = []
+
+    response = httpx.post(
+        settings.GET_TRAINING_FILES_URL,
+        json={"train_access_token": train_access_token},
+    )
+    response.raise_for_status()
+
+    zip_bytes = io.BytesIO(response.content)
+
+    with zipfile.ZipFile(zip_bytes) as zip_file:
+        for file_name in zip_file.namelist():
+            with zip_file.open(file_name) as file:
+                text = file.read().decode("utf-8")
+                all_sentences.extend(parse_csv_from_text(text))
+                if len(all_sentences) > 3000:
+                    break
+
+    return all_sentences
+
+
+def parse_csv_from_text(text: str):
+    sentences = []
+    reader = csv.reader(io.StringIO(text), skipinitialspace=True)
+    next(reader, None)
+    for row in reader:
+        if len(row) < 2:
+            continue
+        tokens = row[0].split()
+        labels = row[1].split()
+        if len(tokens) != len(labels):
+            continue
+        sentences.append(
+            [{"token": t, "label": l} for t, l in zip(tokens, labels)]
+        )
+    return sentences
+
+
+def extract_labels_from_sentences(sentences):
+    labels = set()
+    for sent in sentences:
+        for item in sent:
+            if item["label"] != "O":
+                labels.add(item["label"])
+    return sorted(labels) + ["O"]
+
+
+def prepare_dataset(sentences, tokenizer, label2id, max_length):
+    tokens = [[i["token"] for i in s] for s in sentences]
+    tags = [[i["label"] for i in s] for s in sentences]
+    dataset = Dataset.from_dict({"tokens": tokens, "ner_tags": tags})
+    return dataset
+
+# ========================= model_router.py =========================
+
+import tempfile
+import time
+import httpx
+from app.services.model_class import NERModel
+from app.services.model_files import (
+    extract_labels_from_sentences,
+    get_all_sentences,
+    prepare_dataset,
+)
+from app.core.config import settings
+""")
         tmp.flush()
 
     return FileResponse(
