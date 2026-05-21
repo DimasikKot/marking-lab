@@ -7,50 +7,50 @@ from fastapi import HTTPException
 
 COLORS_SET: set[str] = {
     "bg-red-200",
-    "bg-sky-200",
-    "bg-lime-200",
-    "bg-teal-200",
-    "bg-cyan-200",
-    "bg-blue-300",
-    "bg-pink-200",
     "bg-rose-200",
+    "bg-pink-200",
+    "bg-purple-200",
+    "bg-indigo-200",
+    "bg-blue-200",
+    "bg-sky-200",
+    "bg-cyan-200",
+    "bg-teal-200",
+    "bg-emerald-200",
     "bg-green-200",
+    "bg-lime-200",
+    "bg-yellow-200",
     "bg-amber-200",
     "bg-orange-200",
-    "bg-yellow-200",
-    "bg-indigo-200",
-    "bg-purple-200",
-    "bg-emerald-200",
     "bg-red-300",
-    "bg-sky-300",
-    "bg-lime-300",
-    "bg-teal-300",
-    "bg-cyan-300",
-    "bg-blue-300",
-    "bg-pink-300",
     "bg-rose-300",
+    "bg-pink-300",
+    "bg-purple-300",
+    "bg-indigo-300",
+    "bg-blue-300",
+    "bg-sky-300",
+    "bg-cyan-300",
+    "bg-teal-300",
+    "bg-emerald-300",
     "bg-green-300",
+    "bg-lime-300",
+    "bg-yellow-300",
     "bg-amber-300",
     "bg-orange-300",
-    "bg-yellow-300",
-    "bg-indigo-300",
-    "bg-purple-300",
-    "bg-emerald-300",
     "bg-red-400",
-    "bg-sky-400",
-    "bg-lime-400",
-    "bg-teal-400",
-    "bg-cyan-400",
-    "bg-blue-400",
-    "bg-pink-400",
     "bg-rose-400",
+    "bg-pink-400",
+    "bg-purple-400",
+    "bg-indigo-400",
+    "bg-blue-400",
+    "bg-sky-400",
+    "bg-cyan-400",
+    "bg-teal-400",
+    "bg-emerald-400",
     "bg-green-400",
+    "bg-lime-400",
+    "bg-yellow-400",
     "bg-amber-400",
     "bg-orange-400",
-    "bg-yellow-400",
-    "bg-indigo-400",
-    "bg-purple-400",
-    "bg-emerald-400",
 }
 
 
@@ -96,18 +96,21 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
             labels += ["O"] * (len(tokens) - len(labels))
         labels = labels[: len(tokens)]
 
-        # BIO auto-fix
-        prev = "O"
-        for i, lab in enumerate(labels):
-            if lab.startswith("I-") and (prev == "O" or prev[2:] != lab[2:]):
-                labels[i] = "B" + lab[1:]
-            prev = labels[i]
+        prev_label = "O"
+        for i, label in enumerate(labels):
+            # BIO auto-fix
+            if label.startswith("I-") and (
+                prev_label == "O" or prev_label[2:] != label[2:]
+            ):
+                label = "B" + label[1:]
+                labels[i] = label
 
-        # Сбор уникальных тегов
-        for lab in labels:
-            if lab != "O":
-                tag = lab[2:] if lab.startswith(("B-", "I-")) else lab
+            # Сбор уникальных тегов
+            if label != "O":
+                tag = label[2:] if label.startswith(("B-", "I-")) else label
                 unique_tags.add(tag)
+
+            prev_label = label
 
         sentences.append((" ".join(tokens), " ".join(labels)))
 
@@ -132,9 +135,10 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
 
     csv_result = output.getvalue()
 
-    # 4. total_rows
+    # total_rows
     total_rows = len(sentences)
 
+    # tags
     color_cycle = cycle(COLORS_SET)
     tags = [
         {

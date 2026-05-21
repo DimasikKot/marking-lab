@@ -156,27 +156,33 @@ def create_prediction_file_by_project_id(
     if not origin_file_db:
         raise HTTPException(status_code=404, detail="Файл не найден")
 
+    new_real_tags: list[dict[str, str]] = []
+    # 1) сначала реальные метки
+    # 2) потом метки из тренировочных файлов (главная инфа считается в последнем файле)
+    # 3) потом метки из оригинального файла
+    # 4) сохраняем метки
+    # 5) если реальных меток нет, то значит файл не размечен
+
     content, total_rows, real_tags = normalize_content_to_csv(file)
+    new_real_tags.extend(real_tags)  # 1
 
     training_files = [
         link.file for link in model_db.file_links if link.role == "training"
     ]
-
-    tags: list[dict[str, str]] = []
     for training_file in training_files:
-        tags.extend(training_file.tags) # главной инфой всегда считаются метки последнего файла
-    real_tags.extend(tags)
+        new_real_tags.extend(
+            training_file.tags
+        )  # 2 (главной инфой всегда считаются метки последнего файла)
+    new_real_tags.extend(origin_file_db.tags)  # 3
 
     file_db = FileDB(
         name=origin_file_db.name + " (размечен)",
         project_id=project_id,
         total_rows=total_rows,
         origin_file_id=origin_file_db.id,
-        tags=tags,
-        is_labeled=True,
+        tags=new_real_tags,  # 4
+        is_labeled=real_tags != [],  # 5
     )
-    if real_tags == []:
-        file_db.is_labeled = False
     db.add(file_db)
     db.flush()
 

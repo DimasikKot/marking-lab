@@ -1,6 +1,6 @@
 import csv
 from collections import deque
-from itertools import islice
+from itertools import cycle, islice
 from fastapi import HTTPException
 from pathlib import Path
 from pydantic import BaseModel
@@ -10,7 +10,7 @@ from typing import Any, BinaryIO, Generator, Literal
 from app.core.config import settings
 from app.models.db import FileDB
 from app.services.project import is_owner_of_project
-from app.services.file_normalize import normalize_content_to_csv
+from app.services.file_normalize import COLORS_SET, normalize_content_to_csv
 
 
 def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) -> None:
@@ -107,13 +107,16 @@ def _get_file_rows(file_path: Path, page: int, limit: int) -> Generator[Row, Any
             yield Row(words=words)
 
 
-def _write_new_rows(file_path: Path, page: int, limit: int, new_rows: list[Row]) -> int:
+def _write_new_rows(
+    file_path: Path, page: int, limit: int, new_rows: list[Row]
+) -> tuple[int, list[dict[str, str]]]:
     start_idx = (page - 1) * limit
     end_idx = start_idx + limit
     tmp = file_path.with_suffix(".tmp")
 
     new_total_rows = 0
     inserted_rows = 0
+    unique_tags: set[str] = set()
 
     with file_path.open(encoding="utf-8") as src, tmp.open(
         "w", encoding="utf-8", newline=""
@@ -163,7 +166,18 @@ def _write_new_rows(file_path: Path, page: int, limit: int, new_rows: list[Row])
 
     tmp.replace(file_path)
 
-    return new_total_rows
+    # tags
+    color_cycle = cycle(COLORS_SET)
+    tags = [
+        {
+            "value": tag,
+            "label": tag,
+            "color": next(color_cycle),
+        }
+        for tag in sorted(unique_tags)
+    ]
+
+    return new_total_rows, tags
 
 
 # router
@@ -324,20 +338,35 @@ def update_page_by_id(
         project_id=project_id, file_id=file_id, db=db, user_id=user_id
     )
 
-    if new_tags is not None:
-        file_db.tags = new_tags
+    new_real_tags: list[dict[str, str]] = []
+    # 1) сначала реальные метки
+    # 2) потом метки из БД
+    # 3) потом метки из запроса
+    # 4) и если хоть что-то новое, то обновляем метки
+    # 5) если реальных меток нет, то значит файл не размечен
 
     if new_rows is not None:
         file_path = get_file_path_by_id(project_id, file_id)
 
-        new_total_rows = _write_new_rows(
+        new_total_rows, real_tags = _write_new_rows(
             file_path=file_path,
             page=page,
             limit=limit,
             new_rows=new_rows,
         )
+        new_real_tags.extend(real_tags)  # 1
+        new_real_tags.extend(file_db.tags)  # 2
 
         file_db.total_rows = new_total_rows
+
+        if real_tags == []:  # 5
+            file_db.is_labeled = False
+
+    if new_tags is not None:
+        new_real_tags.extend(new_tags)  # 3
+
+    if new_rows is not None or new_tags is not None:
+        file_db.tags = new_real_tags  # 4
 
     db.commit()
     db.refresh(file_db)
