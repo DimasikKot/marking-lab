@@ -147,7 +147,7 @@ def model_train(
         except Exception as error:
             httpx.post(
                 settings.POST_PROGRESS_URL,
-                json={"progress": 100, "train_access_token": train_access_token},
+                json={"progress": 201, "train_access_token": train_access_token},
                 timeout=300,
             )
 

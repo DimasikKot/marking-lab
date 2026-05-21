@@ -71,7 +71,7 @@ export function Model() {
         setPredictionFilesIds(response.prediction_files.map((file) => file.id));
       }
 
-      if (response.progress <= 0 || response.progress >= 100) {
+      if (response.progress <= 0 || response.progress >= 200) {
         clearInterval(interval);
       }
     };

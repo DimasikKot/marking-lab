@@ -70,7 +70,7 @@ export function Components() {
 
   const models: ModelListResponse[] = [
     {
-      id: 2,
+      id: 1,
       name: "Классификатор BERT",
       progress: 0,
       parameters: {
@@ -97,13 +97,62 @@ export function Components() {
       },
       training_files: [],
       prediction_files: [],
+      predicted_files: [],
       created_at: "2024-02-01T09:00:00Z",
       updated_at: "2024-03-25T14:30:00Z",
     },
     {
       id: 2,
+      name: "Классификатор BERT",
+      progress: 1,
+      parameters: {
+        model: "bert",
+        epochs: 3,
+        batch_size: 4,
+        learning_rate: 0.001,
+      },
+      metrics: {
+        model: "bert",
+        epochs: 8,
+        batch_size: 40,
+        learning_rate: 0.01,
+        accuracy: 0.95,
+        precision: 0.98,
+        recall: 0.99,
+        f1: 0.97,
+        loss: 0.02,
+        val_accuracy: 0.96,
+        val_precision: 0.97,
+        val_recall: 0.98,
+        val_f1: 0.99,
+        val_loss: 0.01,
+      },
+      training_files: [],
+      prediction_files: [],
+      predicted_files: [],
+      created_at: "2024-02-01T09:00:00Z",
+      updated_at: "2024-03-25T14:30:00Z",
+    },
+    {
+      id: 3,
+      name: "Классификатор BERT",
+      progress: 2,
+      parameters: {
+        model: "bert",
+      },
+      metrics: {
+        batch_size: 40,
+      },
+      training_files: [],
+      prediction_files: [],
+      predicted_files: [],
+      created_at: "2024-02-01T09:00:00Z",
+      updated_at: "2024-03-25T14:30:00Z",
+    },
+    {
+      id: 4,
       name: "Вторая модель",
-      progress: 70,
+      progress: 3,
       parameters: {
         model: "ner",
         epochs: 3,
@@ -122,11 +171,12 @@ export function Components() {
       },
       training_files: [],
       prediction_files: [],
+      predicted_files: [],
       created_at: "2026-04-24T02:05:34.752538",
       updated_at: "2026-04-24T22:34:30.828596",
     },
     {
-      id: 3,
+      id: 5,
       name: "Вторая модель",
       progress: 100,
       parameters: {
@@ -142,8 +192,73 @@ export function Components() {
       },
       training_files: [],
       prediction_files: [],
+      predicted_files: [],
       created_at: "2026-04-24T02:05:34.752538",
       updated_at: "2026-04-24T22:34:30.828596",
+    },
+    {
+      id: 6,
+      name: "Классификатор BERT",
+      progress: 101,
+      parameters: {
+        model: "bert",
+      },
+      metrics: {
+        batch_size: 40,
+      },
+      training_files: [],
+      prediction_files: [],
+      predicted_files: [],
+      created_at: "2024-02-01T09:00:00Z",
+      updated_at: "2024-03-25T14:30:00Z",
+    },
+    {
+      id: 7,
+      name: "Классификатор BERT",
+      progress: 199,
+      parameters: {
+        model: "bert",
+      },
+      metrics: {
+        batch_size: 40,
+      },
+      training_files: [],
+      prediction_files: [],
+      predicted_files: [],
+      created_at: "2024-02-01T09:00:00Z",
+      updated_at: "2024-03-25T14:30:00Z",
+    },
+    {
+      id: 8,
+      name: "Классификатор BERT",
+      progress: 200,
+      parameters: {
+        model: "bert",
+      },
+      metrics: {
+        batch_size: 40,
+      },
+      training_files: [],
+      prediction_files: [],
+      predicted_files: [],
+      created_at: "2024-02-01T09:00:00Z",
+      updated_at: "2024-03-25T14:30:00Z",
+    },
+    {
+      id: 9,
+      name: "Классификатор BERT",
+      progress: 201,
+      parameters: {
+        model: "bert",
+      },
+      metrics: {
+        batch_size: 40,
+      },
+      training_files: [],
+      prediction_files: [],
+      predicted_files: [],
+      created_at: "2024-02-01T09:00:00Z",
+      updated_at: "2024-03-25T14:30:00Z",
     },
   ];
 
@@ -248,7 +363,7 @@ export function Components() {
             <TextUI variant="header" className="mb-6">
               ProjectCard
             </TextUI>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ProjectCard project={projects[0]} />
               <ProjectCard project={projects[1]} dateIsCreatedAt={true} />
             </div>
@@ -271,10 +386,9 @@ export function Components() {
               ModelCard
             </TextUI>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ModelCard model={models[0]} />
-              <ModelCard model={models[1]} dateIsCreatedAt={true} />
-              <ModelCard model={models[2]} />
-              <ModelCard model={models[2]} dateIsCreatedAt={true} />
+              {models.map((model) => (
+                <ModelCard key={model.id} model={model} />
+              ))}
             </div>
           </div>
 
