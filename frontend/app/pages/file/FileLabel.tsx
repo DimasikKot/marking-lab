@@ -8,6 +8,7 @@ import { TagSelector } from "@/shared/components/TagSelector";
 import { type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { RightPanel } from "@/shared/components/RightPanel";
+import { COLORS } from "@/shared/constants/tags";
 
 type SelectedWord = [number, number];
 
@@ -17,9 +18,9 @@ export function FileLabel({
   page,
   totalPages,
   localTags,
-  // setLocalTags,
+  setLocalTags,
   localColors,
-  // setLocalColors,
+  setLocalColors,
   localRows,
   setLocalRows,
   isLoading,
@@ -49,6 +50,77 @@ export function FileLabel({
   const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([]);
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+
+  // Состояния для создания метки
+  const [editMode, setEditMode] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const [selectedColor, setSelectedColor] = useState("bg-blue-200");
+
+  const handleAddTag = () => {
+    if (!newTagName.trim()) return;
+
+    const normalized = newTagName.trim().toLowerCase();
+
+    const bTag = `B-${normalized}`;
+    const iTag = `I-${normalized}`;
+
+    setLocalTags((prev) => ({
+      ...prev,
+      [bTag]: normalized,
+    }));
+
+    setLocalColors((prev) => ({
+      ...prev,
+      [bTag]: selectedColor,
+      [iTag]: selectedColor,
+    }));
+
+    setNewTagName("");
+    setHasUnsavedChanges(true);
+  };
+
+  const handleChangeColor = (tagKey: string, color: string) => {
+    const iTag = tagKey.replace("B-", "I-");
+
+    const iColor = color.replace(/-(\d+)$/, (_, num) => {
+      const newNum = Math.max(parseInt(num) - 100, 100);
+      return `-${newNum}`;
+    });
+
+    setLocalColors((prev) => ({
+      ...prev,
+      [tagKey]: color,
+      [iTag]: iColor,
+    }));
+
+    setHasUnsavedChanges(true);
+  };
+
+  const handleRenameTag = (tagKey: string, label: string) => {
+    setHasUnsavedChanges(true);
+    setLocalTags((prev) => ({
+      ...prev,
+      [tagKey]: label,
+    }));
+  };
+
+  const removeTag = (tagKey: string) => {
+    const iTag = tagKey.replace("B-", "I-");
+
+    setLocalTags((prev) => {
+      const next = { ...prev };
+      delete next[tagKey];
+      delete next[iTag];
+      return next;
+    });
+
+    setLocalColors((prev) => {
+      const next = { ...prev };
+      delete next[tagKey];
+      delete next[iTag];
+      return next;
+    });
+  };
 
   const handleBackClick = () => {
     if (hasUnsavedChanges) {
@@ -173,46 +245,147 @@ export function FileLabel({
       <ButtonPage onClick={handleExitClick} isLoading={isSaving || isLoading} />
 
       <RightPanel>
-        <button
-          key="O"
-          onClick={() => assignTag("O")}
-          className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
-        >
-          <span
-            className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
+        <div className="flex items-center justify-between mb-3">
+          <ButtonUI
+            onClick={() => setEditMode((v) => !v)}
+            variant={editMode ? "primary" : "secondary"}
+            className="mx-auto"
           >
-            O
-          </span>
+            {editMode ? "Готово" : "Редактировать"}
+          </ButtonUI>
+        </div>
 
-          <TextUI variant="normal">Не сущность</TextUI>
-        </button>
+        {editMode ? (
+          <>
+            <div className="border-b border-gray-200 pb-4 mb-4 space-y-3">
+              <input
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                placeholder="Новая сущность (ORG, PER...)"
+                className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              />
 
-        {Object.entries(localTags).map(([tagKey, label]) => {
-          const iTag = tagKey.replace("B-", "I-");
+              <div className="flex flex-wrap gap-2">
+                {COLORS.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-7 h-7 rounded-full border transition 
+            ${color} 
+            ${selectedColor === color ? "ring-2 ring-black" : ""}`}
+                  />
+                ))}
+              </div>
 
-          return (
+              <ButtonUI
+                onClick={handleAddTag}
+                variant="primary"
+                className="mx-auto"
+              >
+                + Добавить метку
+              </ButtonUI>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(localTags)
+                .filter(([k]) => k.startsWith("B-"))
+                .map(([tagKey, label]) => {
+                  const iTag = tagKey.replace("B-", "I-");
+
+                  return (
+                    <div
+                      key={tagKey}
+                      className="rounded p-2 space-y-2 hover:bg-gray-50 transition"
+                    >
+                      {/* Заголовок */}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-mono text-xs px-2 py-0.5 rounded ${localColors[tagKey]}`}
+                        >
+                          {tagKey}
+                        </span>
+                        <span
+                          className={`font-mono text-xs px-2 py-0.5 rounded ${localColors[iTag]}`}
+                        >
+                          {iTag}
+                        </span>
+
+                        <input
+                          defaultValue={label}
+                          onBlur={(e) =>
+                            handleRenameTag(tagKey, e.target.value)
+                          }
+                          className="ml-auto border rounded px-2 py-1 text-xs w-32"
+                        />
+
+                        <button
+                          onClick={() => removeTag(tagKey)}
+                          className="text-red-500 hover:text-red-700 transition"
+                          title="Удалить метку"
+                        >
+                          🗑
+                        </button>
+                      </div>
+
+                      {/* Цвета */}
+                      <div className="flex flex-wrap gap-2">
+                        {COLORS.map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => handleChangeColor(tagKey, color)}
+                            className={`w-6 h-6 rounded-full border ${color}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </>
+        ) : (
+          <>
             <button
-              key={tagKey}
-              onClick={() => assignTag(tagKey)}
+              key="O"
+              onClick={() => assignTag("O")}
               className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
             >
               <span
-                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
+                className={`font-mono text-md font-medium px-1 py-0.5 h-min w-28 text-center rounded`}
               >
-                {tagKey}
+                O
               </span>
 
-              <span
-                onClick={() => assignTag(iTag)}
-                className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
-              >
-                {iTag}
-              </span>
-
-              <TextUI variant="normal">{label}</TextUI>
+              <TextUI variant="normal">Не сущность</TextUI>
             </button>
-          );
-        })}
+
+            {Object.entries(localTags).map(([tagKey, label]) => {
+              const iTag = tagKey.replace("B-", "I-");
+
+              return (
+                <button
+                  key={tagKey}
+                  onClick={() => assignTag(tagKey)}
+                  className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
+                >
+                  <span
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
+                  >
+                    {tagKey}
+                  </span>
+
+                  <span
+                    onClick={() => assignTag(iTag)}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
+                  >
+                    {iTag}
+                  </span>
+
+                  <TextUI variant="normal">{label}</TextUI>
+                </button>
+              );
+            })}
+          </>
+        )}
       </RightPanel>
 
       <div className="border border-gray-200 rounded-4xl z-100 p-6 overflow-auto">
