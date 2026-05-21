@@ -186,7 +186,7 @@ def model_router(
     httpx.post(
         settings.POST_PROGRESS_URL,
         json={
-            "progress": 0,
+            "progress": 8,
             "train_access_token": train_access_token,
             "parameters": return_parameters,
         },

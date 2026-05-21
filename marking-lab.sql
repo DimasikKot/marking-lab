@@ -26,6 +26,7 @@ DROP TABLE IF EXISTS models CASCADE;
 CREATE TABLE IF NOT EXISTS models (
     id              SERIAL          PRIMARY KEY,
     project_id      INTEGER         REFERENCES projects(id) ON DELETE CASCADE,
+    redis_id        VARCHAR(64),
     name            VARCHAR(255)    NOT NULL,
     progress        INTEGER         NOT NULL DEFAULT 0,
     parameters      JSONB           NOT NULL DEFAULT '{}', -- параметры модели

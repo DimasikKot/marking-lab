@@ -153,6 +153,7 @@ class ModelDB(Base):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
+    redis_id: Mapped[str | None] = mapped_column(String(64))
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

@@ -52,7 +52,7 @@ async def _train_model_request(model_db: ModelDB, db: Session):
                 decode_responses=True,
             )
 
-            redis_class.xadd(
+            redis_id = redis_class.xadd(
                 "ml_train_tasks",
                 {
                     "model_id": model_db.id,
@@ -64,22 +64,7 @@ async def _train_model_request(model_db: ModelDB, db: Session):
                 },
             )
 
-            # model_db.progress = 5
-            # db.commit()
-
-            # if response.status_code != 200:
-            #     model_db.progress = 0
-            #     db.commit()
-            #     db.refresh(model_db)
-
-            #     raise HTTPException(
-            #         status_code=500,
-            #         detail=f"Ошибка при страрте обучения модели: {model_db.id}",
-            #     )
-
-            # data = response.json()
-            # parameters = json.loads(data["parameters"])
-            # model_db.parameters = parameters
+            model_db.redis_id = str(redis_id)
 
             model_db.progress = 5
             db.commit()
@@ -339,6 +324,16 @@ def stop_train_model_by_id(
     model_db = fetch_model_db_by_id(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
+
+    redis_class = redis.Redis(
+        host="redis",  # имя сервиса в docker-compose
+        port=6379,
+        decode_responses=True,
+    )
+
+    if model_db.redis_id is not None:
+        redis_class.xdel("train_stream", str(model_db.redis_id))
+        model_db.redis_id = None
 
     model_db.progress = 0
     db.commit()
