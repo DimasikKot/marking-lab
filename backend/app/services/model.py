@@ -41,29 +41,14 @@ def is_viewer_of_model(
         raise HTTPException(status_code=404, detail=f"Нет доступа к модели {model_id}")
 
 
-async def _train_model_request(
-    training_files_paths: set[Path], model_db: ModelDB, db: Session
-):
+async def _train_model_request(model_db: ModelDB, db: Session):
     # Формируем запрос к внешнему сервису
     async with httpx.AsyncClient() as client:
-        files_to_send: list[tuple[str, tuple[str, io.BufferedReader, str]]] = []
-        opened_files: list[io.BufferedReader] = []
-
-        model_db.progress = 4
+        model_db.progress = 2
         db.commit()
         db.refresh(model_db)
 
         try:
-            for path in training_files_paths:
-                file_stream: io.BufferedReader = open(path, "rb")
-                opened_files.append(file_stream)
-                # Формат: (название_поля, (имя_файла, объект_файла, content_type))
-                files_to_send.append(("files", (path.name, file_stream, "text/plain")))
-
-            model_db.progress = 5
-            db.commit()
-            db.refresh(model_db)
-
             response = await client.post(
                 settings.POST_TRAIN_URL,
                 data={
@@ -72,34 +57,28 @@ async def _train_model_request(
                         project_id=model_db.project_id, model_id=model_db.id
                     ),
                 },
-                files=files_to_send,
                 timeout=30000,
             )
-
-            for file_stream in opened_files:
-                file_stream.close()
 
             if response.status_code != 200:
                 model_db.progress = 0
                 db.commit()
                 db.refresh(model_db)
 
-                raise response.json()
-
-            # Метрики забираем из заголовка
-            # metrics_raw = response.headers.get("X-Metrics")
-            # graphs_raw = response.headers.get("X-Graphs")
-            # metrics: dict[str, Any] = json.loads(metrics_raw) if metrics_raw else {}
-            # graphs: dict[str, Any] = json.loads(graphs_raw) if graphs_raw else {}
-            # Проверить можно на https://products.aspose.app/imaging/ru/conversion/base64-to-image
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Ошибка при страрте обучения модели: {model_db.id}",
+                )
 
             data = response.json()
             parameters = json.loads(data["parameters"])
             model_db.parameters = parameters
+
+            model_db.progress = 5
             db.commit()
             db.refresh(model_db)
 
-        except Exception as error:
+        except Exception as _:
             model_db.progress = 0
             db.commit()
             db.refresh(model_db)
@@ -108,10 +87,6 @@ async def _train_model_request(
                 status_code=500,
                 detail=f"Ошибка при страрте обучения модели: {model_db.id}",
             )
-
-        finally:
-            for file_stream in opened_files:
-                file_stream.close()
 
 
 def _update_files_by_role(
@@ -338,20 +313,7 @@ async def train_model_by_id(
     db.commit()
     db.refresh(model_db)
 
-    training_files_paths: set[Path] = {
-        get_file_path_by_id(
-            project_id=file_db.project_id,
-            file_id=file_db.id,
-        )
-        for file_db in training_files
-    }
-
-    model_db.progress = 2
-    db.commit()
-    db.refresh(model_db)
-
     await _train_model_request(
-        training_files_paths=training_files_paths,
         model_db=model_db,
         db=db,
     )

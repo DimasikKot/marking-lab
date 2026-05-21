@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Form, HTTPException
 
 from app.services.model_router import model_router
 from app.services.model_files import get_all_sentences
@@ -11,11 +11,10 @@ router = APIRouter()
 async def train_ner(
     parameters: str = Form(...),
     train_access_token: str = Form(...),
-    files: list[UploadFile] = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     # Получаем предложения
-    all_sentences = await get_all_sentences(files)
+    all_sentences = await get_all_sentences(train_access_token)
     if len(all_sentences) == 0:
         raise HTTPException(status_code=400, detail="Выберите файлы для обучения")
 

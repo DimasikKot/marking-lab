@@ -1,16 +1,37 @@
 import csv
 import io
+import zipfile
 from datasets import Dataset
+import httpx
+
+from app.core.config import settings
 
 
-# Собираем все предложения из загруженных CSV-файлов
-async def get_all_sentences(files) -> list[list[dict[str, str]]]:
+# Собираем все предложения из тренировочных CSV-файлов
+async def get_all_sentences(train_access_token: str) -> list[list[dict[str, str]]]:
     all_sentences = []
-    for file in files:
-        content = await file.read()
-        text = content.decode("utf-8")
-        # Теперь используем правильный парсер
-        all_sentences.extend(parse_csv_from_text(text))  # список предложений
+
+    response = httpx.post(
+        settings.GET_TRAINING_FILES_URL,
+        json={"train_access_token": train_access_token},
+    )
+
+    response.raise_for_status()  # TODO Подробнее изучить, может применить в train.py
+
+    zip_bytes = io.BytesIO(response.content)
+
+    with zipfile.ZipFile(zip_bytes) as zip_file:
+        for _, file_name in enumerate(zip_file.namelist()):
+            with zip_file.open(file_name) as file:
+                content = file.read()
+                text = content.decode("utf-8")
+                # Теперь используем правильный парсер
+                # список предложений
+                all_sentences.extend(parse_csv_from_text(text))
+
+                # Максимальное количество предложений для обучения
+                if len(all_sentences) > 3000:
+                    break
 
     return all_sentences
 

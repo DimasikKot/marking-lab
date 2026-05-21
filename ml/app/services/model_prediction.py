@@ -59,7 +59,8 @@ def model_predict(
                         text = file.read().decode("utf-8")
 
                         # Разбиваем текст
-                        validation_sentences = parse_csv_from_text(text)
+                        # Максимальное количество предложений для разметки
+                        validation_sentences = parse_csv_from_text(text)[:3000]
 
                         # Dataset для модели
                         dataset = prepare_dataset(
