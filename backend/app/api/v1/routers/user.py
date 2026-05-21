@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 # Модели для валидации данных, которые мы будем получать от клиента и отправлять ему в ответ
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 # Подключение к БД
 from app.core.database import get_auth_db
@@ -28,6 +28,32 @@ class PostRequest(BaseModel):
     username: str
     email: str
     password: str
+
+    @field_validator("email")
+    def validate_email(cls, value):
+        if len(value) > 255:
+            raise HTTPException(
+                status_code=400,
+                detail="Электронная почта не должна превышать 255 символов",
+            )
+
+    @field_validator("password")
+    def validate_password(cls, value):
+        if len(value) > 255:
+            raise HTTPException(
+                status_code=400,
+                detail="Пароль не должен превышать 255 символов",
+            )
+        return value
+
+    @field_validator("username")
+    def validate_username(cls, value):
+        if len(value) > 32 or len(value) < 4:
+            raise HTTPException(
+                status_code=400,
+                detail="Имя пользователя должно быть от 4 до 32 символов",
+            )
+        return value
 
 
 class PostResponse(BaseModel):
@@ -80,13 +106,12 @@ class PostValidateResponse(BaseModel):
 async def post_validate_username(
     data: PostValidateUsernameRequest, db: Session = Depends(get_auth_db)
 ):
-    username_patt = r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$"
+    username_patt = r"^[a-zA-Z][a-zA-Z0-9_]"
     if not re.match(username_patt, data.username):
         raise HTTPException(
             status_code=400,
             detail="Имя пользователя должно начинаться с буквы, "
-            "содержать только буквы, цифры и подчёркивания и быть "
-            "длиной от 5 до 32 символов",
+            "содержать только буквы, цифры и подчёркивания",
         )
 
     existing_username: User | None = (

@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Any
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from fastapi import (
     APIRouter,
     Depends,
     Query,
+    HTTPException,
 )
 
 from app.api.v1.routers.echo import GetEchoResponse
@@ -109,6 +110,27 @@ class PostModelRequest(BaseModel):
     training_files_ids: list[int] | None = None
     prediction_files_ids: list[int] | None = None
 
+    @field_validator("name")
+    def validate_name(cls, v):
+        if len(v) > 255:
+            raise HTTPException(
+                status_code=400,
+                detail="Название модели не должно превышать 255 символов",
+            )
+        return v
+
+    @field_validator("training_files_ids")
+    def validate_training_files_ids(cls, v):
+        if v is not None and len(v) > 5:
+            raise ValueError("Максимум 5 тренировочных файлов")
+        return v
+
+    @field_validator("prediction_files_ids")
+    def validate_prediction_files_ids(cls, v):
+        if v is not None and len(v) > 5:
+            raise ValueError("Максимум 5 файлов, которые будут размечены")
+        return v
+
 
 @router.post("", response_model=ModelListResponse)
 async def post(
@@ -173,6 +195,24 @@ class PatchModelFullRequest(BaseModel):
     parameters: dict[str, Any] | None = None
     training_files_ids: list[int] | None = None
     prediction_files_ids: list[int] | None = None
+
+    @field_validator("name")
+    def validate_name(cls, v):
+        if len(v) > 255:
+            raise ValueError("Название модели не должно превышать 255 символов")
+        return v
+
+    @field_validator("training_files_ids")
+    def validate_training_files_ids(cls, v):
+        if v is not None and len(v) > 5:
+            raise ValueError("Максимум 5 тренировочных файлов")
+        return v
+
+    @field_validator("prediction_files_ids")
+    def validate_prediction_files_ids(cls, v):
+        if v is not None and len(v) > 5:
+            raise ValueError("Максимум 5 файлов, которые будут размечены")
+        return v
 
 
 @router.patch("/{model_id}", response_model=ModelFullResponse)
