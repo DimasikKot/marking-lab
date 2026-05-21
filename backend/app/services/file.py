@@ -10,7 +10,7 @@ from typing import Any, BinaryIO, Generator, Literal
 from app.core.config import settings
 from app.models.db import FileDB
 from app.services.project import is_owner_of_project
-from app.services.file_normalize import COLORS_SET, normalize_content_to_csv
+from app.services.file_normalize import BASE_TAGS, COLORS_SET, normalize_content_to_csv
 
 
 def _is_owner_of_file(project_id: int, file_id: int, user_id: int, db: Session) -> None:
@@ -223,6 +223,7 @@ def create_file_by_project_id(
     )
     if real_tags == []:  # 2
         file_db.is_labeled = False
+        file_db.tags = BASE_TAGS
     db.add(file_db)
     db.flush()
 
