@@ -19,7 +19,8 @@ def model_predict(
 ):
     with httpx.Client(timeout=300) as client:
         response = client.post(
-            settings.GET_FILES_URL, json={"train_access_token": train_access_token}
+            settings.GET_PREDICTION_FILES_URL,
+            json={"train_access_token": train_access_token},
         )
 
         response.raise_for_status()  # TODO Подробнее изучить, может применить в train.py

@@ -19,22 +19,55 @@ from app.api.v1.routers.model import ModelFullResponse, ToModelFullResponse
 from app.services.train import (
     create_prediction_file_by_project_id,
     get_prediction_files_by_id,
+    get_training_files_by_id,
     set_progress_model_db_by_id,
 )
 
 router = APIRouter()
 
 
-class PostProgressRequest(BaseModel):
+class GetTrainFilesRequest(BaseModel):
+    train_access_token: str
+
+
+@router.post("/train/get_files", response_class=StreamingResponse)
+async def get_train_files(
+    data: GetTrainFilesRequest,
+    db: Session = Depends(get_db),
+):
+    training_files_paths = get_training_files_by_id(
+        train_access_token=data.train_access_token, db=db
+    )
+
+    if not training_files_paths:
+        raise HTTPException(status_code=404, detail="Файлы не найдены")
+
+    # zip в памяти
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "w") as zipf:
+        for file_path in training_files_paths:
+            zipf.write(file_path, arcname=file_path.stem)  # Было file_path.name
+
+    zip_buffer.seek(0)
+
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=prediction_files.zip"},
+    )
+
+
+class PostTrainProgressRequest(BaseModel):
     train_access_token: str
     progress: int
     metrics: dict[str, Any] | None = None
     graphs: dict[str, Any] | None = None
 
 
-@router.post("/post_progress", response_model=ModelFullResponse)
-async def post_progress(
-    data: PostProgressRequest,
+@router.post("/train/post_progress", response_model=ModelFullResponse)
+async def post_train_progress(
+    data: PostTrainProgressRequest,
     db: Session = Depends(get_db),
 ):
     model_db = set_progress_model_db_by_id(
@@ -48,13 +81,13 @@ async def post_progress(
     return ToModelFullResponse(model_db=model_db)
 
 
-class GetPredictionRequest(BaseModel):
+class GetPredictionFilesRequest(BaseModel):
     train_access_token: str
 
 
-@router.post("/get_files", response_class=StreamingResponse)
-async def get_files_to_prediction(
-    data: GetPredictionRequest,
+@router.post("/predict/get_files", response_class=StreamingResponse)
+async def get_prediction_files(
+    data: GetPredictionFilesRequest,
     db: Session = Depends(get_db),
 ):
     prediction_files_paths = get_prediction_files_by_id(
@@ -80,7 +113,7 @@ async def get_files_to_prediction(
     )
 
 
-@router.post("/post_file", response_model=FileDbResponse)
+@router.post("/predict/post_file", response_model=FileDbResponse)
 async def post_prediction_file(
     train_access_token: str = Form(...),
     origin_file_id: int = Form(...),

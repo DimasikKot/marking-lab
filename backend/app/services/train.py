@@ -64,6 +64,34 @@ def _get_info_from_train_access_token(token: str) -> tuple[int, int]:
 
 
 # router
+def get_training_files_by_id(train_access_token: str, db: Session) -> set[Path]:
+    project_id, model_id = _get_info_from_train_access_token(train_access_token)
+
+    model_db = (
+        db.query(ModelDB)
+        .filter(ModelDB.id == model_id, ModelDB.project_id == project_id)
+        .first()
+    )
+
+    if not model_db:
+        raise HTTPException(status_code=404, detail="Модель не найдена")
+
+    training_files = [
+        link.file for link in model_db.file_links if link.role == "training"
+    ]
+
+    training_files_paths: set[Path] = {
+        get_file_path_by_id(
+            project_id=file_db.project_id,
+            file_id=file_db.id,
+        )
+        for file_db in training_files
+    }
+
+    return training_files_paths
+
+
+# router
 def set_progress_model_db_by_id(
     train_access_token: str,
     progress: int,

@@ -9,16 +9,20 @@ class _Settings(BaseSettings):
     # Количесво шагов, необходимое для обратной связи обучения модели
 
     @property
-    def POST_PROGRESS_URL(self) -> str:
-        return f"{self.BACKEND_URL}/train/post_progress"
+    def GET_TRAINING_FILES_URL(self) -> str:
+        return f"{self.BACKEND_URL}/ml/train/get_files"
 
     @property
-    def GET_FILES_URL(self) -> str:
-        return f"{self.BACKEND_URL}/train/get_files"
+    def POST_PROGRESS_URL(self) -> str:
+        return f"{self.BACKEND_URL}/ml/train/post_progress"
+
+    @property
+    def GET_PREDICTION_FILES_URL(self) -> str:
+        return f"{self.BACKEND_URL}/ml/predict/get_files"
 
     @property
     def POST_FILE_URL(self) -> str:
-        return f"{self.BACKEND_URL}/train/post_file"
+        return f"{self.BACKEND_URL}/ml/predict/post_file"
 
     MIN_EPOCHS: int = 1
     MAX_EPOCHS: int = 10
