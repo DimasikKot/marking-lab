@@ -194,7 +194,12 @@ async def get_by_id(
         page=max(1, page),
         limit=limit,
     )
-    total_pages = file_db.total_rows // limit + 1
+
+    total_pages = (
+        file_db.total_rows // limit
+        if file_db.total_rows % limit == 0
+        else file_db.total_rows // limit + 1
+    )
 
     def parse_labels(tags):
         labels = {}

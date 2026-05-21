@@ -252,12 +252,12 @@ def get_page_by_id(
     real_page = page
 
     if page_rows == []:
-        real_page = file_db.total_rows // limit + 1
-        page_rows = list(
-            _get_file_rows(
-                file_path, page=(file_db.total_rows // limit + 1), limit=limit
-            )
+        real_page = (
+            file_db.total_rows // limit
+            if file_db.total_rows % limit == 0
+            else file_db.total_rows // limit + 1
         )
+        page_rows = list(_get_file_rows(file_path, page=(real_page), limit=limit))
 
     return file_db, page_rows, real_page
 
