@@ -1,7 +1,7 @@
 import tempfile
 import time
 from datasets import Dataset
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, HTTPException
 import httpx
 
 from app.services.model_class import NERModel
@@ -10,11 +10,12 @@ from app.services.model_metrics import loss_plot, plot_confusion_matrix
 from app.services.model_prediction import model_predict
 from app.services.model_files import (
     extract_labels_from_sentences,
+    get_all_sentences,
     prepare_dataset,
 )
 
 
-def _model_train(
+def model_train(
     EPOCHS: int,
     BATCH_SIZE: int,
     BASE_MODEL: str,
@@ -22,8 +23,17 @@ def _model_train(
     TESTING_SIZE: float,
     MAX_LINE_LENGHT: int,
     train_access_token: str,
-    all_sentences: list[list[dict]],
 ):
+    # Получаем предложения
+    all_sentences = get_all_sentences(train_access_token)
+    if len(all_sentences) == 0:
+        httpx.post(
+            settings.POST_PROGRESS_URL,
+            json={"progress": 0, "train_access_token": train_access_token},
+            timeout=300,
+        )
+        raise RuntimeError(f"Нет предложений для обучения")
+
     # Список уникальных меток
     label_list = extract_labels_from_sentences(all_sentences)
 
@@ -139,54 +149,3 @@ def _model_train(
             "metrics": return_metrics,
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
-
-
-# router
-def model_router(
-    EPOCHS: int,
-    BATCH_SIZE: int,
-    BASE_MODEL: str,
-    LEARNING_RATE: float,
-    TESTING_SIZE: float,
-    MAX_LINE_LENGHT: int,
-    train_access_token: str,
-    all_sentences: list[list[dict]],
-    background_tasks: BackgroundTasks,
-) -> dict:
-    EPOCHS = max(settings.MIN_EPOCHS, EPOCHS)
-    EPOCHS = min(settings.MAX_EPOCHS, EPOCHS)
-
-    BATCH_SIZE = max(settings.MIN_BATCH_SIZE, BATCH_SIZE)
-    BATCH_SIZE = min(settings.MAX_BATCH_SIZE, BATCH_SIZE)
-
-    LEARNING_RATE = max(settings.MIN_LEARNING_RATE, LEARNING_RATE)
-    LEARNING_RATE = min(settings.MAX_LEARNING_RATE, LEARNING_RATE)
-
-    TESTING_SIZE = max(settings.MIN_TESTING_SIZE, TESTING_SIZE)
-    TESTING_SIZE = min(settings.MAX_TESTING_SIZE, TESTING_SIZE)
-
-    MAX_LINE_LENGHT = max(settings.MIN_MAX_LINE_LENGHT, MAX_LINE_LENGHT)
-    MAX_LINE_LENGHT = min(settings.MAX_MAX_LINE_LENGHT, MAX_LINE_LENGHT)
-
-    background_tasks.add_task(
-        _model_train,
-        EPOCHS,
-        BATCH_SIZE,
-        BASE_MODEL,
-        LEARNING_RATE,
-        TESTING_SIZE,
-        MAX_LINE_LENGHT,
-        train_access_token,
-        all_sentences,
-    )
-
-    return_parameters = {
-        "Эпохи": EPOCHS,
-        "Размер батчей": BATCH_SIZE,
-        "Базовая модель": BASE_MODEL,
-        "Скорость обучения": LEARNING_RATE,
-        "Размер тренировочного набора": TESTING_SIZE,
-        "Максимальная длина предложения": MAX_LINE_LENGHT,
-    }
-
-    return return_parameters

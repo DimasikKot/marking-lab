@@ -8,7 +8,7 @@ from app.core.config import settings
 
 
 # Собираем все предложения из тренировочных CSV-файлов
-async def get_all_sentences(train_access_token: str) -> list[list[dict[str, str]]]:
+def get_all_sentences(train_access_token: str) -> list[list[dict[str, str]]]:
     all_sentences = []
 
     response = httpx.post(
@@ -29,7 +29,7 @@ async def get_all_sentences(train_access_token: str) -> list[list[dict[str, str]
                 # список предложений
                 all_sentences.extend(parse_csv_from_text(text))
 
-                # Максимальное количество предложений для обучения
+                # Максимальное количество предложений для обучения TODO
                 if len(all_sentences) > 3000:
                     break
 
