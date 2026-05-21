@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from fastapi import (
@@ -24,6 +25,7 @@ from app.services.file import (
     create_file_by_project_id,
     delete_file_by_id,
     fetch_files_db_by_project_id,
+    get_file_path_by_id_to_download,
     get_page_by_id,
     update_page_by_id,
     update_file_db_by_id,
@@ -253,6 +255,22 @@ async def get_by_id(
         rows=page_rows,
         created_at=file_db.created_at,
         updated_at=file_db.updated_at,
+    )
+
+
+@router.get("/{file_id}/download", response_class=FileResponse)
+def download_file(
+    project_id: int,
+    file_id: int,
+    user_id: int = Depends(get_user_id),
+    db: Session = Depends(get_db),
+):
+    file_db, file_path = get_file_path_by_id_to_download(
+        project_id=project_id, file_id=file_id, user_id=user_id, db=db
+    )
+
+    return FileResponse(
+        path=file_path, filename=file_db.name, media_type="application/octet-stream"
     )
 
 

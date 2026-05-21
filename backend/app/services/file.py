@@ -263,6 +263,19 @@ def get_page_by_id(
 
 
 # router
+def get_file_path_by_id_to_download(
+    project_id: int, file_id: int, user_id: int, db: Session
+) -> tuple[FileDB, Path]:
+    file_db = _fetch_file_db_by_id(
+        db=db, project_id=project_id, user_id=user_id, file_id=file_id
+    )
+
+    file_path = get_file_path_by_id(project_id, file_id)
+
+    return file_db, file_path
+
+
+# router
 def update_page_by_id(
     project_id: int,
     file_id: int,

@@ -8,6 +8,7 @@ export const FileCard = ({
   file,
   onClick,
   onEditClick = () => toast.error("Обработка редактирования не настроена"),
+  onDownloadClick = () => toast.error("Обработка скачивания не настроена"),
   onDeleteClick = () => toast.error("Обработка удаления не настроена"),
   dateIsCreatedAt = false,
   className = "",
@@ -16,6 +17,7 @@ export const FileCard = ({
   file: FileListResponse;
   onClick?: () => void;
   onEditClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onDownloadClick?: React.MouseEventHandler<HTMLButtonElement>;
   onDeleteClick?: React.MouseEventHandler<HTMLButtonElement>;
   dateIsCreatedAt?: boolean;
   className?: string;
@@ -91,6 +93,14 @@ export const FileCard = ({
               <div className="select-none material-icons">edit</div>
             </ButtonUI>
 
+            <ButtonUI
+              onClick={onDownloadClick}
+              variant="icon"
+              className="flex-max text-left"
+            >
+              <div className="select-none material-icons">download</div>
+            </ButtonUI>
+
             <TextUI
               variant="desc"
               className="flex flex-1 text-center justify-center items-center"
@@ -103,13 +113,15 @@ export const FileCard = ({
               })}
             </TextUI>
 
-            <ButtonUI
-              onClick={onDeleteClick}
-              variant="icon"
-              className="flex-max text-right text-red-600 hover:text-red-800"
-            >
-              <div className="select-none material-icons">delete</div>
-            </ButtonUI>
+            <div className="ml-9">
+              <ButtonUI
+                onClick={onDeleteClick}
+                variant="icon"
+                className="flex-max text-right text-red-600 hover:text-red-800"
+              >
+                <div className="select-none material-icons">delete</div>
+              </ButtonUI>
+            </div>
           </div>
         </>
       )}

@@ -124,6 +124,24 @@ export const fetchFileById = async (
   }
 };
 
+export const downloadFileById = async (
+  projectId: string | number,
+  fileId: string | number,
+): Promise<Blob | undefined> => {
+  try {
+    const response = await api.get(
+      `/projects/${projectId}/files/${fileId}/download`,
+      {
+        responseType: "blob",
+      },
+    );
+    const blob = new Blob([response.data]);
+    return blob;
+  } catch (error: unknown) {
+    errorValidate(error);
+  }
+};
+
 export interface PatchFileListRequest {
   name: string;
   is_labeled: boolean;

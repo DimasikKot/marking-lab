@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 import {
   deleteFileById,
+  downloadFileById,
   fetchFiles,
   updateFileById,
   uploadFile,
@@ -70,10 +71,11 @@ export function Files({
     if (!selectedFile || !projectId) return;
 
     setIsUploading(true);
+    const fileNameWithoutExtension = selectedFile.name.replace(/\.[^/.]+$/, "");
     const response = await uploadFile(
       projectId,
       selectedFile,
-      selectedFile.name,
+      fileNameWithoutExtension,
       selectedFileIsLabeled,
     );
     setIsUploading(false);
@@ -83,6 +85,23 @@ export function Files({
     setSelectedFile(null);
     setSelectedFileIsLabeled(false);
     loadFiles();
+  };
+
+  const handleDownloadClick = async (file: FileListResponse) => {
+    const blob = await downloadFileById(projectId, file.id);
+
+    if (blob === undefined) return;
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${file.name}.csv`;
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const handleDeleteClick = async (
@@ -226,6 +245,7 @@ export function Files({
                     <FileCard
                       file={file}
                       onEditClick={() => handleEditClick(file)}
+                      onDownloadClick={() => handleDownloadClick(file)}
                       onDeleteClick={(event) =>
                         handleDeleteClick(file.id, event)
                       }
