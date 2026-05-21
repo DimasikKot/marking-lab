@@ -1,7 +1,6 @@
 import tempfile
 import time
 from datasets import Dataset
-from fastapi import BackgroundTasks, HTTPException
 import httpx
 
 from app.services.model_class import NERModel
@@ -149,3 +148,57 @@ def model_train(
             "metrics": return_metrics,
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
+
+
+def model_router(
+    EPOCHS: int,
+    BATCH_SIZE: int,
+    BASE_MODEL: str,
+    LEARNING_RATE: float,
+    TESTING_SIZE: float,
+    MAX_LINE_LENGHT: int,
+    train_access_token: str,
+):
+    EPOCHS = max(settings.MIN_EPOCHS, EPOCHS)
+    EPOCHS = min(settings.MAX_EPOCHS, EPOCHS)
+
+    BATCH_SIZE = max(settings.MIN_BATCH_SIZE, BATCH_SIZE)
+    BATCH_SIZE = min(settings.MAX_BATCH_SIZE, BATCH_SIZE)
+
+    LEARNING_RATE = max(settings.MIN_LEARNING_RATE, LEARNING_RATE)
+    LEARNING_RATE = min(settings.MAX_LEARNING_RATE, LEARNING_RATE)
+
+    TESTING_SIZE = max(settings.MIN_TESTING_SIZE, TESTING_SIZE)
+    TESTING_SIZE = min(settings.MAX_TESTING_SIZE, TESTING_SIZE)
+
+    MAX_LINE_LENGHT = max(settings.MIN_MAX_LINE_LENGHT, MAX_LINE_LENGHT)
+    MAX_LINE_LENGHT = min(settings.MAX_MAX_LINE_LENGHT, MAX_LINE_LENGHT)
+
+    return_parameters = {
+        "Эпохи": EPOCHS,
+        "Размер батчей": BATCH_SIZE,
+        "Базовая модель": BASE_MODEL,
+        "Скорость обучения": LEARNING_RATE,
+        "Размер тренировочного набора": TESTING_SIZE,
+        "Максимальная длина предложения": MAX_LINE_LENGHT,
+    }
+
+    httpx.post(
+        settings.POST_PROGRESS_URL,
+        json={
+            "progress": 0,
+            "train_access_token": train_access_token,
+            "parameters": return_parameters,
+        },
+        timeout=1000,
+    )
+
+    model_train(
+        EPOCHS=EPOCHS,
+        BATCH_SIZE=BATCH_SIZE,
+        BASE_MODEL=BASE_MODEL,
+        LEARNING_RATE=LEARNING_RATE,
+        TESTING_SIZE=TESTING_SIZE,
+        MAX_LINE_LENGHT=MAX_LINE_LENGHT,
+        train_access_token=train_access_token,
+    )

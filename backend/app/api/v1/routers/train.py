@@ -61,6 +61,7 @@ async def get_train_files(
 class PostTrainProgressRequest(BaseModel):
     train_access_token: str
     progress: int
+    parameters: dict[str, Any] | None = None
     metrics: dict[str, Any] | None = None
     graphs: dict[str, Any] | None = None
 
@@ -73,6 +74,7 @@ async def post_train_progress(
     model_db = set_progress_model_db_by_id(
         train_access_token=data.train_access_token,
         progress=data.progress,
+        parameters=data.parameters,
         metrics=data.metrics,
         graphs=data.graphs,
         db=db,

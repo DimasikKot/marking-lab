@@ -95,6 +95,7 @@ def get_training_files_by_id(train_access_token: str, db: Session) -> set[Path]:
 def set_progress_model_db_by_id(
     train_access_token: str,
     progress: int,
+    parameters: dict[str, Any] | None,
     metrics: dict[str, Any] | None,
     graphs: dict[str, Any] | None,
     db: Session,
@@ -114,6 +115,11 @@ def set_progress_model_db_by_id(
         raise HTTPException(
             status_code=400, detail="Модель была остановлена пользователем"
         )
+
+    if parameters is not None:
+        model_db.parameters = parameters
+        db.commit()
+        db.refresh(model_db)
 
     if metrics is not None:
         metrics_new = {}

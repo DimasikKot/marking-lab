@@ -1,15 +1,12 @@
-import io
 import json
-from pathlib import Path
 from typing import Any, Literal
 from fastapi import HTTPException
 import httpx
+import redis
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.models.db import FileDB, ModelDB, ModelFileDB
 from app.services.project import is_owner_of_project, is_viewer_of_project
-from app.services.file import get_file_path_by_id
 from app.services.train import encode_train_access_token
 
 
@@ -49,30 +46,40 @@ async def _train_model_request(model_db: ModelDB, db: Session):
         db.refresh(model_db)
 
         try:
-            response = await client.post(
-                settings.POST_TRAIN_URL,
-                data={
+            redis_class = redis.Redis(
+                host="redis",  # имя сервиса в docker-compose
+                port=6379,
+                decode_responses=True,
+            )
+
+            redis_class.xadd(
+                "ml_train_tasks",
+                {
+                    "model_id": model_db.id,
+                    "project_id": model_db.project_id,
                     "parameters": json.dumps(model_db.parameters),
                     "train_access_token": encode_train_access_token(
                         project_id=model_db.project_id, model_id=model_db.id
                     ),
                 },
-                timeout=30000,
             )
 
-            if response.status_code != 200:
-                model_db.progress = 0
-                db.commit()
-                db.refresh(model_db)
+            # model_db.progress = 5
+            # db.commit()
 
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Ошибка при страрте обучения модели: {model_db.id}",
-                )
+            # if response.status_code != 200:
+            #     model_db.progress = 0
+            #     db.commit()
+            #     db.refresh(model_db)
 
-            data = response.json()
-            parameters = json.loads(data["parameters"])
-            model_db.parameters = parameters
+            #     raise HTTPException(
+            #         status_code=500,
+            #         detail=f"Ошибка при страрте обучения модели: {model_db.id}",
+            #     )
+
+            # data = response.json()
+            # parameters = json.loads(data["parameters"])
+            # model_db.parameters = parameters
 
             model_db.progress = 5
             db.commit()
