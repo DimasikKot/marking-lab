@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { Header } from "@/shared/components/Header";
@@ -16,17 +16,19 @@ import {
 } from "@/shared/api/model";
 
 export function Model() {
+  const navigate = useNavigate();
   const { projectId = "0", modelId = "0" } = useParams<{
     projectId: string;
     modelId: string;
   }>();
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editing_param = Boolean(searchParams.get("editing")) || false;
 
   const [model, setModel] = useState<ModelFullResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isTraining, setIsTraining] = useState(false);
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(editing_param);
   const [editParams, setEditParams] = useState("");
 
   const [trainingFilesIds, setTrainingFilesIds] = useState<number[]>([]);

@@ -165,11 +165,11 @@ export const ModelSettings = ({
             </TextUI>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto p-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 h-full overflow-y-auto gap-2 p-3">
             {filteredTrainingFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-start gap-2 p-2 w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
+                className="flex items-start gap-2 p-2 w-full h-fit hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
                 onClick={() => toggleFile(file.id, "training")}
               >
                 <CheckboxUI
@@ -207,11 +207,11 @@ export const ModelSettings = ({
             </TextUI>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto p-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 h-full overflow-y-auto p-3">
             {filteredPredictionFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-start gap-2 p-2 w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
+                className="flex items-start gap-2 p-2 h-fit w-full hover:bg-gray-100 rounded-xl cursor-pointer transition-colors"
                 onClick={() => toggleFile(file.id, "for_prediction")}
               >
                 <CheckboxUI

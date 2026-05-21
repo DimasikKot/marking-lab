@@ -182,7 +182,7 @@ export function Models({
     loadModels();
 
     if (!event || !event.shiftKey) {
-      navigate(`/projects/${projectId}/models/${response.id}`);
+      navigate(`/projects/${projectId}/models/${response.id}?editing=true`);
     }
   };
 
