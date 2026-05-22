@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import tempfile
 from typing import Any
 from fastapi.responses import FileResponse
@@ -267,14 +268,53 @@ def download_model(
         project_id=project_id, model_id=model_id, user_id=user_id, db=db
     )
 
-    with open("app/models/model_worker.py", "rb") as src, \
-        tempfile.NamedTemporaryFile(mode="w+b", delete=False) as tmp:
-        
-        for chunk in iter(lambda: src.read(8192), b""):
-            tmp.write(chunk)
+    # -------- parameters --------
+    params = model_db.parameters
+
+    # -------- files --------
+    training_files = [
+        f'BASE_DIR / "{link.file.name}"'
+        for link in model_db.file_links
+        if link.role == "training" and link.file is not None
+    ]
+
+    prediction_files = [
+        f'BASE_DIR / "{link.file.name}"'
+        for link in model_db.file_links
+        if link.role == "for_prediction" and link.file is not None
+    ]
+
+    # -------- load template --------
+    with open("app/models/model_worker.py", "r", encoding="utf-8") as f:
+        template = f.read()
+
+    TRAINING_FILES="{TRAINING_FILES}",
+    PREDICTING_FILES="{PREDICTING_FILES}",
+
+    # -------- render --------
+    rendered = template.format(
+        EPOCHS=params.get("Эпохи", 2),
+        BATCH_SIZE=params.get("Размер батчей", 16),
+        BASE_MODEL=params.get("Базовая модель", "albert-base-v2"),
+        LEARNING_RATE=params.get("Скорость обучения", 2e-5),
+        TRAINING_SIZE=params.get("Размер тренировочного набора", 0.8),
+        MAX_LINE_LENGTH=params.get("Максимальная длина предложения", 128),
+
+        TRAINING_FILES=",\n    ".join(training_files),
+        PREDICTING_FILES=",\n    ".join(prediction_files),
+    )
+
+    # -------- write temp file --------
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w", delete=False, suffix=".py", encoding="utf-8"
+    )
+    tmp.write(rendered)
+    tmp.close()
 
     return FileResponse(
-        tmp.name, filename=model_db.name, media_type="application/octet-stream"
+        tmp.name,
+        filename=model_db.name + "_worker.py",
+        media_type="text/x-python",
     )
 
 

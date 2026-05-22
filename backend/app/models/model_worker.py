@@ -36,20 +36,20 @@ from transformers import (
 
 TRAIN_LOGGING_STEPS: int = 8
 
-EPOCHS: int = 2
-BATCH_SIZE: int = 128
-BASE_MODEL: str = "albert-base-v2"
-LEARNING_RATE: float = 0.00002
-TRAINING_SIZE: float = 0.8
-MAX_LINE_LENGHT: int = 128
+EPOCHS: int = {EPOCHS}
+BATCH_SIZE: int = {BATCH_SIZE}
+BASE_MODEL: str = "{BASE_MODEL}"
+LEARNING_RATE: float = {LEARNING_RATE}
+TRAINING_SIZE: float = {TRAINING_SIZE}
+MAX_LINE_LENGHT: int = {MAX_LINE_LENGTH}
 
 BASE_DIR = Path(__file__).resolve().parent
 TRAINING_FILES_PATHS = [
-    BASE_DIR / "47.csv",
+    {TRAINING_FILES},
 ]
 
 PREDICTING_FILES_PATHS = [
-    BASE_DIR / "54.csv",
+    {PREDICTING_FILES},
 ]
 
 
@@ -64,7 +64,7 @@ class ProgressCallback(TrainerCallback):
 
     def _send_progress(self, progress: int, metrics: dict):
         try:
-            metrics_data = {
+            metrics_data = {{
                 "F1-мера": metrics.get("f1"),
                 "Потери на обучающей выборке": metrics.get("train_loss"),
                 "Потери на валидационной выборке": metrics.get("eval_loss"),
@@ -72,14 +72,14 @@ class ProgressCallback(TrainerCallback):
                 "Скорость обучения": metrics.get("learning_rate"),
                 "Точность (accuracy)": metrics.get("accuracy"),
                 "Точность (precision)": metrics.get("precision"),
-            }
+            }}
 
             if "epoch" in metrics:
-                metrics_data["Эпоха"] = f'{metrics["epoch"]} / {self.total_epochs}'
+                metrics_data["Эпоха"] = f'{{metrics["epoch"]}} / {{self.total_epochs}}'
 
-            metrics_data = {k: v for k, v in metrics_data.items() if v is not None}
+            metrics_data = {{k: v for k, v in metrics_data.items() if v is not None}}
 
-            print({"progress": progress, "metrics": metrics_data})
+            print({{"progress": progress, "metrics": metrics_data}})
 
             return True
 
@@ -115,7 +115,7 @@ class ProgressCallback(TrainerCallback):
 
         self.last_progress = progress
 
-        metrics = {}
+        metrics = {{}}
 
         # TRAIN METRICS
         if "loss" in logs:
@@ -149,7 +149,7 @@ class ProgressCallback(TrainerCallback):
 
         progress = self._calculate_progress(state)
 
-        eval_metrics = {}
+        eval_metrics = {{}}
 
         if "eval_loss" in metrics:
             eval_metrics["eval_loss"] = float(metrics["eval_loss"])
@@ -179,7 +179,7 @@ class ProgressCallback(TrainerCallback):
     # def on_train_end(self, args, state, control, **kwargs):
     #     self._send_progress(
     #         progress=100,
-    #         metrics={"status": "completed"},
+    #         metrics={{"status": "completed"}},
     #     )
 
 
@@ -210,14 +210,14 @@ def compute_metrics(p, label_list):
     acc = accuracy_score(true_labels, true_predictions)
 
     # Возвращаем метрики И метки
-    return {
+    return {{
         "accuracy": acc,
         "f1": f1,
         "precision": report_dict["micro avg"]["precision"],
         "recall": report_dict["micro avg"]["recall"],
         "true_labels": true_labels,  # добавляем
         "pred_labels": true_predictions,  # добавляем
-    }
+    }}
 
 
 # График потерь
@@ -267,7 +267,7 @@ def plot_confusion_matrix(
         return base64.b64encode(buf.getvalue()).decode("utf-8")
 
     # Создаем mapping меток в индексы
-    # label_to_idx = {label: idx for idx, label in enumerate(labels)}
+    # label_to_idx = {{label: idx for idx, label in enumerate(labels)}}
 
     # Фильтруем предсказания, исключая "O"
     filtered_true = []
@@ -307,7 +307,7 @@ def plot_confusion_matrix(
 
     ax.set_xlabel("Предсказанные метки")
     ax.set_ylabel("Истинные метки")
-    ax.set_title(f"Матрица ошибок (всего: {len(filtered_true)} примеров)")
+    ax.set_title(f"Матрица ошибок (всего: {{len(filtered_true)}} примеров)")
 
     plt.tight_layout()
 
@@ -327,12 +327,12 @@ class NERModel:
     def __init__(self, model_name: str, label_list: list[str]):
         self.model_name = model_name
         self.label_list = label_list  # список уникальных меток
-        self.label2id = {
+        self.label2id = {{
             l: i for i, l in enumerate(label_list)
-        }  # преобразование метки в число
-        self.id2label = {
+        }}  # преобразование метки в число
+        self.id2label = {{
             i: l for l, i in self.label2id.items()
-        }  # преобразование числа в метку
+        }}  # преобразование числа в метку
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name, use_fast=True
@@ -421,7 +421,7 @@ class NERModel:
 
         log_history = trainer.state.log_history
         train_loss = []
-        eval_metrics = {}
+        eval_metrics = {{}}
         true_labels: list = []
         pred_labels: list = []
         for entry in log_history:
@@ -454,13 +454,13 @@ class NERModel:
         # print(eval_metrics)
         # print(log_history[-5:])
         # print("-" * 100)
-        return {
+        return {{
             "train_loss": train_loss,
             "eval_metrics": eval_metrics,
             "model_dir": output_dir,
             "true_labels": flat_true_labels,  # добавляем
             "pred_labels": flat_pred_labels,  # добавляем
-        }
+        }}
 
     def load(self, model_dir: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
@@ -506,7 +506,7 @@ class NERModel:
                     else token
                 )
 
-                result.append({"word": token_text, "entity": label, "score": score})
+                result.append({{"word": token_text, "entity": label, "score": score}})
 
             prev_word_id = word_id
 
@@ -522,11 +522,11 @@ class NERModel:
                 elif label.startswith("B-"):
                     if current_entity:
                         entities.append(current_entity)
-                    current_entity = {
+                    current_entity = {{
                         "type": label[2:],
                         "text": item["word"],
                         "score": item["score"],
-                    }
+                    }}
                 elif label.startswith("I-"):
                     if current_entity and current_entity["type"] == label[2:]:
                         current_entity["text"] += " " + item["word"]
@@ -536,11 +536,11 @@ class NERModel:
                     else:
                         if current_entity:
                             entities.append(current_entity)
-                        current_entity = {
+                        current_entity = {{
                             "type": label[2:],
                             "text": item["word"],
                             "score": item["score"],
-                        }
+                        }}
             if current_entity:
                 entities.append(current_entity)
             return entities
@@ -555,7 +555,7 @@ def parse_csv_from_text(text: str):
     Строки могут быть в кавычках, разделитель – запятая.
     Пример строки:
     "Thousands of demonstrators have marched...",O O O O O O B-geo ...
-    Возвращает список предложений, где каждое предложение – список словарей {token, label}.
+    Возвращает список предложений, где каждое предложение – список словарей {{token, label}}.
     """
     sentences: list[list[dict[str, str]]] = []
     reader = csv.reader(io.StringIO(text), skipinitialspace=True)
@@ -571,11 +571,11 @@ def parse_csv_from_text(text: str):
         labels = labels_part.split()
         if len(tokens) != len(labels):
             print(
-                f"Несовпадение длины токенов ({len(tokens)}) и меток ({len(labels)}). "
-                f"Строка пропущена: {text_part[:100]}..."
+                f"Несовпадение длины токенов ({{len(tokens)}}) и меток ({{len(labels)}}). "
+                f"Строка пропущена: {{text_part[:100]}}..."
             )
             continue
-        sentence = [{"token": t, "label": l} for t, l in zip(tokens, labels)]
+        sentence = [{{"token": t, "label": l}} for t, l in zip(tokens, labels)]
         sentences.append(sentence)
     return sentences
 
@@ -585,7 +585,7 @@ def model_predict(
     MAX_LINE_LENGTH: int,
     BATCH_SIZE: int,
 ):
-    print({"progress": 101})
+    print({{"progress": 101}})
 
     with tempfile.TemporaryDirectory() as tmpdir:
         trainer = Trainer(
@@ -602,7 +602,7 @@ def model_predict(
             with open(file_path, "r", encoding="utf-8") as file:
                 progress = int((index / len(PREDICTING_FILES_PATHS)) * (99 - 2)) + 102
                 progress = min(199, max(102, progress))
-                print({"progress": progress})
+                print({{"progress": progress}})
 
                 text = file.read()
 
@@ -644,15 +644,15 @@ def model_predict(
                             prev_word_idx = word_idx
                     pred_labels_aligned = pred_labels_aligned[: len(tokens)]
                     result_rows.append(
-                        {
+                        {{
                             "tokens": tokens,
                             "labels": pred_labels_aligned,
-                        }
+                        }}
                     )
 
                 # Сохранение CSV
                 # result_path = (
-                #     Path("./files") / f"{Path(file_name).stem}_pred.csv"
+                #     Path("./files") / f"{{Path(file_name).stem}}_pred.csv"
                 # )
                 # result_path.parent.mkdir(parents=True, exist_ok=True)
                 # with result_path.open(
@@ -684,12 +684,12 @@ def model_predict(
                 output_dir = Path("output")
                 output_dir.mkdir(exist_ok=True)
 
-                output_path = output_dir / f"{file_path}_result.csv"
+                output_path = output_dir / f"{{file_path}}_result.csv"
 
                 with open(output_path, "w", encoding="utf-8", newline="") as f:
                     f.write(csv_buffer.getvalue())
 
-                print(f"Сохранено: {output_path}")
+                print(f"Сохранено: {{output_path}}")
 
                 # print(response.status_code)
                 # print(response.json())
@@ -705,7 +705,7 @@ def get_all_sentences() -> list[list[dict[str, str]]]:
                 for sentence in parse_csv_from_text(f.read()):
                     all_sentences.append(sentence)
         except Exception as e:
-            print(f"Ошибка при чтении CSV-файла {file_path}: {e}")
+            print(f"Ошибка при чтении CSV-файла {{file_path}}: {{e}}")
 
     return all_sentences
 
@@ -752,7 +752,7 @@ def extract_labels_from_sentences(sentences: list[list[dict]]) -> list[str]:
 def prepare_dataset(sentences: list[list[dict]], tokenizer, label2id, max_length):
     tokens_list = [[item["token"] for item in sent] for sent in sentences]
     tags_list = [[item["label"] for item in sent] for sent in sentences]
-    dataset = Dataset.from_dict({"tokens": tokens_list, "ner_tags": tags_list})
+    dataset = Dataset.from_dict({{"tokens": tokens_list, "ner_tags": tags_list}})
     tokenized_dataset = dataset.map(
         lambda x: tokenize_and_align_labels(x, tokenizer, label2id, max_length),
         batched=True,
@@ -772,7 +772,7 @@ def model_train(
     # Получаем предложения
     all_sentences = get_all_sentences()
     if len(all_sentences) == 0:
-        print({"progress": 0})
+        print({{"progress": 0}})
         raise RuntimeError(f"Нет предложений для обучения")
 
     # Список уникальных меток
@@ -798,7 +798,7 @@ def model_train(
         else None
     )
 
-    print({"progress": 4})
+    print({{"progress": 4}})
 
     # Обучаем модель во временном каталоге, чтобы не засорять память
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -820,21 +820,21 @@ def model_train(
         true_labels = result.get("true_labels", [])
         pred_labels = result.get("pred_labels", [])
 
-        return_metrics = {}
+        return_metrics = {{}}
         if validation_metrics:
             # Убираем метки из словаря метрик, если они там есть
-            clean_metrics = {
+            clean_metrics = {{
                 k: v
                 for k, v in validation_metrics.items()
                 if not k.startswith("eval_true") and not k.startswith("eval_pred")
-            }
-            return_metrics = {
+            }}
+            return_metrics = {{
                 "Точность (accuracy)": clean_metrics.get("eval_accuracy"),
                 "Точность (precision)": clean_metrics.get("eval_precision"),
                 "Полнота (recall)": clean_metrics.get("eval_recall"),
                 "F1-мера": clean_metrics.get("eval_f1"),
                 "Время обучения (сек)": round(training_time_seconds, 2),
-            }
+            }}
 
         train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
 
@@ -844,14 +844,14 @@ def model_train(
         )
 
         print(
-            {
+            {{
                 "progress": 100,
                 "metrics": return_metrics,
-                "graphs": {
-                    "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
-                    "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
-                },
-            }
+                "graphs": {{
+                    "Потери на обучении": f"data:image/png;base64,{{train_loss_plot}}",
+                    "Матрица ошибок": f"data:image/png;base64,{{confusion_matrix_plot}}",
+                }},
+            }}
         )
 
         try:
@@ -860,27 +860,27 @@ def model_train(
             predict_time_seconds = time.perf_counter() - star_predict_time
             return_metrics["Время разметки (сек)"] = round(predict_time_seconds, 2)
         except Exception as error:
-            print({"progress": 201}, error)
+            print({{"progress": 201}}, error)
 
         print(
-            {
+            {{
                 "progress": 200,
                 "metrics": return_metrics,
-            }
+            }}
         )
 
 
 def main():
-    return_parameters = {
+    return_parameters = {{
         "Эпохи": EPOCHS,
         "Размер батчей": BATCH_SIZE,
         "Базовая модель": BASE_MODEL,
         "Скорость обучения": LEARNING_RATE,
         "Размер тренировочного набора": TRAINING_SIZE,
         "Максимальная длина предложения": MAX_LINE_LENGHT,
-    }
+    }}
 
-    print({"progress": 3, "parameters": return_parameters})
+    print({{"progress": 3, "parameters": return_parameters}})
 
     model_train(
         EPOCHS=EPOCHS,
