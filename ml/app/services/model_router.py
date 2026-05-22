@@ -144,19 +144,19 @@ def model_train(
             model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
             predict_time_seconds = time.perf_counter() - star_predict_time
             return_metrics["Время разметки (сек)"] = round(predict_time_seconds, 2)
+
+            request = {
+                "train_access_token": train_access_token,
+                "progress": 200,
+                "metrics": return_metrics,
+            }
+            httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
         except Exception as error:
             httpx.post(
                 settings.POST_PROGRESS_URL,
                 json={"progress": 201, "train_access_token": train_access_token},
                 timeout=300,
             )
-
-        request = {
-            "train_access_token": train_access_token,
-            "progress": 200,
-            "metrics": return_metrics,
-        }
-        httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
 
 
 def model_router(
