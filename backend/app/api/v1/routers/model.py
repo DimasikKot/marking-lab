@@ -279,7 +279,7 @@ def download_model(
     ]
 
     prediction_files = [
-        f'BASE_DIR / "{link.file.name}.csv"'
+        f'BASE_DIR / "{link.file.name}_prediction.csv"'
         for link in model_db.file_links
         if link.role == "for_prediction" and link.file is not None
     ]
@@ -288,8 +288,8 @@ def download_model(
     with open("app/models/model_worker.py", "r", encoding="utf-8") as f:
         template = f.read()
 
-    TRAINING_FILES="{TRAINING_FILES}",
-    PREDICTING_FILES="{PREDICTING_FILES}",
+    TRAINING_FILES = ("{TRAINING_FILES}",)
+    PREDICTING_FILES = ("{PREDICTING_FILES}",)
 
     # -------- render --------
     rendered = template.format(
@@ -299,7 +299,6 @@ def download_model(
         LEARNING_RATE=params.get("Скорость обучения", 2e-5),
         TRAINING_SIZE=params.get("Размер тренировочного набора", 0.8),
         MAX_LINE_LENGTH=params.get("Максимальная длина предложения", 128),
-
         TRAINING_FILES=",\n    ".join(training_files),
         PREDICTING_FILES=",\n    ".join(prediction_files),
     )

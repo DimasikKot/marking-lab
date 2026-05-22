@@ -20,6 +20,7 @@ import type {
   PatchModelFullRequest,
 } from "@/shared/api/model";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
+import { downloadFileById } from "@/shared/api/file";
 
 export function Models({
   projectId,
@@ -133,6 +134,42 @@ export function Models({
 
     link.remove();
     URL.revokeObjectURL(url);
+
+    model.training_files.forEach(async (file) => {
+      setIsLoading(true);
+      const blob = await downloadFileById(projectId, file.id);
+      setIsLoading(false);
+
+      if (blob === undefined) return;
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${file.name}.csv`;
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    model.prediction_files.forEach(async (file) => {
+      setIsLoading(true);
+      const blob = await downloadFileById(projectId, file.id);
+      setIsLoading(false);
+
+      if (blob === undefined) return;
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${file.name}_prediction.csv`;
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
   };
 
   const handleStopClick = async (
