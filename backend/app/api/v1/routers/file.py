@@ -285,6 +285,7 @@ class PatchFileListRequest(BaseModel):
                 status_code=400,
                 detail="Название файла не должно быть от 1 до 128",
             )
+        return v
 
 
 @router.patch("/{file_id}", response_model=FileDbResponse)

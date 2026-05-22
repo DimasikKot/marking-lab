@@ -36,6 +36,7 @@ class PostRequest(BaseModel):
                 status_code=400,
                 detail="Электронная почта не должна превышать 255 символов",
             )
+        return value
 
     @field_validator("password")
     def validate_password(cls, value):
