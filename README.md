@@ -112,24 +112,49 @@ TRAIN_JWT_ACCESS_TOKEN_EXPIRATION_HOURS=12
 # Также отвечает за максимальное время, которое может обучаться модель
 
 STORAGE_PATH="./projects"
+
+MAX_TRAINING_FILES=5
+MAX_PREDICTION_FILES=5
 ```
 
 `frontend`
 
 ```bash
 VITE_BACKEND_URL="http://localhost:8000/api/v1"
+
+VITE_BASE_MODELS = ["DeepPavlov/rubert-base-cased","albert-base-v2","distilbert-base-uncased","bert-base-multilingual-cased","xlm-roberta-base"]
+
+VITE_CLEAR_PARAMETERS = {"Эпохи": 2,"Размер батчей": 16,"Базовая модель": "DeepPavlov/rubert-base-cased","Скорость обучения": 0.00002,"Размер тренировочного набора": 0.8,"Максимальная длина предложения": 128}
 ```
 
 `ml`
 
 ```bash
-BACKEND_URL="http://backend:8001/api/v1"
+BACKEND_URL="http://backend:8000/api/v1"
 
 REDIS_HOST="redis"
 REDIS_PORT=6379
 
 TRAIN_LOGGING_STEPS=8
 # Количесво шагов, необходимое для обратной связи обучения модели
+
+MIN_EPOCHS=1
+MAX_EPOCHS=30
+
+MIN_BATCH_SIZE=8
+MAX_BATCH_SIZE=128
+
+MIN_LEARNING_RATE=1e-7
+MAX_LEARNING_RATE=1e-3
+
+MIN_TESTING_SIZE=0.1
+MAX_TESTING_SIZE=0.9
+
+MIN_MAX_LINE_LENGHT=32
+MAX_MAX_LINE_LENGHT=512
+
+MAX_TRAINING_LINES_FOR_FILE=2000
+MAX_PREDICTION_LINES_FOR_FILE=2000
 ```
 
 ## Запуск проекта

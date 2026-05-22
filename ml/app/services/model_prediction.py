@@ -62,8 +62,9 @@ def model_predict(
                         text = file.read().decode("utf-8")
 
                         # Разбиваем текст
-                        # Максимальное количество предложений для разметки TODO
-                        validation_sentences = parse_csv_from_text(text)[:3000]
+                        validation_sentences = parse_csv_from_text(text)[
+                            : settings.MAX_PREDICTION_LINES_FOR_FILE
+                        ]
 
                         # Dataset для модели
                         dataset = prepare_dataset(

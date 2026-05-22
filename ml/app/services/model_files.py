@@ -21,7 +21,7 @@ def get_all_sentences(train_access_token: str) -> list[list[dict[str, str]]]:
     zip_bytes = io.BytesIO(response.content)
 
     with zipfile.ZipFile(zip_bytes) as zip_file:
-        for _, file_name in enumerate(zip_file.namelist()):
+        for index, file_name in enumerate(zip_file.namelist()):
             with zip_file.open(file_name) as file:
                 content = file.read()
                 text = content.decode("utf-8")
@@ -29,9 +29,8 @@ def get_all_sentences(train_access_token: str) -> list[list[dict[str, str]]]:
                 # список предложений
                 all_sentences.extend(parse_csv_from_text(text))
 
-                # Максимальное количество предложений для обучения TODO
-                if len(all_sentences) > 3000:
-                    break
+                if len(all_sentences) > index * settings.MAX_TRAINING_LINES_FOR_FILE:
+                    continue
 
     return all_sentences
 

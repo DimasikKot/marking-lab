@@ -33,6 +33,9 @@ class _Settings(BaseSettings):
     # Хранилище файлов
     STORAGE_PATH: str = "./projects"
 
+    MAX_TRAINING_FILES: int = 5
+    MAX_PREDICTION_FILES: int = 5
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"

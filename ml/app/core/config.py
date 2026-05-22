@@ -42,6 +42,9 @@ class _Settings(BaseSettings):
     MIN_MAX_LINE_LENGHT: int = 32
     MAX_MAX_LINE_LENGHT: int = 512
 
+    MAX_TRAINING_LINES_FOR_FILE: int = 2000
+    MAX_PREDICTION_LINES_FOR_FILE: int = 2000
+
     class Config:
         env_file = ".env.local"
 

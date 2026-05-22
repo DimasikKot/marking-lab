@@ -12,6 +12,7 @@ from fastapi import (
     HTTPException,
 )
 
+from app.core.config import settings
 from app.api.v1.routers.echo import GetEchoResponse
 from app.api.v1.routers.file import FileDbResponse
 from app.models.db import ModelDB
@@ -207,13 +208,13 @@ class PatchModelFullRequest(BaseModel):
 
     @field_validator("training_files_ids")
     def validate_training_files_ids(cls, v):
-        if v is not None and len(v) > 5:
+        if v is not None and len(v) > settings.MAX_TRAINING_FILES:
             raise ValueError("Максимум 5 тренировочных файлов")
         return v
 
     @field_validator("prediction_files_ids")
     def validate_prediction_files_ids(cls, v):
-        if v is not None and len(v) > 5:
+        if v is not None and len(v) > settings.MAX_PREDICTION_FILES:
             raise ValueError("Максимум 5 файлов, которые будут размечены")
         return v
 

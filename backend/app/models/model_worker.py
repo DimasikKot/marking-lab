@@ -679,12 +679,7 @@ def model_predict(
                     writer.writerow([text_part, labels_part])
 
                 # Переводим в bytes
-                csv_bytes = csv_buffer.getvalue().encode("utf-8")
-
-                output_dir = Path("output")
-                output_dir.mkdir(exist_ok=True)
-
-                output_path = output_dir / f"{{file_path}}_result.csv"
+                output_path = BASE_DIR / f"{{file_path}}_result.csv"
 
                 with open(output_path, "w", encoding="utf-8", newline="") as f:
                     f.write(csv_buffer.getvalue())
