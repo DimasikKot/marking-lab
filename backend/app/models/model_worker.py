@@ -1,67 +1,56 @@
+# accelerate==1.13.0
+# datasets==4.8.5
+# httpx==0.28.1
+# matplotlib==3.10.9
+# numpy==2.4.4
+# pydantic-settings==2.14.0
+# python-multipart==0.0.27
+# redis==7.4.0
+# seqeval==1.2.2
+# transformers==5.7.0
+
 from pathlib import Path
-
-from transformers import TrainerCallback
-
-
 import csv
 import io
 import tempfile
-import zipfile
 import numpy as np
-
-
 import base64
 import matplotlib.pyplot as plt
 from typing import Any, cast
 from seqeval.metrics import classification_report, f1_score, accuracy_score
 from seqeval.scheme import IOB2
-
+from sklearn.metrics import confusion_matrix
+from datasets import Dataset
+import time
 import gc
 import torch
 from transformers import (
     AutoTokenizer,
     AutoModelForTokenClassification,
     TrainingArguments,
+    TrainerCallback,
     Trainer,
     DataCollatorForTokenClassification,
     EarlyStoppingCallback,
 )
 
-from sklearn.metrics import confusion_matrix
-
-from datasets import Dataset
-
-import time
-
 TRAIN_LOGGING_STEPS: int = 8
 
 EPOCHS: int = 2
-BATCH_SIZE: int = 2
+BATCH_SIZE: int = 128
 BASE_MODEL: str = "albert-base-v2"
-LEARNING_RATE: float = 2
-TESTING_SIZE: float = 2
-MAX_LINE_LENGHT: int = 2
+LEARNING_RATE: float = 0.00002
+TRAINING_SIZE: float = 0.8
+MAX_LINE_LENGHT: int = 128
 
+BASE_DIR = Path(__file__).resolve().parent
 TRAINING_FILES_PATHS = [
-    "train1.csv",
-    "train2.csv",
+    BASE_DIR / "47.csv",
 ]
 
 PREDICTING_FILES_PATHS = [
-    "predict1.csv",
-    "predict2.csv",
+    BASE_DIR / "54.csv",
 ]
-
-return_parameters = {
-    "Эпохи": EPOCHS,
-    "Размер батчей": BATCH_SIZE,
-    "Базовая модель": BASE_MODEL,
-    "Скорость обучения": LEARNING_RATE,
-    "Размер тренировочного набора": TESTING_SIZE,
-    "Максимальная длина предложения": MAX_LINE_LENGHT,
-}
-
-print({"progress": 3, "parameters": return_parameters})
 
 
 class ProgressCallback(TrainerCallback):
@@ -618,8 +607,7 @@ def model_predict(
                 text = file.read()
 
                 # Разбиваем текст
-                # Максимальное количество предложений для разметки TODO
-                validation_sentences = parse_csv_from_text(text)[:3000]
+                validation_sentences = parse_csv_from_text(text)
 
                 # Dataset для модели
                 dataset = prepare_dataset(
@@ -712,12 +700,12 @@ def get_all_sentences() -> list[list[dict[str, str]]]:
     all_sentences: list[list[dict[str, str]]] = []
 
     for file_path in TRAINING_FILES_PATHS:
-        with open(file_path, newline="", encoding="utf-8") as f:
-            for sentence in parse_csv_from_text(f.read()):
-                all_sentences.append(sentence)
-
-                if len(all_sentences) > 3000:
-                    return all_sentences
+        try:
+            with open(file_path, newline="", encoding="utf-8") as f:
+                for sentence in parse_csv_from_text(f.read()):
+                    all_sentences.append(sentence)
+        except Exception as e:
+            print(f"Ошибка при чтении CSV-файла {file_path}: {e}")
 
     return all_sentences
 
@@ -882,11 +870,31 @@ def model_train(
         )
 
 
-model_train(
-    EPOCHS=EPOCHS,
-    BATCH_SIZE=BATCH_SIZE,
-    BASE_MODEL=BASE_MODEL,
-    LEARNING_RATE=LEARNING_RATE,
-    TESTING_SIZE=TESTING_SIZE,
-    MAX_LINE_LENGHT=MAX_LINE_LENGHT,
-)
+def main():
+    return_parameters = {
+        "Эпохи": EPOCHS,
+        "Размер батчей": BATCH_SIZE,
+        "Базовая модель": BASE_MODEL,
+        "Скорость обучения": LEARNING_RATE,
+        "Размер тренировочного набора": TRAINING_SIZE,
+        "Максимальная длина предложения": MAX_LINE_LENGHT,
+    }
+
+    print({"progress": 3, "parameters": return_parameters})
+
+    model_train(
+        EPOCHS=EPOCHS,
+        BATCH_SIZE=BATCH_SIZE,
+        BASE_MODEL=BASE_MODEL,
+        LEARNING_RATE=LEARNING_RATE,
+        TESTING_SIZE=TRAINING_SIZE,
+        MAX_LINE_LENGHT=MAX_LINE_LENGHT,
+    )
+    pass
+
+
+if __name__ == "__main__":
+    from multiprocessing import freeze_support
+
+    freeze_support()  # можно оставить всегда
+    main()
