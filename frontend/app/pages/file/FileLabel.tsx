@@ -5,16 +5,18 @@ import { TextUI } from "@/shared/components/TextUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TagSelector } from "@/shared/components/TagSelector";
-import { type Row } from "@/shared/api/file";
+import { type FileFullResponse, type Row } from "@/shared/api/file";
 import { ButtonUI } from "@/shared/components/ButtonUI";
 import { RightPanel } from "@/shared/components/RightPanel";
 import { COLORS } from "@/shared/constants/tags";
+import { FileInfoElement } from "../comparisons/ComparisonFiles";
 
 type SelectedWord = [number, number];
 
 export function FileLabel({
   projectId,
   fileId,
+  file,
   page,
   totalPages,
   localTags,
@@ -31,6 +33,7 @@ export function FileLabel({
 }: {
   projectId: string | number;
   fileId: string | number;
+  file: FileFullResponse | null;
   page: number;
   totalPages: number;
   localTags: Record<string, string>;
@@ -388,18 +391,24 @@ export function FileLabel({
         )}
       </RightPanel>
 
-      <div className="border border-gray-200 rounded-4xl z-100 p-6 overflow-auto">
-        {/* Header */}
-        <div className="flex justify-end">
-          <ButtonUI
-            onClick={handleSave}
-            disabled={isSaving || isLoading || !hasUnsavedChanges}
-            className="bg-emerald-600 hover:bg-emerald-700"
-          >
-            {isSaving ? "Сохранение..." : "Сохранить разметку"}
-          </ButtonUI>
+      {file && (
+        <div className="mb-6 py-2 m-2">
+          <FileInfoElement file={file} />
         </div>
+      )}
 
+      <div className="flex justify-end sticky sm:top-45 lg:top-16 self-start pt-6 -mb-16 mr-6">
+        <ButtonUI
+          onClick={handleSave}
+          disabled={isSaving || isLoading || !hasUnsavedChanges}
+          className="bg-emerald-600 hover:bg-emerald-700"
+        >
+          {isSaving ? "Сохранение..." : "Сохранить разметку"}
+        </ButtonUI>
+      </div>
+
+      <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
+        {/* Header */}
         <PageNavigate
           className="mb-2"
           currentPage={page}

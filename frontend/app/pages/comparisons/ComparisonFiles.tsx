@@ -143,7 +143,7 @@ const FileInfoRow = ({
   );
 };
 
-const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
+export const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
   return (
     <div className="flex-1 flex-col p-4 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">

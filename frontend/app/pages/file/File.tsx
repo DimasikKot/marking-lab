@@ -133,6 +133,7 @@ export function File() {
         <FileEdit
           projectId={projectId}
           fileId={fileId}
+          file={file}
           page={page}
           totalPages={file?.total_pages || 1}
           localTags={localTags}
@@ -153,6 +154,7 @@ export function File() {
         <FileLabel
           projectId={projectId}
           fileId={fileId}
+          file={file}
           page={page}
           totalPages={file?.total_pages || 1}
           localTags={localTags}
