@@ -273,13 +273,13 @@ def download_model(
 
     # -------- files --------
     training_files = [
-        f'BASE_DIR / "{link.file.name}"'
+        f'BASE_DIR / "{link.file.name}.csv"'
         for link in model_db.file_links
         if link.role == "training" and link.file is not None
     ]
 
     prediction_files = [
-        f'BASE_DIR / "{link.file.name}"'
+        f'BASE_DIR / "{link.file.name}.csv"'
         for link in model_db.file_links
         if link.role == "for_prediction" and link.file is not None
     ]
