@@ -286,3 +286,13 @@ docker-compose up --build
 docker update --memory 4g ml
 
 ```
+
+7. Применить свой HUGGINGFACE_TOKEN в контейнере воркера (по желанию):
+
+```bash
+docker exec -it ml bash
+```
+
+```bash
+hf auth login --token hf_xxxxx
+```
