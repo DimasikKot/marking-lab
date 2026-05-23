@@ -1,18 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { Header } from "@/shared/components/Header";
 import { ButtonPage } from "@/shared/components/ButtonPage";
 import { TextUI } from "@/shared/components/TextUI";
 import { CheckboxUI } from "@/shared/components/CheckboxUI";
 import { PageNavigate } from "@/shared/components/PageNavigate";
+import { RightPanel } from "@/shared/components/RightPanel";
 import {
   fetchFileById,
   type FileFullResponse,
   type Row,
   type Word,
 } from "@/shared/api/file";
-import { RightPanel } from "@/shared/components/RightPanel";
 
 export function ComparisonFiles() {
   const navigate = useNavigate();
@@ -107,6 +112,7 @@ export function ComparisonFiles() {
               <FileInfoRow
                 file1={isLinkedOriginal === 2 ? file2 : file1}
                 file2={isLinkedOriginal === 2 ? file1 : file2}
+                projectId={Number(projectId)}
               />
               <FileRowsRow
                 projectId={projectId}
@@ -131,19 +137,27 @@ export function ComparisonFiles() {
 const FileInfoRow = ({
   file1,
   file2,
+  projectId,
 }: {
   file1: FileFullResponse;
   file2: FileFullResponse;
+  projectId: number | string;
 }) => {
   return (
     <div className="w-full grid grid-cols-2 gap-8 sticky sm:top-47 lg:top-15 self-start">
-      <FileInfoElement file={file1} />
-      <FileInfoElement file={file2} />
+      <FileInfoElement file={file1} projectId={projectId} />
+      <FileInfoElement file={file2} projectId={projectId} />
     </div>
   );
 };
 
-export const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
+export const FileInfoElement = ({
+  file,
+  projectId,
+}: {
+  file: FileFullResponse;
+  projectId: number | string;
+}) => {
   return (
     <div className="flex-1 flex-col p-4 -m-2 border border-gray-300 rounded-2xl bg-white">
       <div className="flex flex-row justify-between gap-4">
@@ -169,19 +183,31 @@ export const FileInfoElement = ({ file }: { file: FileFullResponse }) => {
 
       {file.prediction_model && (
         <TextUI variant="desc" maxLines={1} className="mt-1">
-          <strong>Размечен моделью:</strong> {file.prediction_model.name}
-          {" ("}
-          {file.prediction_model.parameters["Базовая модель"] &&
-            String(file.prediction_model.parameters["Базовая модель"])
-              .split("/")
-              .pop()}
-          {")"}
+          <strong>Размечен моделью:</strong>{" "}
+          <TextUI variant="link" isSpan isSelectable>
+            <Link
+              to={`/projects/${projectId}/models/${file.prediction_model.id}`}
+            >
+              {file.prediction_model.name}
+              {" ("}
+              {file.prediction_model.parameters["Базовая модель"] &&
+                String(file.prediction_model.parameters["Базовая модель"])
+                  .split("/")
+                  .pop()}
+              {")"}
+            </Link>
+          </TextUI>
         </TextUI>
       )}
 
       {file.origin_file && (
         <TextUI variant="desc" maxLines={1} className="mt-1">
-          <strong>Исходный файл:</strong> {file.origin_file.name}
+          <strong>Исходный файл:</strong>{" "}
+          <TextUI variant="link" isSpan isSelectable>
+            <Link to={`/projects/${projectId}/files/${file.origin_file.id}`}>
+              {file.origin_file.name}
+            </Link>
+          </TextUI>
         </TextUI>
       )}
     </div>

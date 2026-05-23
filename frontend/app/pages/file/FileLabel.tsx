@@ -397,7 +397,7 @@ export function FileLabel({
 
       {file && (
         <div className="mb-6 py-2 m-2">
-          <FileInfoElement file={file} />
+          <FileInfoElement file={file} projectId={projectId} />
         </div>
       )}
 
