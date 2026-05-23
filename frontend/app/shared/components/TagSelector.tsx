@@ -1,14 +1,14 @@
 import { TextUI } from "./TextUI";
 
 export function TagSelector({
-  selectedWord,
+  currentTag,
   tags,
   colors,
   onSelect,
   onClose,
   position,
 }: {
-  selectedWord: string | null;
+  currentTag: string | null;
   tags: Record<string, string>;
   colors: Record<string, string>;
   onSelect: (tag: string) => void;
@@ -56,7 +56,7 @@ export function TagSelector({
                 className="p-1 w-full text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
               >
                 <span
-                  className={`font-mono text-sm font-medium px-1 py-0.5 w-14 h-min text-center rounded ${colors[tagKey]} ${selectedWord === tagKey ? "ring-2 ring-gray-800" : ""}`}
+                  className={`font-mono text-sm font-medium px-1 py-0.5 w-14 h-min text-center rounded ${colors[tagKey]} ${currentTag === tagKey ? "ring-2 ring-gray-800" : ""}`}
                 >
                   {tagKey}
                 </span>
@@ -73,7 +73,7 @@ export function TagSelector({
                 className="px-1 w-min text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
               >
                 <span
-                  className={`font-mono text-sm font-medium px-1 py-0.5 w-13 text-center rounded ${colors[iTag]} ${selectedWord === iTag ? "ring-2 ring-gray-800" : ""}`}
+                  className={`font-mono text-sm font-medium px-1 py-0.5 w-13 text-center rounded ${colors[iTag]} ${currentTag === iTag ? "ring-2 ring-gray-800" : ""}`}
                 >
                   {iTag}
                 </span>

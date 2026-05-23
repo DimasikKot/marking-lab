@@ -60,6 +60,10 @@ export function FileLabel({
   const [newTagName, setNewTagName] = useState("");
   const [selectedColor, setSelectedColor] = useState("bg-blue-200");
 
+  const currentTag =
+    localRows[selectedWords?.[0]?.[0]]?.words?.[selectedWords?.[0]?.[1]]
+      ?.label || "";
+
   const handleAddTag = () => {
     if (!newTagName.trim()) return;
 
@@ -375,14 +379,14 @@ export function FileLabel({
                 >
                   <span
                     className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[tagKey]}
-                    ${localRows[selectedWords?.[0]?.[0]]?.words[selectedWords[0][1]]?.label === tagKey ? "ring-2 ring-gray-800" : ""}`}
+                    ${currentTag === tagKey ? "ring-2 ring-gray-800" : ""}`}
                   >
                     {tagKey}
                   </span>
 
                   <span
                     className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[iTag]}
-                    ${localRows[selectedWords?.[0]?.[0]]?.words[selectedWords[0][1]]?.label === iTag ? "ring-2 ring-gray-800" : ""}`}
+                    ${currentTag === iTag ? "ring-2 ring-gray-800" : ""}`}
                   >
                     {iTag}
                   </span>
@@ -481,10 +485,7 @@ export function FileLabel({
 
       {showTagMenu && (
         <TagSelector
-          selectedWord={
-            localRows[selectedWords[0][0]]?.words[selectedWords[0][1]]?.label ||
-            null
-          }
+          currentTag={currentTag}
           tags={localTags}
           colors={localColors}
           onSelect={assignTag}
