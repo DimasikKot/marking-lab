@@ -549,14 +549,16 @@ export function FileEdit({
         </div>
       )}
 
-      <div className="flex justify-end sticky sm:top-45 lg:top-16 self-start pt-6 -mb-16 mr-6">
-        <ButtonUI
-          onClick={handleSave}
-          disabled={isSaving || isLoading || !hasUnsavedChanges}
-          className="bg-emerald-600 hover:bg-emerald-700"
-        >
-          {isSaving ? "Сохранение..." : "Сохранить разметку"}
-        </ButtonUI>
+      <div className="sticky sm:top-45 lg:top-16 self-start pt-6 -mb-16  flex justify-end pointer-events-none">
+        <div className="mr-6 pointer-events-auto">
+          <ButtonUI
+            onClick={handleSave}
+            disabled={isSaving || isLoading || !hasUnsavedChanges}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {isSaving ? "Сохранение..." : "Сохранить разметку"}
+          </ButtonUI>
+        </div>
       </div>
 
       <div className="border border-gray-200 rounded-4xl p-6 overflow-auto">
