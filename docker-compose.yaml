@@ -4,8 +4,9 @@ services:
     restart: always
 
     image: redis:7
-    ports:
-      - "6379:6379"
+
+    # ports:
+    #   - "6379:6379"
 
     deploy:
       resources:
@@ -56,8 +57,8 @@ services:
     #   - "host.docker.internal:172.17.0.1"
 
     # Ожидаем загрузки сервиса `redis`
-    depends_on:
-      - redis
+    # depends_on:
+    #   - redis
 
     # Указываем сети, к которым будет подключён контейнер. Сети нужно создавать заранее командой `docker network create <network-name>`
     networks:
@@ -89,8 +90,8 @@ services:
           memory: 1G
 
     # Ожидаем загрузки сервиса `backend`
-    depends_on:
-      - backend
+    # depends_on:
+    #   - backend
 
   ml:
     build:
@@ -99,8 +100,8 @@ services:
     container_name: ml
     restart: always
 
-    ports:
-      - "8001:8001"
+    # ports:
+    #   - "8001:8001"
 
     volumes:
       - ./ml:/app

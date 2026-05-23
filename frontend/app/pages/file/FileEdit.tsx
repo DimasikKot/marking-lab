@@ -9,6 +9,7 @@ import { ButtonUI } from "@/shared/components/ButtonUI";
 import { RightPanel } from "@/shared/components/RightPanel";
 import { COLORS } from "@/shared/constants/tags";
 import { FileInfoElement } from "../comparisons/ComparisonFiles";
+import { TextField } from "@/shared/components/TextField";
 
 export function FileEdit({
   projectId,
@@ -118,6 +119,8 @@ export function FileEdit({
       delete next[iTag];
       return next;
     });
+
+    setHasUnsavedChanges(true);
   };
 
   const handleBackClick = () => {
@@ -412,12 +415,11 @@ export function FileEdit({
 
         {editMode ? (
           <>
-            <div className="border-b border-gray-200 pb-4 mb-4 space-y-3">
-              <input
+            <div className="border-b border-gray-200 pb-4 mb-4 space-y-3 mx-2">
+              <TextField
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="Новая сущность (ORG, PER...)"
-                className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                placeholder="Новая сущность (org, per...)"
               />
 
               <div className="flex flex-wrap gap-2">
@@ -425,9 +427,9 @@ export function FileEdit({
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
-                    className={`w-7 h-7 rounded-full border transition 
-            ${color} 
-            ${selectedColor === color ? "ring-2 ring-black" : ""}`}
+                    className={`w-7 h-7 rounded-full border transition
+                                ${color}
+                                ${selectedColor === color && "ring-2 ring-black"}`}
                   />
                 ))}
               </div>
@@ -455,31 +457,32 @@ export function FileEdit({
                       {/* Заголовок */}
                       <div className="flex items-center gap-2">
                         <span
-                          className={`font-mono text-xs px-2 py-0.5 rounded ${localColors[tagKey]}`}
+                          className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[tagKey]}`}
                         >
                           {tagKey}
                         </span>
+
                         <span
-                          className={`font-mono text-xs px-2 py-0.5 rounded ${localColors[iTag]}`}
+                          className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[iTag]}`}
                         >
                           {iTag}
                         </span>
 
-                        <input
-                          defaultValue={label}
-                          onBlur={(e) =>
+                        <TextField
+                          value={label}
+                          onChange={(e) =>
                             handleRenameTag(tagKey, e.target.value)
                           }
-                          className="ml-auto border rounded px-2 py-1 text-xs w-32"
+                          className="text-sm w-fit"
                         />
 
-                        <button
+                        <ButtonUI
+                          variant="icon"
                           onClick={() => removeTag(tagKey)}
-                          className="text-red-500 hover:text-red-700 transition"
-                          title="Удалить метку"
+                          className="text-red-500 hover:text-red-700 material-icons"
                         >
-                          🗑
-                        </button>
+                          delete
+                        </ButtonUI>
                       </div>
 
                       {/* Цвета */}
@@ -488,7 +491,7 @@ export function FileEdit({
                           <button
                             key={color}
                             onClick={() => handleChangeColor(tagKey, color)}
-                            className={`w-6 h-6 rounded-full border ${color}`}
+                            className={`w-6 h-6 rounded-full border ${color} ${localColors[tagKey] === color ? "ring-2 ring-black" : ""}`}
                           />
                         ))}
                       </div>
@@ -521,13 +524,13 @@ export function FileEdit({
                   className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
                 >
                   <span
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-12 text-center rounded ${localColors[tagKey]}`}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[tagKey]}`}
                   >
                     {tagKey}
                   </span>
 
                   <span
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min w-13 text-center rounded ${localColors[iTag]}`}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[iTag]}`}
                   >
                     {iTag}
                   </span>

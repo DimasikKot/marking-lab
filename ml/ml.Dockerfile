@@ -27,5 +27,4 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-# ⬇️ ВАЖНО: запускаем НЕ uvicorn, а воркер
 CMD ["python3", "-m", "main"]
