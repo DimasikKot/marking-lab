@@ -374,13 +374,15 @@ export function FileLabel({
                   className="w-full px-2 py-2.5 text-left hover:bg-gray-100 flex items-center cursor-pointer gap-3 transition-colors"
                 >
                   <span
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[tagKey]}`}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[tagKey]}
+                    ${localRows[selectedWords?.[0]?.[0]]?.words[selectedWords[0][1]]?.label === tagKey ? "ring-2 ring-gray-800" : ""}`}
                   >
                     {tagKey}
                   </span>
 
                   <span
-                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[iTag]}`}
+                    className={`font-mono text-sm font-medium px-1 py-0.5 h-min text-center rounded ${localColors[iTag]}
+                    ${localRows[selectedWords?.[0]?.[0]]?.words[selectedWords[0][1]]?.label === iTag ? "ring-2 ring-gray-800" : ""}`}
                   >
                     {iTag}
                   </span>
@@ -477,6 +479,10 @@ export function FileLabel({
 
       {showTagMenu && (
         <TagSelector
+          selectedWord={
+            localRows[selectedWords[0][0]]?.words[selectedWords[0][1]]?.label ||
+            null
+          }
           tags={localTags}
           colors={localColors}
           onSelect={assignTag}
