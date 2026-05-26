@@ -424,7 +424,7 @@ const ModelMetricsElement = ({
               return (
                 <div
                   key={key}
-                  className={`flex justify-between py-1 border-b border-emerald-300 ${color}`}
+                  className={`flex justify-between py-1 border-b border-green-300 ${color}`}
                 >
                   <TextUI
                     variant="subtitle"
