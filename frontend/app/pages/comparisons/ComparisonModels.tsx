@@ -325,7 +325,43 @@ const ModelParametersElement = ({ model }: { model: ModelFullResponse }) => {
   );
 };
 
+type MetricsStat = {
+  lose: number;
+  win: number;
+};
+
+const computeMetricsStats = (
+  models: ModelFullResponse[],
+): Record<string, MetricsStat> => {
+  const stats: Record<string, MetricsStat> = {};
+
+  models.forEach((model) => {
+    Object.entries(model.metrics).forEach(([key, value]) => {
+      const num = Number(value);
+      const isTimeMetric = (key: string): boolean =>
+        key.toLowerCase().includes("время");
+
+      if (Number.isNaN(num)) return;
+
+      if (!stats[key]) {
+        stats[key] = { lose: num, win: num };
+        console.log(key, stats[key]);
+      } else if (isTimeMetric(key)) {
+        stats[key].win = Math.min(stats[key].win, num);
+        stats[key].lose = Math.max(stats[key].lose, num);
+      } else {
+        stats[key].win = Math.max(stats[key].win, num);
+        stats[key].lose = Math.min(stats[key].lose, num);
+      }
+    });
+  });
+
+  return stats;
+};
+
 const ModelMetricsRow = ({ models }: { models: ModelFullResponse[] }) => {
+  const metricsStats = computeMetricsStats(models);
+
   return (
     <div
       className="grid gap-8"
@@ -334,13 +370,23 @@ const ModelMetricsRow = ({ models }: { models: ModelFullResponse[] }) => {
       }}
     >
       {models.map((model) => (
-        <ModelMetricsElement key={model.id} model={model} />
+        <ModelMetricsElement
+          key={model.id}
+          model={model}
+          metricsStats={metricsStats}
+        />
       ))}
     </div>
   );
 };
 
-const ModelMetricsElement = ({ model }: { model: ModelFullResponse }) => {
+const ModelMetricsElement = ({
+  model,
+  metricsStats,
+}: {
+  model: ModelFullResponse;
+  metricsStats: Record<string, MetricsStat>;
+}) => {
   return (
     <div>
       {Object.entries(model.metrics).length > 0 && (
@@ -354,28 +400,44 @@ const ModelMetricsElement = ({ model }: { model: ModelFullResponse }) => {
           </TextUI>
 
           <div className="space-y-2">
-            {Object.entries(model.metrics).map(([k, v]) => (
-              <div
-                key={k}
-                className="flex justify-between py-1 border-b border-emerald-300"
-              >
-                <TextUI
-                  variant="subtitle"
-                  className="text-emerald-500 w-[45%] overflow-hidden"
-                  isSelectable
-                >
-                  {k}
-                </TextUI>
+            {Object.entries(model.metrics).map(([key, value]) => {
+              const num = Number(value);
+              const stat = metricsStats[key];
 
-                <TextUI
-                  className="text-emerald-500 w-[50%] overflow-hidden"
-                  isSpan
-                  isSelectable
+              let color = "text-gray-700 border-gray-200";
+
+              if (stat && !Number.isNaN(num)) {
+                if (num === stat.win) {
+                  color =
+                    "text-green-700 border-green-500 bg-green-100 rounded px-2";
+                } else if (num === stat.lose) {
+                  color = "text-red-700 border-red-500 bg-red-50 rounded px-2";
+                }
+              }
+
+              return (
+                <div
+                  key={key}
+                  className={`flex justify-between py-1 border-b border-emerald-300 ${color}`}
                 >
-                  {String(v)}
-                </TextUI>
-              </div>
-            ))}
+                  <TextUI
+                    variant="subtitle"
+                    className="text-emerald-500 w-[45%] overflow-hidden"
+                    isSelectable
+                  >
+                    {key}
+                  </TextUI>
+
+                  <TextUI
+                    className="text-emerald-500 w-[50%] overflow-hidden"
+                    isSpan
+                    isSelectable
+                  >
+                    {String(value)}
+                  </TextUI>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
