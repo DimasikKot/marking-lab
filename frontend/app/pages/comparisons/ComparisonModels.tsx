@@ -417,7 +417,7 @@ const ModelMetricsElement = ({
                   color =
                     "text-green-700 border-green-500 bg-green-100 rounded px-2";
                 } else if (num === stat.lose) {
-                  color = "text-red-700 border-red-500 bg-red-50 rounded px-2";
+                  color = "text-red-700 border-red-300 bg-red-50 rounded px-2";
                 }
               }
 
