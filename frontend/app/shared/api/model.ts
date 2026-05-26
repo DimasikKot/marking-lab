@@ -84,6 +84,18 @@ export const fetchModelById = async (
     const response = await api.get<ModelFullResponse>(
       `/projects/${projectId}/models/${modelId}`,
     );
+
+    // if (response.data?.metrics) {
+    //   response.data.metrics = Object.fromEntries(
+    //     Object.entries(response.data.metrics).map(([key, value]) => {
+    //       if (typeof value === "number" && !key.includes("Скорость обучения")) {
+    //         return [key, Number(value.toFixed(5))];
+    //       }
+    //       return [key, value];
+    //     }),
+    //   );
+    // }
+
     return response.data;
   } catch (error: unknown) {
     errorValidate(error);
