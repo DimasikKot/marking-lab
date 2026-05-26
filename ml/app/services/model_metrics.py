@@ -45,35 +45,47 @@ def compute_metrics(p, label_list):
 
 
 # График потерь
-def loss_plot(title: str, loss_list: list) -> str:
+def loss_plot(title: str, loss_list: list) -> tuple[str, str | None]:
     fig, ax = plt.subplots(figsize=(6, 4))
+    comment = None
+
     if loss_list:
         epochs = [item[0] for item in loss_list if item[0] is not None]
         losses = [item[1] for item in loss_list if item[0] is not None]
+
         if epochs:
-            ax.plot(epochs, losses, "b-o", linewidth=2, markersize=8)
+            ax.plot(epochs, losses, "b-o", linewidth=1, markersize=4)
+
+            # Анализ
+            min_loss = min(losses)
+            min_epoch = epochs[losses.index(min_loss)]
+
+            if losses[-1] < losses[0]:
+                trend = "В целом наблюдается снижение функции потерь."
+            else:
+                trend = "Функция потерь не имеет выраженной тенденции к снижению."
+
+            comment = (
+                f"Минимальные потери ({min_loss:.4f}) достигнуты на эпохе {min_epoch}.\n"
+                f"{trend}"
+            )
+
     ax.set_title(title)
     ax.set_xlabel("Эпохи")
     ax.set_ylabel("Потери")
     ax.grid(True, alpha=0.3)
+
     buf = io.BytesIO()
     plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
     plt.close(fig)
-    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    return base64.b64encode(buf.getvalue()).decode("utf-8"), comment
 
 
 # График матрицы ошибок
 def plot_confusion_matrix(
     label_list: list[str], true_labels: list, pred_labels: list
-) -> str:
-    """
-    Создает и возвращает base64 изображение матрицы ошибок
-
-    Args:
-        label_list: Список всех меток
-        true_labels: Истинные метки для валидационной выборки
-        pred_labels: Предсказанные метки модели
-    """
+) -> tuple[str, str | None]:
     # Фильтруем метки, исключая "O"
     labels = [l for l in label_list if l != "O"]
     size = len(labels)
@@ -88,7 +100,7 @@ def plot_confusion_matrix(
         buf = io.BytesIO()
         plt.savefig(buf, format="png", dpi=80, bbox_inches="tight")
         plt.close(fig)
-        return base64.b64encode(buf.getvalue()).decode("utf-8")
+        return base64.b64encode(buf.getvalue()).decode("utf-8"), None
 
     # Создаем mapping меток в индексы
     # label_to_idx = {label: idx for idx, label in enumerate(labels)}
@@ -106,7 +118,28 @@ def plot_confusion_matrix(
 
     cm = confusion_matrix(filtered_true, filtered_pred, labels=labels)
 
-    # Создаем график
+    # Анализ
+    correct_per_class = np.diag(cm)
+    total_per_class = cm.sum(axis=1)
+
+    accuracy_per_class = np.divide(
+        correct_per_class,
+        total_per_class,
+        out=np.zeros_like(correct_per_class, dtype=float),
+        where=total_per_class != 0,
+    )
+
+    best_idx = np.argmax(accuracy_per_class)
+    worst_idx = np.argmin(accuracy_per_class)
+
+    comment = (
+        f"Лучше всего распознаётся класс «{labels[best_idx]}»\n"
+        f"(доля верных предсказаний {accuracy_per_class[best_idx]:.2%}).\n\n"
+        f"Хуже всего распознаётся класс «{labels[worst_idx]}»\n"
+        f"(доля верных предсказаний {accuracy_per_class[worst_idx]:.2%})."
+    )
+
+    # Визуализация
     fig, ax = plt.subplots(figsize=(10, 8))
 
     # Отображаем матрицу
@@ -122,7 +155,7 @@ def plot_confusion_matrix(
     # Добавляем значения в ячейки
     for i in range(size):
         for j in range(size):
-            text = ax.text(
+            ax.text(
                 j,
                 i,
                 cm[i, j],
@@ -135,10 +168,8 @@ def plot_confusion_matrix(
     ax.set_ylabel("Истинные метки")
     ax.set_title(f"Матрица ошибок (всего: {len(filtered_true)} примеров)")
 
-    plt.tight_layout()
-
     buf = io.BytesIO()
     plt.savefig(buf, format="png", dpi=100, bbox_inches="tight")
     plt.close(fig)
 
-    return base64.b64encode(buf.getvalue()).decode("utf-8")
+    return base64.b64encode(buf.getvalue()).decode("utf-8"), comment

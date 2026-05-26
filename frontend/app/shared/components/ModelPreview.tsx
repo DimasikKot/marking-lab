@@ -86,19 +86,27 @@ export const ModelPreview = ({
       )}
 
       {/* Графики */}
-      {Object.entries(model.graphs).map(([key, value]) => (
-        <div key={key} className="border rounded-2xl p-3">
-          <TextUI className="mb-2" isSelectable>
-            {key}
-          </TextUI>
+      {Object.entries(model.graphs)
+        .filter(([key]) => !key.includes("(описание)"))
+        .map(([key, value]) => (
+          <div key={key} className="border rounded-2xl p-3">
+            <TextUI variant="subtitle" className="mb-2" isSelectable>
+              {key}
+            </TextUI>
 
-          <img
-            src={value}
-            alt={key}
-            className="w-full select-none rounded-lg"
-          />
-        </div>
-      ))}
+            <img
+              src={value}
+              alt={key}
+              className="w-full select-none rounded-lg"
+            />
+
+            {model.graphs[key + " (описание)"] && (
+              <TextUI className="mt-2 whitespace-pre-line" isSelectable>
+                {String(model.graphs[key + " (описание)"])}
+              </TextUI>
+            )}
+          </div>
+        ))}
 
       {/* Файлы */}
       <div className="flex flex-col p-6 border border-gray-300 rounded-2xl">

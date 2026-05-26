@@ -121,21 +121,31 @@ def model_train(
         # print(f"Всего меток для матрицы ошибок: {len(true_labels)}")
         # print("+" * 100)
 
-        train_loss_plot = loss_plot("Потери на обучении", result["train_loss"])
+        train_loss_plot, train_loss_description = loss_plot(
+            "Потери на обучении", result["train_loss"]
+        )
 
         # Создаем матрицу ошибок с реальными данными
-        confusion_matrix_plot = plot_confusion_matrix(
+        confusion_matrix_plot, confusion_matrix_description = plot_confusion_matrix(
             label_list, true_labels, pred_labels
         )
+
+        return_graphs = {
+            "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
+            "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
+        }
+
+        if train_loss_description is not None:
+            return_graphs["Потери на обучении (описание)"] = train_loss_description
+
+        if confusion_matrix_description is not None:
+            return_graphs["Матрица ошибок (описание)"] = confusion_matrix_description
 
         request = {
             "train_access_token": train_access_token,
             "progress": 100,
             "metrics": return_metrics,
-            "graphs": {
-                "Потери на обучении": f"data:image/png;base64,{train_loss_plot}",
-                "Матрица ошибок": f"data:image/png;base64,{confusion_matrix_plot}",
-            },
+            "graphs": return_graphs,
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
 

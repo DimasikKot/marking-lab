@@ -48,7 +48,7 @@ export function ComparisonModels() {
       setIsLoadingModels(false);
 
       const hasTrainingModels = validModels.some(
-        (model) => model.progress > 0 && model.progress < 100,
+        (model) => 1 <= model.progress && model.progress <= 199,
       );
 
       if (!hasTrainingModels) {
@@ -289,7 +289,11 @@ const ModelParametersRow = ({ models }: { models: ModelFullResponse[] }) => {
   );
 };
 
-const ModelParametersElement = ({ model }: { model: ModelFullResponse }) => {
+export const ModelParametersElement = ({
+  model,
+}: {
+  model: ModelFullResponse;
+}) => {
   return (
     <div className="p-6 border border-orange-200 bg-orange-50/20 rounded-2xl">
       <TextUI variant="header" className="mb-4 text-orange-400" isSelectable>
@@ -338,15 +342,17 @@ const computeMetricsStats = (
   models.forEach((model) => {
     Object.entries(model.metrics).forEach(([key, value]) => {
       const num = Number(value);
-      const isTimeMetric = (key: string): boolean =>
-        key.toLowerCase().includes("время");
+      const isReverseMetric = (key: string): boolean =>
+        key.toLowerCase().includes("время") ||
+        key.toLowerCase().includes("time") ||
+        key.toLowerCase().includes("потери") ||
+        key.toLowerCase().includes("loss");
 
       if (Number.isNaN(num)) return;
 
       if (!stats[key]) {
         stats[key] = { lose: num, win: num };
-        console.log(key, stats[key]);
-      } else if (isTimeMetric(key)) {
+      } else if (isReverseMetric(key)) {
         stats[key].win = Math.min(stats[key].win, num);
         stats[key].lose = Math.max(stats[key].lose, num);
       } else {
@@ -463,19 +469,27 @@ const ModelGraphsRow = ({ models }: { models: ModelFullResponse[] }) => {
 const ModelGraphsElement = ({ model }: { model: ModelFullResponse }) => {
   return (
     <div className="space-y-6">
-      {Object.entries(model.graphs).map(([key, value]) => (
-        <div key={key} className="border rounded-2xl p-3">
-          <TextUI className="mb-2" isSelectable>
-            {key}
-          </TextUI>
+      {Object.entries(model.graphs)
+        .filter(([key]) => !key.includes("(описание)"))
+        .map(([key, value]) => (
+          <div key={key} className="border rounded-2xl p-3">
+            <TextUI variant="subtitle" className="mb-2" isSelectable>
+              {key}
+            </TextUI>
 
-          <img
-            src={value}
-            alt={key}
-            className="w-full select-none rounded-lg"
-          />
-        </div>
-      ))}
+            <img
+              src={value}
+              alt={key}
+              className="w-full select-none rounded-lg"
+            />
+
+            {model.graphs[key + " (описание)"] && (
+              <TextUI className="mt-2 whitespace-pre-line" isSelectable>
+                {String(model.graphs[key + " (описание)"])}
+              </TextUI>
+            )}
+          </div>
+        ))}
     </div>
   );
 };
