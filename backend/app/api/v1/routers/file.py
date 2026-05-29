@@ -116,7 +116,7 @@ def ToFileListResponse(file_db: FileDB, db: Session) -> FileListResponse:
 @router.post("", response_model=FileDbResponse)
 async def post(
     project_id: int = Path(...),
-    # name: str = Form(...) - используем `Form(...)``,
+    # name: str = Form(...) - используем `Form(...)`,
     # тк если передаются файлы, то только с этим атрибутом работает
     name: str = Form(...),
     is_labeled: bool = Form(...),
@@ -124,6 +124,18 @@ async def post(
     user_id: int = Depends(get_user_id),
     db: Session = Depends(get_db),
 ):
+    # Проверяем размер файла (5 МБ = 5 * 1024 * 1024 байт)
+    file.file.seek(0, 2)  # Перемещаем указатель в конец файла
+    file_size = file.file.tell()  # Получаем текущую позицию (размер в байтах)
+    file.file.seek(0)  # Обязательно возвращаем указатель в начало!
+
+    # Выбрасываем ошибку, если лимит превышен
+    if file_size > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=413,
+            detail="Файл должен быть меньше 5 МБ",
+        )
+
     file_db = create_file_by_project_id(
         project_id=project_id,
         user_id=user_id,
