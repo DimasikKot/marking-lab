@@ -293,7 +293,7 @@ def update_page_by_id(
 
     new_real_tags: list[dict[str, str]] = []
     # 1) сначала реальные метки
-    # 2) потом метки из БД
+    # 2) потом метки из БД (зачем?)
     # 3) потом метки из запроса
     # 4) и если хоть что-то новое, то обновляем метки
     # 5) если реальных меток нет, то значит файл не размечен
@@ -308,7 +308,7 @@ def update_page_by_id(
             new_rows=new_rows,
         )
         new_real_tags.extend(real_tags)  # 1
-        new_real_tags.extend(file_db.tags)  # 2
+        # new_real_tags.extend(file_db.tags)  # 2
 
         file_db.total_rows = new_total_rows
 
