@@ -31,13 +31,14 @@ class NERModel:
         }  # преобразование числа в метку
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name, use_fast=True
+            model_name, use_fast=True, token=settings.HF_TOKEN
         )  # преобразование текста в числа
         self.model = AutoModelForTokenClassification.from_pretrained(  # инициализируем предобученную модель
             model_name,  # название модели
             num_labels=len(label_list),  # сколько всего типов меток
             id2label=self.id2label,  # словарь число-метка
             label2id=self.label2id,  # cловарь метка-число
+            token=settings.HF_TOKEN,  # Добавлен токен
         ).to(
             DEVICE
         )  # используем GPU
@@ -83,6 +84,7 @@ class NERModel:
             lr_scheduler_type="linear",  # тип распределения скорости обучения
             warmup_steps=0.1,  # кол-во эпох для увеличения скорости обучения
             dataloader_pin_memory=False,
+            hub_token=settings.HF_TOKEN,  # Добавлен токен для возможной загрузки на Hub
         )
 
         trainer = Trainer(
@@ -164,10 +166,12 @@ class NERModel:
         }
 
     def load(self, model_dir: str):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.model = AutoModelForTokenClassification.from_pretrained(model_dir).to(
-            DEVICE
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_dir, token=settings.HF_TOKEN
         )
+        self.model = AutoModelForTokenClassification.from_pretrained(
+            model_dir, token=settings.HF_TOKEN
+        ).to(DEVICE)
         self.label_list = list(self.model.config.id2label.values())
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label

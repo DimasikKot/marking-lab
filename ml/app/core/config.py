@@ -8,6 +8,8 @@ class _Settings(BaseSettings):
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
 
+    HF_TOKEN: str = "hf_xxxxx"
+
     TRAIN_LOGGING_STEPS: int = 8
     # Количесво шагов, необходимое для обратной связи обучения модели
 
