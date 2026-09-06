@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, field_validator
 
 # Подключение к БД
-from app.core.database import get_auth_db
+from app.core.database import get_db
 
 # Модель пользователя хранящаяся в БД
 from app.models.db_auth import User
@@ -64,9 +64,9 @@ class PostResponse(BaseModel):
 
 
 # Пишем метод, путь и какие данные будем возвращать
-@router.post("", response_model=PostResponse)
+@router.post("/", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД
-async def post(data: PostRequest, db: Session = Depends(get_auth_db)):
+async def post(data: PostRequest, db: Session = Depends(get_db)):
     user: User = create_user(db, data.username, data.email, data.password)
 
     access_token: str = encode_user_access_token(user_id=user.id)
@@ -84,7 +84,7 @@ class PostLoginRequest(BaseModel):
 # Совершение авторизации
 @router.post("/login", response_model=PostResponse)
 # Пишем получаемые данные и создаём сессию с БД для проверки
-async def post_login(data: PostLoginRequest, db: Session = Depends(get_auth_db)):
+async def post_login(data: PostLoginRequest, db: Session = Depends(get_db)):
     user: User = authenticate_user(db, data.login, data.password)
 
     # Создаём токен авторизации ("sub" - это стандартный параметр для задания id пользователя)
@@ -105,7 +105,7 @@ class PostValidateResponse(BaseModel):
 
 @router.post("/validate-username", response_model=PostValidateResponse)
 async def post_validate_username(
-    data: PostValidateUsernameRequest, db: Session = Depends(get_auth_db)
+    data: PostValidateUsernameRequest, db: Session = Depends(get_db)
 ):
     username_patt = r"^[a-zA-Z][a-zA-Z0-9_]"
     if not re.match(username_patt, data.username):
@@ -118,6 +118,8 @@ async def post_validate_username(
     existing_username: User | None = (
         db.query(User).filter(User.username == data.username).first()
     )
+    print(existing_username)
+    
     if existing_username:
         raise HTTPException(status_code=400, detail="Имя пользователя уже занято")
 
@@ -130,7 +132,7 @@ class PostValidateEmailRequest(BaseModel):
 
 @router.post("/validate-email", response_model=PostValidateResponse)
 async def post_validate_email(
-    data: PostValidateEmailRequest, db: Session = Depends(get_auth_db)
+    data: PostValidateEmailRequest, db: Session = Depends(get_db)
 ):
     email_patt = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.(ru|com)$"
     if not re.match(email_patt, data.email):
@@ -153,7 +155,7 @@ class PostValidateLoginRequest(BaseModel):
 
 @router.post("/validate-login", response_model=PostValidateResponse)
 async def post_validate_login(
-    data: PostValidateLoginRequest, db: Session = Depends(get_auth_db)
+    data: PostValidateLoginRequest, db: Session = Depends(get_db)
 ):
     user: User = db.query(User).filter(User.email == data.login).first()
     if not user:

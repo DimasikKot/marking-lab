@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     host: true, // Важно для Docker
     port: 5173,
-    allowedHosts: ["fundata.mooo.com"],
+    allowedHosts: ["fundata.mooo.com", "markinglab.mooo.com"],
     open: true,
     watch: { usePolling: true }, // Для корректного отслеживания изменений в контейнере
   },

@@ -309,6 +309,8 @@ def update_page_by_id(
         )
         new_real_tags.extend(real_tags)  # 1
         # new_real_tags.extend(file_db.tags)  # 2
+        if new_tags is not None:
+            new_real_tags.extend(new_tags)  # 3
 
         file_db.total_rows = new_total_rows
 

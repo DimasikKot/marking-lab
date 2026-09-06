@@ -3,10 +3,10 @@ from sqlalchemy import Integer, String, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
-from app.core.database import AuthBase
+from app.core.database import Base
 
 
-class User(AuthBase):
+class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)

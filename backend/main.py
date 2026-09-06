@@ -9,7 +9,8 @@ app: FastAPI = FastAPI()
 origins: list[str] = [
     "http://localhost:5173",  # Фронтенд на Vite
     "http://127.0.0.1:5173",  # Альтернативный локальный хост
-    "*",
+    "https://fundata.mooo.com:5173",
+    "https://markinglab.mooo.com:5173",
 ]
 
 # Добавляем CORS Middleware
