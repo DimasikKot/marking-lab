@@ -71,6 +71,11 @@ export function Model() {
         setPredictionFilesIds(response.prediction_files.map((file) => file.id));
       }
 
+      if (isEditing && trainingFilesIds.length === 0 && predictionFilesIds.length === 0) {
+        setTrainingFilesIds(response.training_files.map((file) => file.id));
+        setPredictionFilesIds(response.prediction_files.map((file) => file.id));
+      }
+
       if (response.progress <= 0 || response.progress >= 200) {
         clearInterval(interval);
       }
