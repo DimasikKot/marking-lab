@@ -161,6 +161,7 @@ export function FileEdit({
   ) => {
     const updatedRows = [...localRows];
     updatedRows[lineIdx].words[wordIdx].token = newToken;
+    setHasUnsavedChanges(true);
     setLocalRows(updatedRows);
   };
 
