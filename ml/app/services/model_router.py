@@ -149,24 +149,33 @@ def model_train(
         }
         httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
 
-        try:
-            star_predict_time = time.perf_counter()
-            model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
-            predict_time_seconds = time.perf_counter() - star_predict_time
-            return_metrics["Время разметки (сек)"] = round(predict_time_seconds, 2)
+        for attempt in range(5):
+            try:
+                star_predict_time = time.perf_counter()
+                model_predict(train_access_token, ner, MAX_LINE_LENGHT, BATCH_SIZE)
+                predict_time_seconds = time.perf_counter() - star_predict_time
+                return_metrics["Время разметки (сек)"] = round(predict_time_seconds, 2)
 
-            request = {
-                "train_access_token": train_access_token,
-                "progress": 200,
-                "metrics": return_metrics,
-            }
-            httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
-        except Exception as error:
-            httpx.post(
-                settings.POST_PROGRESS_URL,
-                json={"progress": 201, "train_access_token": train_access_token},
-                timeout=300,
-            )
+                request = {
+                    "train_access_token": train_access_token,
+                    "progress": 200,
+                    "metrics": return_metrics,
+                }
+                httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=1000)
+                break  # успех - выходим из цикла
+
+            except Exception as error:
+                print(f"Predict attempt {attempt + 1}/5 failed: {error}")
+                time.sleep(10)  # пауза перед следующей попыткой
+                if attempt == 4:  # последняя попытка
+                    httpx.post(
+                        settings.POST_PROGRESS_URL,
+                        json={
+                            "progress": 201,
+                            "train_access_token": train_access_token,
+                        },
+                        timeout=300,
+                    )
 
 
 def model_router(

@@ -2,6 +2,7 @@ import httpx
 import redis
 import json
 import socket
+import time
 from redis.exceptions import ResponseError
 
 from app.core.config import settings
@@ -10,6 +11,11 @@ from app.services.model_router import model_router
 STREAM = "ml_train_tasks"
 GROUP = "ml_trainers"
 WORKER = socket.gethostname()
+
+
+def current_time() -> str:
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+
 
 redis_class = redis.Redis(
     host=settings.REDIS_HOST,
@@ -23,9 +29,12 @@ try:
 except ResponseError:
     pass
 
-print(f"[{WORKER}] ML worker started")
+print(f"[{current_time()}] {WORKER}: ML worker started")
 
 while True:
+    print(f"[{current_time()}] WAITING 30 SEC")
+    time.sleep(30)  # пауза перед началом попыток
+
     resp = redis_class.xreadgroup(
         groupname=GROUP, consumername=WORKER, streams={STREAM: ">"}, count=1, block=0
     )
@@ -33,28 +42,41 @@ while True:
     _, messages = resp[0]  # type: ignore
     msg_id, data = messages[0]
 
-    try:
-        params = json.loads(data["parameters"])
+    for attempt in range(5):
+        try:
+            params = json.loads(data["parameters"])
 
-        model_router(
-            EPOCHS=int(params["Эпохи"]),
-            BATCH_SIZE=int(params["Размер батчей"]),
-            BASE_MODEL=params["Базовая модель"],
-            LEARNING_RATE=float(params["Скорость обучения"]),
-            TESTING_SIZE=float(params["Размер тренировочного набора"]),
-            MAX_LINE_LENGHT=int(params["Максимальная длина предложения"]),
-            train_access_token=data["train_access_token"],
-        )
+            model_router(
+                EPOCHS=int(params["Эпохи"]),
+                BATCH_SIZE=int(params["Размер батчей"]),
+                BASE_MODEL=params["Базовая модель"],
+                LEARNING_RATE=float(params["Скорость обучения"]),
+                TESTING_SIZE=float(params["Размер тренировочного набора"]),
+                MAX_LINE_LENGHT=int(params["Максимальная длина предложения"]),
+                train_access_token=data["train_access_token"],
+            )
 
-        # обучение полностью завершено
-        redis_class.xack(STREAM, GROUP, msg_id)
-        print(f"[{WORKER}] done {msg_id}")
+            # обучение полностью завершено
+            redis_class.xack(STREAM, GROUP, msg_id)
+            print(f"[{current_time()}] {WORKER}: done {msg_id}")
+            break  # успех - выходим из цикла попыток
 
-    except Exception as error:
-        httpx.post(
-            settings.POST_PROGRESS_URL,
-            json={"progress": 0, "train_access_token": data["train_access_token"]},
-            timeout=300,
-        )
-        print(f"[{WORKER}] error {error}")
-        # НЕ xack → retry
+        except Exception as error:
+            print(
+                f"[{current_time()}] {WORKER}: attempt {attempt + 1}/5 failed: {error}"
+            )
+
+            print(f"[{current_time()}] WAITING 30 SEC AGAIN")
+            time.sleep(30)  # пауза перед следующей попыткой
+
+            if attempt == 4:  # последняя попытка
+                httpx.post(
+                    settings.POST_PROGRESS_URL,
+                    json={
+                        "progress": 0,
+                        "train_access_token": data["train_access_token"],
+                    },
+                    timeout=300,
+                )
+                print(f"[{current_time()}] {WORKER}: error after 5 attempts: {error}")
+                # НЕ xack → retry

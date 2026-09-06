@@ -15,7 +15,7 @@ class ProgressCallback(TrainerCallback):
 
         self.last_progress = -1
 
-    def _send_progress(self, progress: int, metrics: dict):
+    def _send_progress(self, progress: int, metrics: dict) -> bool:
         try:
             metrics_data = {
                 "F1-мера": metrics.get("f1"),
@@ -45,7 +45,7 @@ class ProgressCallback(TrainerCallback):
             response = httpx.post(settings.POST_PROGRESS_URL, json=request, timeout=300)
 
             if response.status_code != 200:
-                print(f"Ошибка отправки прогресса: {response.json()["detail"]}")
+                print(f"Ошибка отправки прогресса: {response.json()['detail']}")
                 raise RuntimeError(f"Не удалось отправить прогресс")
 
             return True
@@ -104,6 +104,14 @@ class ProgressCallback(TrainerCallback):
             metrics=metrics,
         )
 
+        attemp = 0
+        while not success and attemp < 5:
+            attemp += 1
+            success = self._send_progress(
+                progress=progress,
+                metrics=metrics,
+            )
+
         if not success:
             print(f"Ошибка отправки прогресса, остановка модели")
             raise RuntimeError(f"Не удалось отправить прогресс")
@@ -138,10 +146,22 @@ class ProgressCallback(TrainerCallback):
         # print(metrics)
         # print("^" * 100)
 
-        self._send_progress(
+        success = self._send_progress(
             progress=progress,
             metrics=eval_metrics,
         )
+
+        attemp = 0
+        while not success and attemp < 5:
+            attemp += 1
+            success = self._send_progress(
+                progress=progress,
+                metrics=eval_metrics,
+            )
+
+        if not success:
+            print(f"Ошибка отправки прогресса, остановка модели")
+            raise RuntimeError(f"Не удалось отправить прогресс")
 
     # def on_train_end(self, args, state, control, **kwargs):
     #     self._send_progress(
