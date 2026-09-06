@@ -103,10 +103,13 @@ def normalize_label(label: str) -> str:
 
 
 # Знаки, которые отделяются в начале токена
-START_SEPARATORS = {"(", "[", "{", '"', "'", "$", "%", "₽"}
+START_SEPARATORS = {"(", "[", "{", '"', "«", "$", "%", "₽"}
 
 # Знаки, которые отделяются в конце токена
-END_SEPARATORS = {".", ",", ")", "]", "}", "!", "?", ":", "-", '"', "'", "$", "%", "₽"}
+END_SEPARATORS = {".", ",", ")", "]", "}", "!", "?", ":", "-", '"', "»", "$", "%", "₽"}
+
+# Токены, которые не нужно разделять
+PROTECTED_TOKENS = {"--", "->", "<-", "...", "::", "++", "/*", "*/", "//", "=>", "<="}
 
 
 def split_token(token: str, label: str) -> tuple[list[str], list[str]]:
@@ -119,7 +122,15 @@ def split_token(token: str, label: str) -> tuple[list[str], list[str]]:
     if not token:
         return [], []
 
-    # Отделяем начальные разделители
+    # Если токен в защищённом списке, не разбиваем
+    if token in PROTECTED_TOKENS:
+        return [token], [label]
+
+    # Если метка не O, не разбиваем
+    if label != "O":
+        return [token], [label]
+
+    # Иначе разделяем по правилам
     start_chars = []
     while token and token[0] in START_SEPARATORS:
         start_chars.append(token[0])
