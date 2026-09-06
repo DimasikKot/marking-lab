@@ -602,7 +602,7 @@ export function FileEdit({
                         flex flex-col items-center gap-1 px-2 py-0.5 rounded
                         ${localColors[word.label] ?? ""}`}
                       style={{
-                        width: `${word.token.length + 2}ch`,
+                        width: `${word.token.length * 1.1 + 3}ch`,
                       }}
                     />
                   </div>
