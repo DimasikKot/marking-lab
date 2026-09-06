@@ -102,6 +102,69 @@ def normalize_label(label: str) -> str:
     return f"{bio}-{ent.lower()}"
 
 
+# Знаки, которые отделяются в начале токена
+START_SEPARATORS = {"(", "[", "{", '"', "'", "$", "%", "₽"}
+
+# Знаки, которые отделяются в конце токена
+END_SEPARATORS = {".", ",", ")", "]", "}", "!", "?", ":", "-", '"', "'", "$", "%", "₽"}
+
+
+def split_token(token: str, label: str) -> tuple[list[str], list[str]]:
+    """
+    Разбивает один токен на части:
+    - все символы из START_SEPARATORS в начале → отдельные токены с меткой O
+    - все символы из END_SEPARATORS в конце → отдельные токены с меткой O
+    - оставшаяся середина получает исходную метку label
+    """
+    if not token:
+        return [], []
+
+    # Отделяем начальные разделители
+    start_chars = []
+    while token and token[0] in START_SEPARATORS:
+        start_chars.append(token[0])
+        token = token[1:]
+
+    # Отделяем конечные разделители
+    end_chars = []
+    while token and token[-1] in END_SEPARATORS:
+        end_chars.append(token[-1])
+        token = token[:-1]
+    end_chars.reverse()  # сохраняем порядок
+
+    result_tokens = []
+    result_labels = []
+
+    # Начальные знаки → O
+    for ch in start_chars:
+        result_tokens.append(ch)
+        result_labels.append("O")
+
+    # Середина → исходная метка
+    if token:
+        result_tokens.append(token)
+        result_labels.append(label)
+
+    # Конечные знаки → O
+    for ch in end_chars:
+        result_tokens.append(ch)
+        result_labels.append("O")
+
+    return result_tokens, result_labels
+
+
+def tokenize_plain_text(text: str) -> list[str]:
+    """
+    Для plain text (без меток) – все метки будут 'O'.
+    """
+    orig_tokens = text.split()
+    new_tokens = []
+    for token in orig_tokens:
+        sub_tokens, _ = split_token(token, "O")
+        new_tokens.extend(sub_tokens)
+    return new_tokens
+
+
 def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, str]]]:
     try:
         content_stream = TextIOWrapper(
@@ -126,13 +189,23 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
         if not text:
             continue
 
-        tokens = text.split()
+        orig_tokens = text.split()
         raw_labels = labels_str.split() if labels_str else []
 
         labels = [normalize_label(l) for l in raw_labels]
-        if len(labels) < len(tokens):
-            labels += ["O"] * (len(tokens) - len(labels))
-        labels = labels[: len(tokens)]
+        if len(labels) < len(orig_tokens):
+            labels += ["O"] * (len(orig_tokens) - len(labels))
+        labels = labels[: len(orig_tokens)]
+
+        # --- НОВАЯ ТОКЕНИЗАЦИЯ ---
+        new_tokens = []
+        new_labels = []
+        for token, label in zip(orig_tokens, labels):
+            sub_tokens, sub_labels = split_token(token, label)
+            new_tokens.extend(sub_tokens)
+            new_labels.extend(sub_labels)
+        tokens, labels = new_tokens, new_labels
+        # --- КОНЕЦ ТОКЕНИЗАЦИИ ---
 
         prev_label = "O"
         for i, label in enumerate(labels):
@@ -143,7 +216,6 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
                 label = "B" + label[1:]
                 labels[i] = label
 
-            # Сбор уникальных тегов
             if label != "O":
                 tag = label[2:] if label.startswith(("B-", "I-")) else label
                 unique_tags.add(tag)
@@ -157,7 +229,7 @@ def normalize_content_to_csv(file: BinaryIO) -> tuple[str, int, list[dict[str, s
         for line in content.splitlines():
             line = line.strip()
             if line:
-                tokens = line.split()
+                tokens = tokenize_plain_text(line)
                 labels = ["O"] * len(tokens)
                 sentences.append((" ".join(tokens), " ".join(labels)))
 
